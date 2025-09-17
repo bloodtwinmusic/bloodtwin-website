@@ -29,7 +29,6 @@
             background-color: #000000;
             color: #e5e5e5;
             scroll-behavior: smooth;
-            /* FIX: Adds better default spacing for the new font */
             line-height: 1.6; 
         }
         
@@ -37,14 +36,12 @@
             font-family: 'LIBBY', serif;
         }
         
-        /* FIX: Adds letter spacing to prevent text from looking cramped */
         h1, h2, h3, p, a, div {
             letter-spacing: 0.05em;
         }
         
         /* --- blood.twin CUSTOM STYLES --- */
 
-        /* Red Gradient for Titles */
         .gradient-text {
             background: linear-gradient(45deg, #ef4444, #7f1d1d);
             -webkit-background-clip: text;
@@ -65,7 +62,6 @@
             box-shadow: 0 15px 40px rgba(178, 34, 34, 0.4);
         }
         
-        /* Navigation Link Underline Effect */
         .nav-link {
             position: relative;
         }
@@ -85,7 +81,6 @@
             width: 100%;
         }
         
-        /* Custom Scrollbar */
         .custom-scrollbar::-webkit-scrollbar {
             width: 6px;
         }
@@ -103,7 +98,6 @@
             background: #991b1b;
         }
 
-        /* Mobile Menu Open State for Animation */
         #mobile-menu.is-open {
             opacity: 1;
             transform: translateY(0);
@@ -111,11 +105,11 @@
         }
     </style>
 </head>
-<body class="antialiased">
+<body class="antialiased overflow-x-hidden">
 
     <nav class="fixed w-full z-50 bg-black bg-opacity-80 backdrop-blur-md py-4 px-6">
         <div class="container mx-auto flex justify-between items-center">
-            <a href="#" class="title-font gradient-text text-lg sm:text-xl md:text-2xl font-bold whitespace-nowrap tracking-normal"> • • • B L O O D . T W I N • • •</a>
+            <a href="#" class="title-font gradient-text text-base sm:text-lg md:text-2xl font-bold whitespace-nowrap tracking-normal" style="transform: translateX(-10px);"> • • • B L O O D . T W I N • • •</a>
             
             <div id="mobile-menu" class="flex flex-col items-end space-y-4 md:flex-row md:items-center md:space-y-0 md:space-x-8 absolute md:static top-full right-0 w-auto md:w-auto bg-black bg-opacity-95 md:bg-transparent p-6 md:p-0 rounded-b-lg md:rounded-none transform transition-all duration-300 ease-out opacity-0 -translate-y-4 md:opacity-100 md:translate-y-0 pointer-events-none md:pointer-events-auto">
                 <a href="#" class="nav-link text-white hover:text-red-400 transition">Home</a>
@@ -135,11 +129,16 @@
 
     <div id="vanta-bg" class="min-h-screen flex items-center justify-center relative">
         <div class="hero-overlay absolute inset-0"></div>
-        <div class="container mx-auto px-6 z-10 text-center" data-aos="fade-up" data-aos-duration="1500">
-            <h1 class="text-2xl sm:text-4xl md:text-5xl font-bold title-font mb-6 tracking-normal">• • • B L O O D . T W I N • • •</h1>
-            <p class="text-xl md:text-2xl mb-8 max-w-3xl mx-auto">Enigmatic London Solo Artist Weaving Dark, Atmospheric Soundscapes & Exploring Gothic Introspection.</p>
-            <div class="flex justify-center space-x-4">
-                <a href="http://bloodtwin.bandcamp.com" target="_blank" class="px-6 py-3 bg-red-700 hover:bg-red-800 text-white rounded-full font-medium transition">Listen Now</a>
+        <div class="container mx-auto z-10 text-center" data-aos="fade-up" data-aos-duration="1500">
+            <h1 class="flex justify-center items-center text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-bold title-font mb-6 tracking-normal whitespace-nowrap">
+                <span>• • • B L O O D</span>
+                <span class="mx-4">.</span>
+                <span>T W I N • • •</span>
+            </h1>
+            <div class="px-6"> <p class="text-xl md:text-2xl mb-8 max-w-3xl mx-auto">Enigmatic London Solo Artist Weaving Dark, Atmospheric Soundscapes & Exploring Gothic Introspection.</p>
+                <div class="flex justify-center space-x-4">
+                    <a href="http://bloodtwin.bandcamp.com" target="_blank" class="px-6 py-3 bg-red-700 hover:bg-red-800 text-white rounded-full font-medium transition">Listen Now</a>
+                </div>
             </div>
         </div>
     </div>
