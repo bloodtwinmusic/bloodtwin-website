@@ -1,4 +1,19 @@
-<style>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>blood.twin - Official Website | Goth Darkwave Post-Punk</title>
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.globe.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+
+    <style>
         /* This rule loads your custom font from the 'fonts' folder. */
         @font-face {
             font-family: 'LIBBY';
@@ -14,10 +29,17 @@
             background-color: #000000;
             color: #e5e5e5;
             scroll-behavior: smooth;
+            /* FIX: Adds better default spacing for the new font */
+            line-height: 1.6; 
         }
         
         .title-font {
             font-family: 'LIBBY', serif;
+        }
+        
+        /* FIX: Adds letter spacing to prevent text from looking cramped */
+        h1, h2, h3, p, a, div {
+            letter-spacing: 0.05em;
         }
         
         /* --- blood.twin CUSTOM STYLES --- */
@@ -87,7 +109,52 @@
             transform: translateY(0);
             pointer-events: auto;
         }
-</style>    <section id="about" class="py-20 px-6">
+    </style>
+</head>
+<body class="antialiased">
+
+    <nav class="fixed w-full z-50 bg-black bg-opacity-80 backdrop-blur-md py-4 px-6">
+        <div class="container mx-auto flex justify-between items-center">
+            <a href="#" class="text-2xl font-bold title-font gradient-text tracking-wider">blood.twin</a>
+            
+            <div id="mobile-menu" class="flex flex-col items-end space-y-4 md:flex-row md:items-center md:space-y-0 md:space-x-8 absolute md:static top-full right-0 w-auto md:w-auto bg-black bg-opacity-95 md:bg-transparent p-6 md:p-0 rounded-b-lg md:rounded-none transform transition-all duration-300 ease-out opacity-0 -translate-y-4 md:opacity-100 md:translate-y-0 pointer-events-none md:pointer-events-auto">
+                <a href="#" class="nav-link text-white hover:text-red-400 transition">Home</a>
+                <a href="#live" class="nav-link text-white hover:text-red-400 transition">Live</a>
+                <a href="#about" class="nav-link text-white hover:text-red-400 transition">About (EPK)</a>
+                <a href="#store" class="nav-link text-white hover:text-red-400 transition">Store</a>
+                <a href="#contact" class="nav-link text-white hover:text-red-400 transition">Contact</a>
+            </div>
+            
+            <div class="flex items-center">
+                <button id="mobile-menu-button" class="md:hidden text-white">
+                    <i data-feather="menu"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div id="vanta-bg" class="min-h-screen flex items-center justify-center relative">
+        <div class="hero-overlay absolute inset-0"></div>
+        <div class="container mx-auto px-6 z-10 text-center" data-aos="fade-up" data-aos-duration="1500">
+            <h1 class="text-5xl md:text-7xl font-bold title-font mb-6 tracking-widest">blood.twin</h1>
+            <p class="text-xl md:text-2xl mb-8 max-w-3xl mx-auto">Enigmatic London Solo Artist Weaving Dark, Atmospheric Soundscapes & Exploring Gothic Introspection.</p>
+            <div class="flex justify-center space-x-4">
+                <a href="http://bloodtwin.bandcamp.com" target="_blank" class="px-6 py-3 bg-red-700 hover:bg-red-800 text-white rounded-full font-medium transition">Listen Now</a>
+            </div>
+        </div>
+    </div>
+
+    <section id="live" class="py-20 px-6 bg-black">
+        <div class="container mx-auto text-center">
+            <h2 class="text-3xl md:text-4xl font-bold title-font mb-8" data-aos="fade-up">LIVE</h2>
+            <div class="max-w-3xl mx-auto" data-aos="fade-up" data-aos-delay="100">
+                <p class="text-lg text-gray-300 mb-8 leading-relaxed">Currently, blood.twin is a studio-based project with a focus on recording and creating new music. While live performances are not ruled out for the future, the immediate goal is to continue building the world of blood.twin through sound and visuals.</p>
+                <p class="text-gray-400">For any announcements on future live dates, please follow the social media channels.</p>
+            </div>
+        </div>
+    </section>
+    
+    <section id="about" class="py-20 px-6">
         <div class="container mx-auto text-center">
             <h2 class="text-3xl md:text-4xl font-bold title-font mb-8" data-aos="fade-up">ABOUT (EPK)</h2>
             <div class="max-w-3xl mx-auto" data-aos="fade-up" data-aos-delay="100">
