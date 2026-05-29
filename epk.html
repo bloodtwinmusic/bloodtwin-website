@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>B L O O D . T W I N</title>
+    <style>
+        /* --- Custom Fonts --- */
+        @font-face {
+            font-family: 'Libby';
+            src: url('fonts/libby.woff2') format('woff2');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        /* --- Global Variables --- */
+        :root {
+            --main-red: #590000;
+            --bg-black: #030000;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-black);
+            color: var(--main-red);
+            font-family: "Courier New", Courier, monospace;
+            font-size: 13px;
+            line-height: 1.4;
+            padding: 30px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            max-width: 950px;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1.55fr 1fr;
+            gap: 20px;
+        }
+
+        /* --- Header Section (Full Width) --- */
+        .header {
+            grid-column: 1 / -1;
+            margin-bottom: 10px;
+        }
+        
+        .brand {
+            font-family: 'Libby', "Courier New", monospace;
+            font-size: 22px;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            font-size: 18px;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+
+        .location {
+            font-size: 14px;
+        }
+
+        /* --- Layout Columns --- */
+        .left-col {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .right-col {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        /* --- Global Box Styles --- */
+        .box {
+            border: 1px solid var(--main-red);
+            padding: 12px;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: stretch;
+            margin-bottom: 12px;
+            height: 24px;
+        }
+
+        .section-header .num {
+            background-color: var(--main-red);
+            color: var(--bg-black);
+            font-weight: bold;
+            font-size: 16px;
+            padding: 0 8px;
+            display: flex;
+            align-items: center;
+            margin-right: 5px;
+        }
+
+        .section-header .title {
+            border: 1px solid var(--main-red);
+            padding: 0 10px;
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+            text-transform: uppercase;
+        }
+
+        /* --- Left Column Specifics --- */
+        .bio-text {
+            text-align: justify;
+        }
+
+        /* Stats Grid */
+        .stats-container {
+            border: 1px solid var(--main-red);
+        }
+
+        .stats-top {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            border-bottom: 1px solid var(--main-red);
+        }
+
+        .stat-box {
+            padding: 12px 10px;
+            text-align: center;
+            border-right: 1px solid var(--main-red);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .stat-box:last-child {
+            border-right: none;
+        }
+
+        .stat-label {
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 26px;
+            font-weight: bold;
+        }
+
+        .stats-bottom {
+            padding: 12px;
+        }
+
+        .top-countries-title {
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .countries-columns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        /* Tracklist Table */
+        .tracklist-table {
+            width: 100%;
+            border-collapse: collapse;
+            border: 1px solid var(--main-red);
+        }
+
+        .tracklist-table th, 
+        .tracklist-table td {
+            border: 1px solid var(--main-red);
+            padding: 10px;
+            text-align: left;
+            vertical-align: top;
+            font-weight: normal;
+        }
+
+        .tracklist-table th {
+            text-transform: uppercase;
+            border-bottom: 2px solid var(--main-red);
+        }
+
+        /* --- Right Column Specifics --- */
+        .quote-text {
+            font-style: italic;
+        }
+
+        .quote-author {
+            display: block;
+            text-align: right;
+            margin-top: 8px;
+        }
+
+        .doctrine {
+            text-align: justify;
+        }
+
+        .mugshot-wrapper {
+            width: 100%;
+            border: 1px solid var(--main-red);
+            padding: 5px;
+        }
+
+        .mugshot-wrapper img {
+            width: 100%;
+            display: block;
+            filter: sepia(100%) hue-rotate(320deg) saturate(300%) brightness(50%) contrast(150%); /* Optional: Tints image to match the red aesthetic */
+        }
+
+        .connect-box {
+            border: 1px solid var(--main-red);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .connect-item {
+            border-bottom: 1px solid var(--main-red);
+            padding: 10px;
+        }
+
+        .connect-item:last-child {
+            border-bottom: none;
+        }
+
+        /* --- Footer --- */
+        .footer-note {
+            grid-column: 1 / -1;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <div class="brand">• • •  B L O O D . T W I N  • • •</div>
+        <div class="subtitle">[   AUDIO ARCHITECTURE   ]</div>
+        <div class="location">London, UK // d0nt.freak.0ut Records</div>
+    </div>
+
+    <div class="left-col">
+        <div class="section">
+            <div class="section-header">
+                <span class="num">1</span>
+                <span class="title">Bio</span>
+            </div>
+            <div class="bio-text">
+                blood.twin<br>
+                (Pronounced "Blood Twin" the dot is silent)<br><br>
+                Goth / Darkwave / Industrial / Post-Punk / Deathrock / EBM / Coldwave<br><br>
+                Energing from the concrete brutalism of London's underground, blood.twin is D.I.Y., there is no band. There is only a singular, anonymous entity weaving an aural tapestry that is both unconventionslly beautiful and chillingly intense. Never following trends or fads he absorbs influences permanently, carrying their entire lived history forward as a constant, monolithic force.
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-header">
+                <span class="num">2</span>
+                <span class="title">Stats</span>
+            </div>
+            <div class="stats-container">
+                <div class="stats-top">
+                    <div class="stat-box">
+                        <div class="stat-label">Combined<br>Network Reach</div>
+                        <div class="stat-value">6,280</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Total Monthly<br>Streams</div>
+                        <div class="stat-value">2.8K+</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Total Glabal<br>Radio Spins</div>
+                        <div class="stat-value">417</div>
+                    </div>
+                </div>
+                <div class="stats-bottom">
+                    <div class="top-countries-title">Top countries</div>
+                    <div class="countries-columns">
+                        <div class="countries-col">
+                            <div>1. Spain (15.15k streams)</div>
+                            <div>2. USA (8.00k streams)</div>
+                            <div>3. Germany (7.29k streams)</div>
+                        </div>
+                        <div class="countries-col">
+                            <div>4. UK (3.30k streams)</div>
+                            <div>5. Sweden (1.96k streams)</div>
+                            <div>6. Mexico (1.50k streams)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-header">
+                <span class="num">3</span>
+                <span class="title">Tracklist</span>
+            </div>
+            <table class="tracklist-table">
+                <thead>
+                    <tr>
+                        <th>TITLE</th>
+                        <th>BPM</th>
+                        <th>KEY</th>
+                        <th>TACTICAL DEFINITION</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Ruins with<br>Suski Imortella</td>
+                        <td>168</td>
+                        <td>E minor</td>
+                        <td>Harsh dark electro /<br>Darksynth bass.</td>
+                    </tr>
+                    <tr>
+                        <td>Return To Recinder</td>
+                        <td>150</td>
+                        <td>C major</td>
+                        <td>Driving EBM bass,<br>martial coldwave banger.</td>
+                    </tr>
+                    <tr>
+                        <td>HeadBlock</td>
+                        <td>154</td>
+                        <td>A minor</td>
+                        <td>Cinematic darkwave goth.</td>
+                    </tr>
+                    <tr>
+                        <td>&lt;Function&gt;<br>_disconnect() ;</td>
+                        <td>151</td>
+                        <td>E minor</td>
+                        <td>A suffocating slab of<br>industrial electronics,<br>Brutalist anthem for the<br>socially engineered.</td>
+                    </tr>
+                    <tr>
+                        <td>UnDread</td>
+                        <td>150</td>
+                        <td>E minor</td>
+                        <td>Motorik Hallowave.<br>File under Post-Punk /<br>Darkkave.</td>
+                    </tr>
+                    <tr>
+                        <td>gravebox.</td>
+                        <td>140</td>
+                        <td>E minor.</td>
+                        <td>A dirge you can dance to.<br>90s UK club goth.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="right-col">
+        <div class="box">
+            <span class="quote-text">'The Sisters Of Mercy on acid.'</span>
+            <span class="quote-author">— Rock Radio UK</span>
+        </div>
+        
+        <div class="box">
+            <span class="quote-text">'A hypnotic exercise in psychological intrusion... a soundtrack to a mental haunting.'</span>
+            <span class="quote-author">— Revista The 13th</span>
+        </div>
+
+        <div class="box doctrine">
+            DOCTRINE: Independent, studio-based nocturnal architect. 'My music can travel to the places I cannot.' Made for club systems, dark subcultural airwaves and late-night frequency rotation.
+        </div>
+
+        <div class="mugshot-wrapper">
+            <img src="mugshot.png" alt="blood.twin">
+        </div>
+
+        <div class="section">
+            <div class="section-header">
+                <span class="num">4</span>
+                <span class="title">Connect</span>
+            </div>
+            <div class="connect-box">
+                <div class="connect-item">Official Hub: bloodtwin.com</div>
+                <div class="connect-item">Instagram: @blood.twin.music</div>
+                <div class="connect-item">Bandcamp: bloodtwin.bandcamp.com</div>
+                <div class="connect-item">Subvert: subvert.fm/bloodtwin</div>
+                <div class="connect-item">Email: contact@bloodtwin.com</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer-note">
+        _disconnect();
+    </div>
+</div>
+
+</body>
+</html>
