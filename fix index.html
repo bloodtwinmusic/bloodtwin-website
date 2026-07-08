@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>blood.twin | TERMINAL</title>
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PRE3J3P2ZT"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-PRE3J3P2ZT');
+</script>
+
+<style>
+  @font-face { font-family: 'LIBBY'; src: url('fonts/libby.woff2') format('woff2'); font-weight: normal; font-style: normal; font-display: swap; }
+  * { box-sizing: border-box; }
+  
+  html, body {
+      background-color: #000000 !important; color: #590000;
+      font-family: 'LIBBY', monospace; margin: 0; padding: 0;
+      width: 100vw; height: 100dvh; overflow: hidden;
+      cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' width='32' height='32'><circle cx='16' cy='16' r='14' fill='%23000000' stroke='%23590000' stroke-width='1.5' /><polygon points='16,28 7.5,6.5 27.5,19 4.5,19 24.5,6.5' fill='none' stroke='%23ffffff' stroke-width='1.5' /><circle cx='16' cy='16' r='1.5' fill='%23590000' /></svg>") 16 16, auto;
+      animation: vhs-glitch 4s infinite;
+  }
+
+  a, button, .social-icon, .polaroid-wrapper {
+      cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' width='32' height='32'><circle cx='14' cy='16' r='14' fill='%23000000' stroke='%23ff0000' stroke-width='1' opacity='0.8' /><circle cx='18' cy='16' r='14' fill='none' stroke='%2300ffff' stroke-width='1' opacity='0.6' /><polygon points='14,28 5.5,6.5 25.5,19 2.5,19 22.5,6.5' fill='none' stroke='%23ff0000' stroke-width='1.5' opacity='0.8' /><polygon points='18,28 9.5,6.5 29.5,19 6.5,19 26.5,6.5' fill='none' stroke='%2300ffff' stroke-width='1.5' opacity='0.8' /><polygon points='16,26 8,8 27,20 5,20 24,8' fill='none' stroke='%23ffffff' stroke-width='2' stroke-dasharray='4 2 1 3' /><rect x='2' y='10' width='28' height='1' fill='%23ffffff' opacity='0.9' /><rect x='4' y='22' width='24' height='1' fill='%23590000' opacity='0.8' /><rect x='12' y='16' width='8' height='2' fill='%23ff0000' /></svg>") 16 16, pointer !important;
+  }
+
+  #status-led {
+      position: absolute; top: 1.5vh; left: 50%; transform: translateX(-50%);
+      width: 0.6vh; height: 0.6vh; background: radial-gradient(circle, #ff0000 0%, #7a0000 100%);
+      border-radius: 50%; box-shadow: 0 0 1vh #ff0000; opacity: 0; z-index: 1000;
+      animation: led-breathe 3s infinite alternate ease-in-out;
+  }
+  @keyframes led-breathe { 0% { opacity: 0.3; transform: translateX(-50%) scale(0.9); } 100% { opacity: 1; transform: translateX(-50%) scale(1.1); } }
+
+  .vhs-noise-layer { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 9998; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.06'/%3E%3C/svg%3E"); }
+  .vhs-tracking-line { position: fixed; top: 0; left: 0; width: 100vw; height: 1.5vh; background: rgba(255, 255, 255, 0.03); z-index: 9999; pointer-events: none; animation: tracking-roll 7s linear infinite; box-shadow: 0 0 1.5vh rgba(89, 0, 0, 0.3); }
+  body::after { content: " "; display: block; position: fixed; top: 0; left: 0; bottom: 0; right: 0; background: linear-gradient(rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0.35) 50%); z-index: 9997; background-size: 100% 0.6vh; pointer-events: none; animation: crt-flicker 0.15s infinite; }
+  @keyframes crt-flicker { 0% { opacity: 0.9; } 50% { opacity: 0.7; } 100% { opacity: 0.9; } }
+  @keyframes tracking-roll { 0% { top: -10%; opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { top: 110%; opacity: 0; } }
+  @keyframes vhs-glitch { 0%, 93%, 100% { transform: translate(0, 0) skew(0deg); } 94% { transform: translate(-3px, 1px) skew(-2deg); } 96% { transform: translate(3px, -2px) skew(3deg); } }
+
+  #flash-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: #ffffff; opacity: 0; pointer-events: none; z-index: 10000; }
+
+  .wrapper { 
+      width: 100%; height: 91vh; margin: 0 auto; padding: 0; 
+      display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+  }
+  
+  .top-header { width: 100%; padding-top: 5vh; }
+  .logo-grid { display: grid; grid-template-columns: 1fr auto 1fr; width: 100%; font-size: clamp(12px, 3.5vw, 19px); letter-spacing: 0.1em; white-space: nowrap; }
+  .logo-left { text-align: right; } .logo-dot { text-align: center; } .logo-right { text-align: left; }
+
+  .type-container { font-size: clamp(11px, 2.5vh, 16px); width: 100%; display: flex; flex-direction: column; align-items: center; }
+  .type-line { color: #ff0000; transition: color 1s step-end; white-space: nowrap; height: 1.6em; }
+  .type-line.faded { color: #590000; }
+  .type-cursor { display: inline-block; width: 0.8vh; height: 1em; background-color: #ff0000; animation: blink 1s step-end infinite; vertical-align: bottom; }
+  @keyframes blink { 50% { opacity: 0; } }
+  .dissolve-out { opacity: 0; transition: opacity 0.8s ease-in-out; }
+
+  .polaroid-wrapper { padding: 1vh; background-color: #590000; width: 31vh; transition: transform 0.15s ease, filter 0.15s ease; opacity: 0; }
+  .polaroid-wrapper:hover { transform: scale(1.02); filter: brightness(1.2) contrast(1.2); }
+  .polaroid-wrapper .thumb { width: 100%; height: auto; aspect-ratio: 1/1; object-fit: contain; display: block; }
+
+  .nav-tier { display: none; flex-wrap: wrap; justify-content: center; gap: 1.2vh; margin-bottom: 1vh; width: 100%; }
+  .nav-tier.revealed { display: flex; animation: snap-in 0.1s step-end forwards; }
+  @keyframes snap-in { 0% { opacity: 0; filter: blur(4px); } 100% { opacity: 1; filter: blur(0); } }
+
+  .social-icon { color: #590000; padding: 0.6vh; transition: transform 0.2s ease; }
+  .social-icon svg { width: 3vh; height: 3vh; fill: currentColor; }
+  .png-mask { width: 3vh; height: 3vh; background-color: currentColor; -webkit-mask-size: contain; mask-size: contain; display: inline-block; }
+
+  .final-text-link { color: #ff0000; font-family: 'LIBBY', monospace; font-size: 1.6vh; letter-spacing: 0.1em; text-decoration: underline; margin-bottom: 2vh; display: block; }
+  .bomb-flash-link { animation: bomb-flash 0.08s infinite alternate !important; }
+  @keyframes bomb-flash { 0%, 49% { color: #ff0000; filter: drop-shadow(0 0 1vh red); } 50%, 100% { color: #590000; } }
+</style>
+</head>
+<body>
+
+    <div id="flash-overlay"></div>
+    <div class="vhs-noise-layer"></div>
+    <div class="vhs-tracking-line"></div>
+    <div id="status-led"></div>
+
+    <div class="wrapper">
+        <header class="top-header">
+            <div class="logo-grid">
+                <span class="logo-left">• • •  B L O O D </span>
+                <span class="logo-dot">.</span>
+                <span class="logo-right"> T W I N  • • •</span>
+            </div>
+        </header>
+
+        <div class="type-container">
+            <div id="line1" class="type-line"></div>
+            <div id="line2" class="type-line"></div>
+        </div>
+
+        <a href="https://snd.click/0ifi" class="polaroid-wrapper" id="polaroid-cta">
+            <img src="lfss.png" alt="" class="thumb">
+        </a>
+
+        <div class="nav-tier" data-tier="1"><a href="https://bloodtwin.bandcamp.com" class="social-icon"><svg viewBox="0 0 24 24"><path d="M2 17.9236H15.6943L22 6.07642H8.30573"></path></svg></a><a href="https://subvert.fm/bloodtwin" class="social-icon"><span class="png-mask" style="-webkit-mask-image: url('Subvert.png'); mask-image: url('Subvert.png');"></span></a></div>
+        <div class="nav-tier" data-tier="2"><a href="https://elasticstage.com/bloodtwin" class="social-icon"><svg viewBox="0 0 24 24" style="fill: none;" stroke="currentColor"><circle cx="12" cy="12" r="8.25" stroke-width="7.5"></circle></svg></a></div>
+        <div class="nav-tier" data-tier="3"><a href="https://amazon.co.uk/music/player/artists/B0DHSMK8Q8/blood-twin" class="social-icon"><svg viewBox="0 0 24 24"><path d="M12 2C9 2 6 3 4 5C2 7 2 10 2 13C2 17 4 20 7 21C9 22 11 22 13 22C16 22 19 21 21 19C22 17 22 15 22 12C22 7 18 3 13 2ZM13 18C10 18 8 16 8 13C8 10 10 8 13 8C16 8 18 10 18 13C18 16 16 18 13 18Z"></path></svg></a></div>
+        <div class="nav-tier" data-tier="4"><a href="https://tidal.com/artist/50634699" class="social-icon"><svg viewBox="0 0 24 24"><path d="M4 2L8 6l-4 4-4-4 4-4zm8 0l4 4-4 4-4-4 4-4zm8 0l4 4-4 4-4-4 4-4zm-8 8l4 4-4 4-4-4 4-4z"/></svg></a><a href="https://music.apple.com/us/artist/blood-twin/1770060712" class="social-icon"><span class="png-mask" style="-webkit-mask-image: url('AppleMusic.png');"></span></a><a href="https://youtube.com/@bloodtwinmusic" class="social-icon"><svg viewBox="0 0 24 24"><path d="M19.8 5.4C20.6 5.6 21.3 6.3 21.5 7.1C22 8.7 22 12 22 12C22 12 22 15.2 21.5 16.8C21.3 17.6 20.6 18.3 19.8 18.5C18.2 18.9 12 18.9 12 18.9C12 18.9 5.7 18.9 4.1 18.5C3.3 18.3 2.6 17.6 2.4 16.8C2 15.2 2 12 2 12C2 12 2 8.7 2.4 7.1C2.6 6.3 3.3 5.6 4.1 5.4C5.7 5 12 5 12 5C12 5 18.2 5 19.8 5.4ZM15.2 12L10 15V9L15.2 12Z"></path></svg></a><a href="https://link.deezer.com/s/33demDqMeWG4e1oNnYPxh" class="social-icon"><span class="png-mask" style="-webkit-mask-image: url('Deezer.png');"></span></a><a href="https://music.amazon.co.uk/artists/B0DHSMK8Q8" class="social-icon"><span class="png-mask" style="-webkit-mask-image: url('AmazonMusic.png');"></span></a><a href="https://open.spotify.com/artist/2BTmz7OsOYsnGgrLMeU4QB" class="social-icon"><svg viewBox="0 0 24 24"><path d="M12 1C5.9 1 1 5.9 1 12C1 18.1 5.9 23 12 23C18.1 23 23 18.1 23 12C23 5.9 18.1 1 12 1ZM17.1 16.9C16.8 17.2 16.4 17.3 16.1 17.1C13.5 15.5 10.2 15.1 6.4 16C6.1 16.1 5.7 15.9 5.6 15.5C5.5 15.1 5.8 14.8 6.1 14.7C10.3 13.7 13.9 14.1 16.8 15.9C17.1 16.1 17.2 16.5 17.1 16.9ZM18.4 13.9C18.1 14.3 17.6 14.4 17.2 14.1C14.2 12.3 9.7 11.8 6.2 12.8C5.8 13 5.3 12.7 5.2 12.3C5 11.8 5.3 11.3 5.8 11.2C9.7 10 14.7 10.6 18.1 12.7C18.5 12.9 18.6 13.5 18.4 13.9ZM18.5 10.8C14.9 8.6 9.1 8.4 5.7 9.5C5.2 9.6 4.6 9.3 4.4 8.8C4.3 8.3 4.5 7.7 5.1 7.5C9 6.3 15.5 6.6 19.5 9C20 9.3 20.2 9.9 19.9 10.4C19.6 10.9 19 11 18.5 10.8Z"></path></svg></a><a href="https://music.youtube.com/@bloodtwinmusic" class="social-icon"><span class="png-mask" style="-webkit-mask-image: url('YouTubeMusic.png');"></span></a></div>
+        <div class="nav-tier" data-tier="5"><a href="https://instagram.com/blood.twin.music" class="social-icon"><svg viewBox="0 0 24 24"><path d="M12 2C9.29 2 9 2 7.87 2.06C7.04 2.07 6.22 2.23 5.44 2.52C4.79 2.78 4.23 3.12 3.67 3.68C3.12 4.23 2.77 4.79 2.52 5.45C2.27 6.09 2.1 6.81 2.06 7.88C2.01 8.94 2 9.28 2 12C2 14.71 2 15.05 2.06 16.12C2.1 17.19 2.28 17.93 2.52 18.56C2.78 19.21 3.12 19.77 3.67 20.33C4.23 20.88 4.79 21.23 5.44 21.48C6.09 21.73 6.81 21.9 7.87 21.94C8.94 21.99 9.28 22 12 22C14.71 22 15.05 22 16.12 21.94C17.18 21.9 17.91 21.72 18.55 21.48C19.21 21.23 19.77 20.88 20.33 20.33C20.88 19.77 21.23 19.21 21.48 18.56C21.73 17.91 21.9 17.19 21.94 16.12C21.99 15.05 22 14.71 22 12C22 9.29 21.99 8.95 21.94 7.88C21.9 7.05 21.72 6.23 21.48 5.45C21.23 4.79 20.88 4.18 20.33 3.68C19.77 3.12 19.21 2.78 18.55 2.52C17.77 2.23 16.95 2.08 16.12 2.07C15.05 2.01 14.71 2 12 2ZM12 6.5C9.52 6.5 7.5 8.52 7.5 11C7.5 13.48 9.52 15.5 12 15.5C14.48 15.5 16.5 13.48 16.5 11C16.5 8.52 14.48 6.5 12 6.5ZM18.25 6.5C17.7 6.5 17.25 6.95 17.25 7.5C17.25 8.05 17.7 8.5 18.25 8.5C18.8 8.5 19.25 8.05 19.25 7.5C19.25 6.95 18.8 6.5 18.25 6.5Z"></path></svg></a><a href="https://threads.com/blood.twin.music" class="social-icon"><svg viewBox="0 0 24 24"><path d="M17.26 11.2C17.17 11.15 17.07 11.11 16.97 11.07C16.8 7.94 15.1 6.15 12.22 6.13C12.21 6.13 12.2 6.13 12.19 6.13C10.47 6.13 9.04 6.86 8.16 8.19L9.74 9.28C10.4 8.28 11.43 8.07 12.19 8.07C12.2 8.07 12.21 8.07 12.22 8.07C13.16 8.07 13.87 8.35 14.33 8.88C14.67 9.28 14.89 9.81 15 10.49C14.17 10.35 13.26 10.31 12.29 10.36C9.56 10.52 7.81 12.11 7.92 14.33C7.98 15.45 8.54 16.41 9.5 17.04C10.31 17.58 11.35 17.84 12.43 17.78C13.85 17.7 14.97 17.15 15.76 16.16C16.35 15.4 16.72 14.42 16.89 13.19C17.57 13.6 18.07 14.14 18.35 14.79C18.83 15.89 18.85 17.71 17.37 19.19C16.08 20.48 14.52 21.04 12.16 21.06C9.55 21.04 7.57 20.2 6.29 18.57C5.08 17.04 4.46 14.83 4.44 12C4.46 9.17 5.08 6.96 6.29 5.43C7.57 3.8 9.55 2.96 12.16 2.94C14.79 2.96 16.81 3.8 18.14 5.44C18.79 6.25 19.29 7.26 19.61 8.44L21.46 7.95C21.07 6.5 20.45 5.24 19.6 4.21C17.89 2.1 15.39 1.02 12.17 1H12.16C8.94 1.02 6.46 2.1 4.8 4.22C3.32 6.1 2.56 8.71 2.53 11.99L2.53 12L2.53 12.01C2.56 15.29 3.32 17.9 4.8 19.78C6.46 21.9 8.94 22.98 12.16 23H12.17C15.03 22.98 17.04 22.23 18.7 20.57C20.88 18.4 20.81 15.68 20.1 14.01C19.58 12.81 18.6 11.84 17.26 11.2ZM12.33 15.84C11.13 15.91 9.89 15.37 9.82 14.22C9.78 13.37 10.43 12.42 12.4 12.3C12.62 12.29 12.84 12.28 13.06 12.28C13.78 12.28 14.44 12.35 15.05 12.49C14.83 15.32 13.5 15.78 12.33 15.84Z"></path></svg></a><a href="https://facebook.com/bloodtwin" class="social-icon"><svg viewBox="0 0 24 24"><path d="M23 12C23 5.92 18.08 1 12 1C5.92 1 1 5.92 1 12C1 17.16 4.55 21.49 9.34 22.68V15.36H7.07V12H9.34V10.55C9.34 6.81 11.04 5.07 14.71 5.07C15.41 5.07 16.61 5.21 17.1 5.35V8.39C16.84 8.37 16.39 8.35 15.83 8.35C14.03 8.35 13.33 9.03 13.33 10.81V12H16.93L16.31 15.36H13.33V22.92C18.78 22.26 23 17.62 23 12Z"></path></svg></a><a href="https://vk.ru/blood.twin" class="social-icon"><span class="png-mask" style="-webkit-mask-image: url('VK.png'); mask-image: url('VK.png');"></span></a><a href="https://bsky.app/profile/bloodtwin.bsky.social" class="social-icon"><svg viewBox="0 0 24 24"><path d="M6.34 4.37C8.63 6.1 11.09 9.59 12 11.46C12.91 9.59 15.37 6.1 17.66 4.37C19.32 3.13 22 2.17 22 5.23C22 5.84 21.65 10.36 21.44 11.09C20.73 13.64 18.13 14.3 15.82 13.9C19.86 14.59 20.89 16.87 18.67 19.15C14.45 23.48 12.6 18.06 12.13 16.68C12.04 16.42 12 16.3 12 16.4C12 16.3 11.96 16.42 11.87 16.68C11.4 18.06 9.55 23.48 5.33 19.15C3.11 16.87 4.14 14.59 8.18 13.9C5.87 14.3 3.27 13.64 2.56 11.09C2.35 10.36 2 5.84 2 5.23C2 2.17 4.68 3.13 6.34 4.37Z"></path></svg></a><a href="https://x.com/bloodtwinmusic" class="social-icon"><svg viewBox="0 0 24 24"><path d="M17.8 3H20.87L14.14 10.63L22 21.03H15.83L11 14.71L5.47 21.03H2.4L9.53 12.83L2 3H8.33L12.69 8.74L17.8 3ZM16.73 19.23H18.43L7.43 4.7H5.61L16.73 19.23Z"></path></svg></a><a href="https://tiktok.com/@blood.twin.music" class="social-icon"><svg viewBox="0 0 24 24"><path d="M15.95 8.69V15.67C15.95 19.16 13.1 22 9.62 22C8.27 22 7.02 21.57 5.99 20.85C4.36 19.7 3.29 17.81 3.29 15.67C3.29 12.18 6.12 9.35 9.61 9.35C9.9 9.35 10.18 9.37 10.47 9.4V12.91H10.44C10.32 12.88 10.18 12.84 10.05 12.82H10C9.86 12.8 9.74 12.78 9.6 12.78C8 12.78 6.7 14.08 6.7 15.68C6.7 17.28 8 18.58 9.6 18.58C11.2 18.58 12.5 17.28 12.5 15.68V2H15.94C15.94 2.3 15.97 2.59 16.02 2.87C16.26 4.18 17.04 5.31 18.12 6.01C18.87 6.5 19.76 6.79 20.72 6.79V10.22C18.94 10.22 17.29 9.65 15.95 8.69Z"></path></svg></a><a href="https://twitch.tv/bl00dtwin" class="social-icon"><svg viewBox="0 0 24 24"><path d="M7 3L3.43 6.57V19.43H7.72V23L11.29 19.43H14.14L20.57 13V3H7ZM19.14 12.29L16.29 15.14H13.43L10.93 17.64V15.14H7.72V4.43H19.14V12.29ZM17 6.93H15.57V11.21H17V6.93ZM11.64 6.93H13.07V11.21H11.64V6.93Z"></path></svg></a>
+        </div>
+
+        <div class="nav-tier" data-tier="6">
+            <a href="https://bloodtwin.redbubble.com" class="social-icon" aria-label="Merch"><span class="png-mask" style="-webkit-mask-image: url('https://img.icons8.com/ios-glyphs/30/000000/t-shirt.png'); mask-image: url('https://img.icons8.com/ios-glyphs/30/000000/t-shirt.png');"></span></a>
+        </div>
+
+        <div class="nav-tier" data-tier="7">
+            <a href="mailto:contact@bloodtwin.com" class="social-icon" aria-label="Email"><svg viewBox="0 0 24 24"><path d="M4.31 7.28C4.14 7.62 4.07 7.99 4.03 8.41C4 8.84 4 9.36 4 10.01V13.99C4 14.64 4 15.16 4.03 15.59C4.07 16.02 4.15 16.41 4.33 16.76C4.61 17.33 5.07 17.79 5.64 18.07C6 18.25 6.38 18.33 6.81 18.37C7.24 18.4 7.76 18.4 8.41 18.4H15.59C16.24 18.4 16.76 18.4 17.19 18.37C17.62 18.33 18.01 18.25 18.36 18.07C18.93 17.79 19.39 17.33 19.67 16.76C19.85 16.41 19.93 16.02 19.97 15.59C20 15.16 20 14.64 20 13.99V10.01C20 9.36 20 8.84 19.97 8.41C19.93 7.99 19.86 7.62 19.69 7.28L13.9 12.02C12.79 12.93 11.21 12.93 10.1 12.02L4.31 7.28Z"></path><path d="M18.96 6.33C18.78 6.17 18.58 6.04 18.36 5.93C18.01 5.75 17.62 5.67 17.19 5.63C16.76 5.6 16.24 5.6 15.59 5.6H8.41C7.76 5.6 7.24 5.6 6.81 5.63C6.38 5.67 5.99 5.75 5.64 5.93C5.42 6.04 5.22 6.17 5.04 6.33L10.86 11.09C11.52 11.63 12.48 11.63 13.14 11.09L18.96 6.33Z"></path></svg></a>
+        </div>
+
+        <div class="links-wrapper">
+            <div class="type-container" id="bottom-type-zone">
+                <div id="line3" class="type-line" style="display: none;"></div>
+                <a id="line4" class="final-text-link" href="https://open.spotify.com/playlist/0L2a9eh9XuFFx3kbPRtapG" target="_blank" style="display: none;"></a>
+            </div>
+        </div>
+    </div>
+
+    <div id="cursor-holder" style="display:none;"><div id="master-cursor" class="type-cursor"></div></div>
+
+<script>
+    const typeSpeed = 35;
+    let timelineActive = false;
+    let returnTrapTriggered = false;
+    let polaroidClicked = false;
+
+    const typeText = async (elementId, text, fadePrevId = null) => {
+        return new Promise(resolve => {
+            const el = document.getElementById(elementId);
+            const cursor = document.getElementById('master-cursor');
+            if(fadePrevId) document.getElementById(fadePrevId).classList.add('faded');
+            el.appendChild(cursor);
+            let i = 0;
+            const interval = setInterval(() => {
+                el.insertBefore(document.createTextNode(text[i]), cursor);
+                i++;
+                if(i >= text.length) { clearInterval(interval); resolve(); }
+            }, typeSpeed);
+        });
+    };
+
+    const triggerWakingSequence = () => {
+        if(timelineActive) return;
+        timelineActive = true;
+        setTimeout(() => { document.getElementById('status-led').style.opacity = '1'; }, 500);
+        setTimeout(async () => {
+            await typeText('line1', '[WE KNOW YOU\'RE HERE]');
+            setTimeout(async () => {
+                await typeText('line2', '[OBSERVER LOGGED]', 'line1');
+                document.getElementById('line2').classList.remove('faded');
+            }, 100);
+        }, 1000);
+        setTimeout(() => {
+            const pol = document.getElementById('polaroid-cta');
+            pol.style.opacity = '1';
+            pol.style.transition = 'opacity 2s ease-in';
+        }, 3000);
+        const tiers = { 1: 5500, 2: 7500, 3: 9500, 4: 11500, 5: 13500, 6: 13500, 7: 13500 };
+        Object.entries(tiers).forEach(([tier, delay]) => {
+            setTimeout(() => {
+                const el = document.querySelector(`.nav-tier[data-tier="${tier}"]`);
+                if (el) el.classList.add('revealed');
+            }, delay);
+        });
+    };
+
+    window.onload = triggerWakingSequence;
+
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const cta = document.getElementById('polaroid-cta');
+    if(cta) {
+        cta.addEventListener('click', (e) => {
+            e.preventDefault();
+            polaroidClicked = true;
+            if (audioCtx.state === 'suspended') { audioCtx.resume(); }
+            const flash = document.getElementById('flash-overlay');
+            flash.style.opacity = '1';
+            setTimeout(() => { flash.style.opacity = '0'; }, 100);
+            const masterGain = audioCtx.createGain();
+            masterGain.gain.setValueAtTime(6.0, audioCtx.currentTime);
+            masterGain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+            masterGain.connect(audioCtx.destination);
+            const osc1 = audioCtx.createOscillator(); osc1.type = 'sawtooth'; osc1.frequency.setValueAtTime(43.65, audioCtx.currentTime); osc1.connect(masterGain);
+            const osc2 = audioCtx.createOscillator(); osc2.type = 'square'; osc2.frequency.setValueAtTime(100, audioCtx.currentTime); osc2.connect(masterGain);
+            osc1.start(); osc2.start(); osc1.stop(audioCtx.currentTime + 0.3); osc2.stop(audioCtx.currentTime + 0.3);
+            setTimeout(() => { window.open('https://snd.click/0ifi', '_blank'); }, 150);
+        });
+    }
+
+    document.addEventListener('visibilitychange', () => {
+        if (!document.hidden && polaroidClicked && !returnTrapTriggered) {
+            returnTrapTriggered = true;
+            document.getElementById('line2').classList.add('faded');
+            const l1 = document.getElementById('line1');
+            const l2 = document.getElementById('line2');
+            l1.classList.add('dissolve-out');
+            l2.classList.add('dissolve-out');
+            setTimeout(() => {
+                l1.style.display = 'none'; l2.style.display = 'none';
+                const l3 = document.getElementById('line3');
+                const l4 = document.getElementById('line4');
+                l3.style.display = 'block'; l4.style.display = 'block';
+                setTimeout(async () => {
+                    await typeText('line3', '[TERMINAL ENGAGED]');
+                    setTimeout(async () => {
+                        const isDaylight = new Date().getHours() >= 6 && new Date().getHours() < 18;
+                        const finalText = isDaylight ? '[ERROR_CODE: DAYLIGHT]' : '[INITIATE : COMPLETE COLLECTION]';
+                        await typeText('line4', finalText, 'line3');
+                        if(!isDaylight) l4.classList.add('bomb-flash-link');
+                        else l4.classList.add('faded');
+                    }, 1000);
+                }, 100);
+            }, 800); 
+        }
+    });
+
+    const playlistLink = document.getElementById("line4");
+    if (playlistLink) {
+        playlistLink.addEventListener("click", function(e) {
+            const isDaylight = new Date().getHours() >= 6 && new Date().getHours() < 18;
+            if (isDaylight) {
+                e.preventDefault();
+                this.innerHTML = "[ERROR_CODE: DAYLIGHT].<br><RETURN IN DARKNESS>.";
+                this.classList.remove('bomb-flash-link');
+                this.classList.add('faded');
+                this.style.pointerEvents = 'none';
+                this.style.animation = 'none';
+            }
+        });
+    }
+</script>
+</body>
+</html>
