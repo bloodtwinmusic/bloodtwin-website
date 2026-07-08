@@ -371,6 +371,11 @@
                     
                     setTimeout(async () => {
                         await typeText('line4', '[INITIATE : COMPLETE COLLECTION].', 'line3');
+
+                      const clearTypeLine = (elementId) => {
+    const el = document.getElementById(elementId);
+    el.innerHTML = "";
+};
                         
                         // Fire rapid-bomb alert phase
                         l4.classList.add('bomb-flash-link');
@@ -381,35 +386,58 @@
         }
     });
 
-    // --- DAYLIGHT ATTRITION ---
-    const currentHour = new Date().getHours();
-    const isDaylight = currentHour >= 6 && currentHour < 18;
-    const playlistLink = document.getElementById("line4");
+  // --- DAYLIGHT ATTRITION ---
 
-    if (isDaylight && playlistLink) {
-        // Disarm the link destination but ensure the UI remains active to be clicked
-        playlistLink.href = "javascript:void(0);";
-        playlistLink.removeAttribute("target"); // Stop opening blank tabs
-        
-        playlistLink.addEventListener("click", function(e) {
-            e.preventDefault();
-            
-            // Core objective constraint: The popup alert.
-            alert("[ERROR : DAYLIGHT DETECTED // RETURN IN DARKNESS].");
-            
-            // Lock out the UI natively within the terminal to reflect system rejection.
-            this.innerHTML = "[ERROR : DAYLIGHT DETECTED // RETURN IN DARKNESS].";
-            this.classList.remove('bomb-flash-link');
-            this.classList.add('faded');
-            this.style.animation = 'none';
-            this.style.textDecoration = 'none';
-            this.style.pointerEvents = 'none'; // Lock terminal from further interaction
-            
-            if(typeof gtag === 'function') {
-                gtag('event', 'daylight_rejection', {'event_category': 'funnel', 'event_label': 'spotify_block'});
-            }
-        });
-    }
+const currentHour = new Date().getHours();
+const isDaylight = currentHour >= 6 && currentHour < 18;
+const playlistLink = document.getElementById("line4");
+
+if (isDaylight && playlistLink) {
+
+    playlistLink.href = "javascript:void(0);";
+    playlistLink.removeAttribute("target");
+
+    playlistLink.addEventListener("click", async function(e) {
+
+        e.preventDefault();
+
+        this.style.pointerEvents = "none";
+
+        this.classList.remove("bomb-flash-link");
+
+        // Remove the old command completely
+        this.innerHTML = "";
+
+        await typeText("line4", "[ERROR // DAYLIGHT DETECTED].");
+
+        // Small pause before the next line
+        await new Promise(resolve => setTimeout(resolve, 600));
+
+        const secondLine = document.createElement("div");
+        secondLine.id = "daylight-return";
+        secondLine.className = "type-line";
+
+        document.getElementById("top-type-zone").appendChild(secondLine);
+
+        await typeText("daylight-return", "<RETURN IN DARKNESS>.");
+
+        // Fade after a short delay
+        await new Promise(resolve => setTimeout(resolve, 3000));
+
+        document.getElementById("line4").classList.add("faded");
+        secondLine.classList.add("faded");
+
+        if (typeof gtag === "function") {
+            gtag("event", "daylight_rejection", {
+                event_category: "funnel",
+                event_label: "spotify_block"
+            });
+        }
+
+    });
+
+}
+  
 </script>
 </body>
 </html>
