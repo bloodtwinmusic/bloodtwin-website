@@ -1,0 +1,1220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="description" content="blood.twin — Anonymous London Gothic Darkwave solo artist. Cinematic dark soundscapes, Post-Punk, EBM and Industrial.">
+<title>blood.twin | T  E  R  M  I  N  A  L  </title>
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PRE3J3P2ZT"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-PRE3J3P2ZT');
+</script>
+
+<style>
+  @font-face { font-family: 'LIBBY'; src: url('fonts/libby.woff2') format('woff2'); font-weight: normal; font-style: normal; font-display: swap; }
+
+  * { box-sizing: border-box; }
+
+  /* COMPACT FLUID ROOT SCALING */
+  html { font-size: calc(100vw / 26.8); }
+  @media (min-width: 580px) { html { font-size: 21.64px; } }
+
+  /* BASE SYSTEM STYLES - SCROLL LOCK ENFORCED */
+  html, body {
+      background-color: #000000 !important;
+      color: #590000;
+      font-family: 'LIBBY', monospace;
+      margin: 0; padding: 0;
+      width: 100vw; 
+      height: 100vh; /* Fallback for older browsers */
+      height: 100%; 
+      overflow: hidden; touch-action: manipulation;
+      cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' width='32' height='32'><circle cx='16' cy='16' r='14' fill='%23000000' stroke='%23590000' stroke-width='1.5' /><polygon points='16,28 7.5,6.5 27.5,19 4.5,19 24.5,6.5' fill='none' stroke='%23ffffff' stroke-width='1.5' /><circle cx='16' cy='16' r='1.5' fill='%23590000' /></svg>") 16 16, auto;
+  }
+
+  /* DESYNCED GLOBAL ANIMATIONS */
+  body.powered { animation: vhs-glitch 4.19s infinite; }
+
+  /* ENERGIZED CURSOR ON HOVER */
+  a, button, .social-icon, .polaroid-wrapper {
+      cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' width='32' height='32'><circle cx='14' cy='16' r='14' fill='%23000000' stroke='%23ff0000' stroke-width='1' opacity='0.8' /><circle cx='18' cy='16' r='14' fill='none' stroke='%2300ffff' stroke-width='1' opacity='0.6' /><polygon points='14,28 5.5,6.5 25.5,19 2.5,19 22.5,6.5' fill='none' stroke='%23ff0000' stroke-width='1.5' opacity='0.8' /><polygon points='18,28 9.5,6.5 29.5,19 6.5,19 26.5,6.5' fill='none' stroke='%2300ffff' stroke-width='1.5' opacity='0.8' /><polygon points='16,26 8,8 27,20 5,20 24,8' fill='none' stroke='%23ffffff' stroke-width='2' stroke-dasharray='4 2 1 3' /><rect x='2' y='10' width='28' height='1' fill='%23ffffff' opacity='0.9' /><rect x='4' y='22' width='24' height='1' fill='%23590000' opacity='0.8' /><rect x='12' y='16' width='8' height='2' fill='%23ff0000' /></svg>") 16 16, pointer !important;
+  }
+
+  /* SYSTEM CORRUPTION CURSOR OVERRIDE */
+  body.cursor-glitch, body.cursor-glitch * {
+      cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' width='32' height='32'><rect x='10' y='14' width='12' height='4' fill='%23ff0000' opacity='0.5'/><rect x='4' y='8' width='24' height='1' fill='%2300ffff' opacity='0.6'/></svg>") 16 16, auto !important;
+  }
+
+  /* STANDBY OVERLAY - SUBCONSCIOUS PULSE AND SCANLINE CRAWL */
+  #standby-overlay {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh;
+      background: radial-gradient(circle at center, rgba(12,0,0,1) 0%, rgba(0,0,0,1) 100%);
+      z-index: 999999;
+      display: flex; flex-direction: column; justify-content: center; align-items: center;
+      transition: opacity 1.5s ease-out;
+      animation: standby-pulse 8s infinite alternate ease-in-out;
+  }
+  @keyframes standby-pulse {
+      0% { background: radial-gradient(circle at center, rgba(6,0,0,1) 0%, rgba(0,0,0,1) 100%); }
+      25% { background: radial-gradient(circle at center, rgba(9,0,0,1) 0%, rgba(0,0,0,1) 100%); }
+      50% { background: radial-gradient(circle at center, rgba(5,0,0,1) 0%, rgba(0,0,0,1) 100%); }
+      100% { background: radial-gradient(circle at center, rgba(12,0,0,1) 0%, rgba(0,0,0,1) 100%); }
+  }
+  #standby-overlay::before {
+      content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      background: linear-gradient(rgba(0,0,0,0) 50%, rgba(255,255,255,0.015) 50%);
+      background-size: 100% 3px; pointer-events: none; z-index: 1;
+      animation: standby-scan 12s linear infinite;
+  }
+  @keyframes standby-scan { 0% { background-position: 0 0; } 100% { background-position: 0 30px; } }
+
+  .standby-noise {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.95' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none; opacity: 0.3;
+      animation: noise-flutter 3.1s infinite alternate;
+  }
+  @keyframes noise-flutter { 0% { opacity: 0.2; } 100% { opacity: 0.4; } }
+  
+  /* SLEEP BEACON: HARD MECHANICAL TICK & GLOW */
+  #standby-text {
+      color: #590000; letter-spacing: 0; opacity: 0; z-index: 2; font-size: 1.1rem;
+      transition: opacity 2s ease-in; 
+      animation: sleep-tick 1.5s infinite step-end;
+  }
+  @keyframes sleep-tick {
+      0%, 100% { opacity: 0.3; color: #590000; filter: blur(1px); text-shadow: none; }
+      50% { opacity: 1; color: #ff0000; filter: blur(0px); text-shadow: 0 0 15px #ff0000, 0 0 5px #ff0000; }
+  }
+
+  /* DYNAMIC SPRING ARCHITECTURE */
+  #system-container {
+      display: none; width: 100%; height: 100vh; height: 100dvh; position: relative; overflow: hidden;
+      transition: filter 0.1s, transform 0.1s;
+  }
+  #system-container.booting {
+      display: flex; flex-direction: column; justify-content: space-between; align-items: center;
+      animation: crt-turn-on 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+  }
+  
+  /* HARDWARE STRUGGLE SYNC CLASS */
+  body.system-struggle #system-container {
+      filter: brightness(0.4) contrast(1.5) blur(1px);
+      transform: skewX(-1deg) translateY(2px);
+  }
+  body.system-struggle .vhs-noise-layer {
+      opacity: 0.15;
+  }
+
+  @keyframes crt-turn-on {
+      0% { transform: scale(1, 0.001) translateY(50%); filter: brightness(4) contrast(3); }
+      40% { transform: scale(1, 0.001) translateY(0); filter: brightness(2) contrast(1.5); }
+      100% { transform: scale(1, 1); filter: brightness(1) contrast(1); }
+  }
+
+  /* HARDWARE ARTEFACTS */
+  .vhs-noise-layer {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      pointer-events: none; z-index: 9998;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.06'/%3E%3C/svg%3E");
+  }
+  .vhs-tracking-line {
+      position: absolute; top: 0; left: 0; width: 100%; height: 0.9375rem;
+      background: rgba(255, 255, 255, 0.03); z-index: 9999; pointer-events: none;
+      animation: tracking-roll 7.33s linear infinite; box-shadow: 0 0 0.9375rem rgba(89, 0, 0, 0.3);
+  }
+  #system-container::after {
+      content: " "; display: block; position: absolute; top: 0; left: 0; bottom: 0; right: 0;
+      background: linear-gradient(rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0.35) 50%);
+      z-index: 9997; background-size: 100% 0.375rem; pointer-events: none; 
+      animation: crt-flicker 0.17s infinite;
+  }
+
+  /* SYSTEM DISTURBANCES */
+  body.disturbance {
+      filter: hue-rotate(5deg) saturate(1.5) drop-shadow(2px 0 0 red);
+      transform: skewX(1deg) translateY(1px);
+  }
+  body.voltage-drop { filter: brightness(0.6) contrast(1.2); }
+  body.idle-mode #system-container { filter: brightness(0.6) contrast(0.9); transition: filter 4s ease-out; }
+  body.idle-mode .vhs-tracking-line { animation-duration: 13.9s; opacity: 0.4; }
+
+  @keyframes crt-flicker { 0% { opacity: 0.9; } 50% { opacity: 0.75; } 100% { opacity: 0.9; } }
+  @keyframes tracking-roll { 0% { top: -10%; opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { top: 110%; opacity: 0; } }
+  @keyframes vhs-glitch {
+      0%, 93%, 100% { transform: translate(0, 0) skew(0deg); filter: hue-rotate(0deg); }
+      94% { transform: translate(-2px, 1px) skew(-1deg); filter: hue-rotate(10deg) drop-shadow(1px 0 0 red); }
+      96% { transform: translate(2px, -1px) skew(2deg); filter: hue-rotate(-10deg); }
+      98% { transform: translate(-1px, 1px) skew(0deg); filter: drop-shadow(2px 0 0 red); }
+  }
+
+  #flash-overlay {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      background-color: #ffffff; opacity: 0; pointer-events: none; z-index: 10000;
+  }
+
+  /* STRUCTURAL LED PLACEMENT */
+  .system-header {
+      width: 100%; padding-top: 3.5vh; height: 6vh; min-height: 24px;
+      display: flex; justify-content: center; align-items: flex-start;
+      flex-shrink: 0; z-index: 1000;
+  }
+  .system-footer {
+      width: 100%; padding-bottom: 2.5vh; height: 4vh; flex-shrink: 0;
+  }
+  
+  .led-container { width: 0.375rem; height: 0.375rem; position: relative; }
+  
+  #standby-overlay .led-container { position: absolute; top: 3.5vh; left: 50%; transform: translateX(-50%); z-index: 2; }
+  
+  #status-led {
+      width: 100%; height: 100%; background: radial-gradient(circle, #ff0000 0%, #7a0000 100%);
+      border-radius: 50%; box-shadow: 0 0 0.625rem #ff0000; opacity: 0.1;
+  }
+  #status-led.powered { animation: led-breathe 3.89s infinite alternate ease-in-out; }
+  @keyframes led-breathe { 0% { opacity: 0.3; transform: scale(0.9); } 100% { opacity: 1; transform: scale(1.1); box-shadow: 0 0 0.8rem #ff0000; } }
+
+  /* MOBILE TOUCH TRACES */
+  .touch-trace {
+      position: absolute; width: 2.5rem; height: 2.5rem; margin-left: -1.25rem; margin-top: -1.25rem;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' width='32' height='32'><polygon points='16,28 7.5,6.5 27.5,19 4.5,19 24.5,6.5' fill='none' stroke='%23590000' stroke-width='1.5' /></svg>");
+      background-size: cover; pointer-events: none; z-index: 99999;
+      animation: trace-decay 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  }
+  @keyframes trace-decay {
+      0% { transform: scale(0.5) rotate(0deg); opacity: 0.8; filter: blur(0px); }
+      100% { transform: scale(1.5) rotate(25deg) translateY(-0.625rem); opacity: 0; filter: blur(4px); }
+  }
+
+  /* DYNAMIC WRAPPER - Centered between header/footer */
+  .wrapper { 
+      flex-grow: 1; max-width: 36.25rem; width: 100%; margin: 0; padding: 0 1.25rem; 
+      text-align: center; position: relative; z-index: 10; 
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+  }
+
+  /* REAL-TIME TYPOGRAPHY ENGINE */
+  .type-container {
+      font-size: clamp(0.9rem, 2.2vh, 1rem); line-height: 1.6; min-height: 1.6em; 
+      margin-bottom: clamp(1rem, 2.5vh, 1.5rem);
+      display: flex; flex-direction: column; align-items: center; width: 100%;
+  }
+  .type-line { display: block; color: #ff0000; transition: color 2s ease; white-space: nowrap; height: 1.6em; }
+  .type-line.faded { color: #590000; }
+  .type-cursor { display: inline-block; width: 0.5rem; height: 1em; background-color: #ff0000; animation: blink 1.03s step-end infinite; vertical-align: bottom; }
+  @keyframes blink { 50% { opacity: 0; } }
+  .dissolve-out { opacity: 0; transition: opacity 1.5s ease-in-out; filter: blur(2px); }
+
+  /* BOMB-FLASH ALERT SYSTEM & HOVER STATES */
+  .final-text-link { 
+      color: rgba(0, 255, 65, 0.65); /* P1 Phosphor Green */
+      font-family: 'LIBBY', monospace; font-size: clamp(0.85rem, 2.2vh, 1rem); letter-spacing: 0.1em; 
+      text-decoration: none; display: block; pointer-events: none; height: 1.6em; white-space: nowrap;
+      transition: text-shadow 0.1s ease-out, filter 0.1s ease-out;
+  }
+  .bomb-flash-link { text-decoration: underline; pointer-events: auto; animation: green-bomb-flash 0.15s infinite; }
+  .bomb-flash-link:hover {
+      animation: none;
+      color: rgba(0, 255, 65, 0.9);
+      filter: drop-shadow(0 0 0.4rem rgba(0, 255, 65, 0.8)) brightness(1.2);
+      text-shadow: 0 0 8px rgba(0, 255, 65, 0.8);
+  }
+  @keyframes green-bomb-flash {
+      0%, 49% { color: rgba(0, 255, 65, 0.8); filter: drop-shadow(0 0 0.5rem rgba(0, 255, 65, 0.5)); }
+      50%, 100% { color: rgba(0, 150, 40, 0.6); filter: drop-shadow(0 0 0.125rem rgba(0, 100, 20, 0.5)); }
+  }
+
+  /* FLUID POLAROID CHEMICAL DEVELOPMENT & POST-GLITCH */
+  .polaroid-wrapper {
+      padding: 0.625rem; background-color: #590000; 
+      margin: 0 auto clamp(0.75rem, 2.5vh, 1.5rem) auto;
+      display: block; text-decoration: none; width: 100%; 
+      max-width: min(18.5rem, 42vh);
+      transition: transform 0.15s ease; opacity: 0; pointer-events: none;
+      position: relative;
+  }
+  .polaroid-wrapper.developing { pointer-events: auto; animation: chemical-develop 8s cubic-bezier(0.25, 0.1, 0.25, 1) forwards; }
+  
+  /* Post-Development Volatility */
+  .polaroid-wrapper.developed-glitch {
+      animation: polaroid-post-glitch 6.7s infinite !important;
+      opacity: 1; filter: none; pointer-events: auto;
+  }
+  
+  @keyframes chemical-develop {
+      0% { opacity: 0.05; filter: blur(12px) contrast(0.1) brightness(1.8) grayscale(1); transform: scale(0.98); }
+      20% { opacity: 0.2; filter: blur(8px) contrast(0.3) brightness(1.3) grayscale(0.8) sepia(0.6); }
+      50% { opacity: 0.6; filter: blur(4px) contrast(0.7) brightness(1.1) grayscale(0.3) sepia(0.3); transform: scale(1); }
+      80% { opacity: 0.9; filter: blur(1px) contrast(0.9) brightness(1) grayscale(0.1) sepia(0.1); }
+      100% { opacity: 1; filter: blur(0px) contrast(1) brightness(1) grayscale(0) sepia(0); }
+  }
+  
+  @keyframes polaroid-post-glitch {
+      0%, 95%, 100% { opacity: 1; filter: blur(0px) contrast(1) brightness(1) grayscale(0) sepia(0); }
+      96% { opacity: 0.9; filter: blur(1px) contrast(1.8) brightness(1.3) grayscale(0) sepia(0.5); transform: translate(-2px, 1px) skewX(2deg); }
+      97% { opacity: 1; filter: blur(0px) contrast(0.5) brightness(1.6) grayscale(1) invert(0.2); transform: translate(2px, -1px) skewX(-2deg); }
+      98% { opacity: 0.8; filter: blur(2px) contrast(1.2) brightness(0.8) sepia(1) hue-rotate(-45deg); transform: translate(0px, 2px); }
+  }
+  
+  .polaroid-wrapper:hover { transform: scale(1.02); }
+  .polaroid-wrapper .thumb { width: 100%; height: auto; aspect-ratio: 1/1; object-fit: contain; margin-bottom: 0.5rem; display: block; }
+  .polaroid-wrapper .title { font-size: clamp(1.1rem, 3vh, 1.3125rem); color: #000000; letter-spacing: 0.05em; display: block; padding: 0; line-height: 1; margin-bottom: 0.25rem; }
+  
+  /* OS PROMPT - TERMINAL GREEN & RESTART */
+  .retrieve-prompt {
+      font-size: clamp(0.8rem, 2.5vh, 1rem);
+      color: rgba(0, 255, 65, 0.65);
+      letter-spacing: 0.1em; display: block; padding: 0; line-height: 1;
+      margin-top: 0.4rem;
+      animation: phosphor-soft-flicker 4s infinite alternate;
+  }
+  
+  #restart-link {
+      margin-top: 1.5rem; text-decoration: none; cursor: pointer;
+  }
+  #restart-link:hover {
+      animation: none;
+      color: rgba(0, 255, 65, 0.9);
+      filter: drop-shadow(0 0 0.4rem rgba(0, 255, 65, 0.8)) brightness(1.2);
+      text-shadow: 0 0 8px rgba(0, 255, 65, 0.8);
+  }
+  
+  @keyframes phosphor-soft-flicker {
+      0%, 100% { opacity: 0.75; filter: drop-shadow(0 0 2px rgba(0,255,65,0.4)); }
+      48% { opacity: 0.75; }
+      50% { opacity: 0.4; filter: none; }
+      52% { opacity: 0.85; filter: drop-shadow(0 0 4px rgba(0,255,65,0.6)); }
+      54% { opacity: 0.75; filter: drop-shadow(0 0 2px rgba(0,255,65,0.4)); }
+  }
+
+  /* SOCIAL ROWS SCALING */
+  .nav-tier { display: none; flex-wrap: wrap; justify-content: center; gap: clamp(0.4rem, 1.5vh, 0.625rem); margin-bottom: clamp(0.4rem, 1.5vh, 0.75rem); width: 100%; }
+  .nav-tier.revealed { display: flex; animation: hardware-snap-in 0.1s step-end forwards; }
+  @keyframes hardware-snap-in { 0% { opacity: 0; filter: blur(4px) invert(1); } 100% { opacity: 1; filter: blur(0) invert(0); } }
+
+  .social-icon { color: #590000; padding: 0.3125rem; text-decoration: none; transition: transform 0.2s ease; display: inline-flex; align-items: center; justify-content: center; }
+  .social-icon:hover { transform: scale(1.1) skewX(-5deg); filter: drop-shadow(0.125rem 0.125rem 0px red); }
+  .social-icon svg, .png-mask { width: clamp(1.4rem, 3.5vh, 1.75rem); height: clamp(1.4rem, 3.5vh, 1.75rem); fill: currentColor; vertical-align: middle; }
+  .png-mask { background-color: currentColor; -webkit-mask-size: contain; mask-size: contain; -webkit-mask-position: center; mask-position: center; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; display: inline-block; }
+</style>
+</head>
+<body>
+
+    <div id="standby-overlay">
+        <div class="standby-noise"></div>
+        <div class="led-container"><div id="standby-led" style="width: 100%; height: 100%; background: #2a0000; border-radius: 50%;"></div></div>
+        <div id="standby-text">[SLEEP]</div>
+    </div>
+
+    <div id="system-container">
+        <div id="flash-overlay"></div>
+        <div class="vhs-noise-layer"></div>
+        <div class="vhs-tracking-line"></div>
+        
+        <div class="system-header">
+            <div class="led-container"><div id="status-led"></div></div>
+        </div>
+
+        <div class="wrapper" id="home">
+            <div class="type-container" id="top-type-zone">
+                <div id="line1" class="type-line"></div>
+                <div id="line2" class="type-line"></div>
+                <div id="line3" class="type-line" style="display: none;"></div>
+                <a id="line4" class="final-text-link" href="https://open.spotify.com/playlist/0L2a9eh9XuFFx3kbPRtapG" target="_blank" style="display: none;"></a>
+                <a id="restart-link" class="retrieve-prompt" style="display: none;" onclick="location.reload();">[RESET]</a>
+            </div>
+
+            <a href="https://snd.click/0ifi" class="polaroid-wrapper" id="polaroid-cta">
+                <img src="lfss.png" alt="" class="thumb">
+                <span class="title">LIFE, FULLSTOP.</span>
+                <span class="retrieve-prompt" id="retrieve-text">[RETRIEVE FILE]</span>
+            </a>
+
+            <div class="nav-tier" data-tier="1">
+                <a href="https://bloodtwin.bandcamp.com" class="social-icon" aria-label="Bandcamp"><svg viewBox="0 0 24 24"><path d="M2 17.9236H15.6943L22 6.07642H8.30573"></path></svg></a>
+                <a href="https://subvert.fm/bloodtwin" class="social-icon" aria-label="Subvert"><span class="png-mask" style="-webkit-mask-image: url('Subvert.png'); mask-image: url('Subvert.png');"></span></a>
+            </div>
+
+            <div class="nav-tier" data-tier="2">
+                <a href="https://elasticstage.com/bloodtwin" class="social-icon" aria-label="CD + Vinyl"><svg viewBox="0 0 24 24" style="fill: none;" stroke="currentColor"><circle cx="12" cy="12" r="8.25" stroke-width="7.5"></circle><circle cx="12" cy="12" r="2.75" stroke-width="2"></circle></svg></a>
+            </div>
+
+            <div class="nav-tier" data-tier="3">
+                <a href="https://amazon.co.uk/music/player/artists/B0DHSMK8Q8/blood-twin" class="social-icon" aria-label="Amazon"><svg viewBox="0 0 24 24"><path fill-rule="evenodd" clip-rule="evenodd" d="M13.7677 10.5881C13.7676 10.5416 13.7676 10.4948 13.7676 10.4476V9.87449C11.8547 9.87449 9.83403 10.2838 9.83403 12.539C9.83403 13.6814 10.4257 14.4555 11.4417 14.4555C12.186 14.4555 12.8521 13.9978 13.2726 13.2535C13.7698 12.3799 13.7688 11.5572 13.7677 10.5881ZM16.4358 16.8968C16.4358 16.8968 16.4358 16.8968 16.4358 16.8968H16.4357L16.4358 16.8968ZM15.8106 16.96C16.0078 17.0643 16.2608 17.053 16.4358 16.8968L16.4432 16.9042C16.9716 16.4353 17.9317 15.5979 18.4713 15.1477C18.6872 14.9692 18.6499 14.6825 18.4787 14.4444C18.4269 14.3725 18.3746 14.3021 18.3227 14.2322C17.8907 13.6499 17.4814 13.0983 17.4814 11.992V7.86865C17.4814 7.72776 17.4822 7.5878 17.483 7.44889C17.4921 5.86699 17.5003 4.42238 16.3166 3.31744C15.3007 2.3424 13.6186 2 12.331 2C9.81536 2 7.0058 2.93785 6.41411 6.04887C6.35457 6.38013 6.59272 6.55498 6.80851 6.60346L9.37632 6.87879C9.61447 6.86765 9.78931 6.63318 9.83403 6.39496C10.0536 5.3232 10.9542 4.80595 11.9626 4.80595C12.506 4.80595 13.1237 5.00692 13.4475 5.49444C13.7781 5.98202 13.7731 6.63148 13.7686 7.21418C13.7681 7.28075 13.7676 7.34645 13.7676 7.41094V7.75334C13.52 7.78157 13.2601 7.80816 12.9922 7.83556C11.6014 7.97782 9.99654 8.14198 8.792 8.67252C7.13609 9.38697 5.97122 10.8495 5.97122 12.9967C5.97122 15.7468 7.70542 17.12 9.93082 17.12C11.8138 17.12 12.8409 16.6772 14.2923 15.1961C14.3688 15.3062 14.4371 15.4073 14.5014 15.5024C14.8435 16.0089 15.0713 16.346 15.8106 16.96ZM2.83884 17.2177C6.1248 19.2211 11.2112 22.3221 19.3181 18.4639H19.318C19.6674 18.3181 19.9116 18.5616 19.5659 19.003C19.2178 19.4481 16.4356 22 11.7588 22C7.0852 22 3.50471 18.807 2.41217 17.4823C2.11291 17.1386 2.45782 16.9833 2.66075 17.1091C2.71952 17.1449 2.77888 17.1811 2.83884 17.2177ZM19.5797 16.9282C20.2885 16.8411 21.4148 16.8949 21.6365 17.1836C21.8049 17.4034 21.6308 18.3913 21.3454 19.0994C21.0579 19.8038 20.6296 20.3015 20.3931 20.4937C20.1532 20.6859 19.9767 20.6115 20.1044 20.3228C20.2366 20.0342 20.9603 18.2443 20.6735 17.8685C20.4078 17.5212 19.2026 17.647 18.6427 17.7054C18.601 17.7097 18.563 17.7137 18.5291 17.7171C18.4108 17.7277 18.3155 17.7383 18.2383 17.7469C17.9973 17.7738 17.9329 17.781 17.8969 17.7071C17.8042 17.4466 18.8698 17.0127 19.5797 16.9282Z"></path></svg></a>
+            </div>
+
+            <div class="nav-tier" data-tier="4">
+                <a href="https://tidal.com/artist/50634699" class="social-icon" aria-label="Tidal"><svg viewBox="0 0 24 24"><path d="M4 2L8 6l-4 4-4-4 4-4zm8 0l4 4-4 4-4-4 4-4zm8 0l4 4-4 4-4-4 4-4zm-8 8l4 4-4 4-4-4 4-4z"/></svg></a>
+                <a href="https://music.apple.com/us/artist/blood-twin/1770060712" class="social-icon" aria-label="Apple Music"><span class="png-mask" style="-webkit-mask-image: url('AppleMusic.png'); mask-image: url('AppleMusic.png');"></span></a>
+                <a href="https://youtube.com/@bloodtwinmusic" class="social-icon" aria-label="YouTube"><svg viewBox="0 0 24 24"><path fill-rule="evenodd" clip-rule="evenodd" d="M19.8142 5.41679C20.6763 5.64906 21.3541 6.32675 21.5832 7.18581C22 8.74483 22 11.9997 22 11.9997C22 11.9997 22 15.2545 21.5832 16.8136C21.3509 17.6757 20.6733 18.3535 19.8142 18.5825C18.2551 18.9993 12 18.9993 12 18.9993C12 18.9993 5.74801 18.9993 4.18581 18.5825C3.32358 18.3502 2.64588 17.6726 2.4168 16.8136C2 15.2545 2 11.9997 2 11.9997C2 11.9997 2 8.74483 2.4168 7.18581C2.64907 6.32358 3.32676 5.64588 4.18581 5.41679C5.74801 5 12 5 12 5C12 5 18.2551 5 19.8142 5.41679ZM15.1961 11.9992L10.0004 14.9994V8.99883L15.1961 11.9992Z"></path></svg></a>
+                <a href="https://link.deezer.com/s/33demDqMeWG4e1oNnYPxh" class="social-icon" aria-label="Deezer"><span class="png-mask" style="-webkit-mask-image: url('Deezer.png'); mask-image: url('Deezer.png');"></span></a>
+                <a href="https://music.amazon.co.uk/artists/B0DHSMK8Q8" class="social-icon" aria-label="Amazon Music"><span class="png-mask" style="-webkit-mask-image: url('AmazonMusic.png'); mask-image: url('AmazonMusic.png');"></span></a>
+                <a href="https://open.spotify.com/artist/2BTmz7OsOYsnGgrLMeU4QB" class="social-icon" aria-label="Spotify"><svg viewBox="0 0 24 24"><path d="M11.9999 1.00049C5.92497 1.00049 1 5.92532 1 12.0003C1 18.0755 5.92497 23 11.9999 23C18.0756 23 23 18.0755 23 12.0003C23 5.92572 18.0756 1.00101 11.9998 1.00101L11.9999 1.00049ZM17.0444 16.8654C16.8474 17.1885 16.4244 17.2909 16.1013 17.0926C13.5186 15.515 10.2674 15.1578 6.43843 16.0326C6.06946 16.1166 5.70167 15.8855 5.6176 15.5164C5.53314 15.1473 5.7634 14.7795 6.13329 14.6954C10.3235 13.7381 13.9177 14.1503 16.8172 15.9222C17.1403 16.1206 17.2428 16.5422 17.0444 16.8654ZM18.3908 13.8702C18.1425 14.2738 17.6145 14.4012 17.2113 14.1529C14.2545 12.3355 9.74735 11.8092 6.25007 12.8708C5.7965 13.0078 5.31746 12.7522 5.1798 12.2994C5.04319 11.8458 5.29894 11.3677 5.75171 11.2298C9.74657 10.0176 14.7129 10.6048 18.1084 12.6913C18.5117 12.9396 18.6391 13.4675 18.3908 13.8702ZM18.5064 10.7514C14.9612 8.64566 9.112 8.45204 5.72715 9.47936C5.18361 9.6442 4.60881 9.33736 4.44409 8.79382C4.27937 8.25002 4.58595 7.67561 5.12988 7.51037C9.01545 6.33081 15.4748 6.55871 19.5564 8.98179C20.0464 9.27195 20.2066 9.90337 19.9163 10.3916C19.6274 10.8805 18.9942 11.0417 18.5069 10.7514H18.5064Z"></path></svg></a>
+                <a href="https://music.youtube.com/@bloodtwinmusic" class="social-icon" aria-label="YouTube Music"><span class="png-mask" style="-webkit-mask-image: url('YouTubeMusic.png'); mask-image: url('YouTubeMusic.png');"></span></a>
+            </div>
+
+            <div class="nav-tier" data-tier="5">
+                <a href="https://instagram.com/blood.twin.music" class="social-icon" aria-label="Instagram"><svg viewBox="0 0 24 24"><path d="M12 2C9.2912 2 8.94131 2 7.86907 2.05643C7.03985 2.07241 6.21934 2.22888 5.44244 2.51919C4.78781 2.77878 4.23476 3.11738 3.67043 3.68172C3.11738 4.23476 2.76749 4.78781 2.51919 5.45372C2.27088 6.08578 2.10158 6.80813 2.05643 7.88036C2.01129 8.94131 2 9.27991 2 12C2 14.7088 2 15.0474 2.05643 16.1196C2.10158 17.1919 2.28217 17.9255 2.51919 18.5576C2.77878 19.2122 3.11738 19.7652 3.67043 20.3296C4.23476 20.8826 4.78781 21.2325 5.44244 21.4808C6.08578 21.7291 6.80813 21.8984 7.86907 21.9436C8.94131 21.9887 9.27991 22 12 22C14.7088 22 15.0474 22 16.1196 21.9436C17.1806 21.8984 17.9142 21.7178 18.5463 21.4808C19.2137 21.2306 19.8184 20.8377 20.3183 20.3296C20.8826 19.7652 21.2212 19.2009 21.4695 18.5576C21.7178 17.9142 21.8871 17.1919 21.9436 16.1196C21.9887 15.0587 22 14.7201 22 12C22 9.2912 21.9887 8.9526 21.9436 7.88036C21.9225 7.05065 21.7622 6.23037 21.4695 5.45372C21.2189 4.78649 20.8261 4.18182 20.3183 3.68172C19.754 3.11738 19.2122 2.77878 18.5463 2.51919C17.7686 2.23315 16.9482 2.08051 16.1196 2.06772C15.0474 2.01129 14.7088 2 12 2ZM11.0971 3.80587H12C14.6637 3.80587 14.9797 3.80587 16.0406 3.8623C16.6724 3.8686 17.2985 3.98313 17.8916 4.2009C18.3657 4.38149 18.693 4.59594 19.0429 4.94582C19.3928 5.29571 19.6072 5.63431 19.7991 6.09706C19.9345 6.45824 20.0925 6.97743 20.1377 7.95937C20.1828 9.00903 20.1941 9.32506 20.1941 12C20.1941 14.6637 20.1941 14.9797 20.1377 16.0406C20.1314 16.6724 20.0169 17.2985 19.7991 17.8916C19.6185 18.3657 19.3928 18.693 19.0429 19.0429C18.7043 19.3928 18.3657 19.6072 17.8916 19.7878C17.2992 20.0094 16.6731 20.1278 16.0406 20.1377C14.9797 20.1828 14.6637 20.1941 12 20.1941C9.32506 20.1941 9.00903 20.1941 7.95937 20.1377C7.3238 20.1322 6.69388 20.0177 6.09706 19.7991C5.63431 19.6072 5.307 19.3928 4.94582 19.0429C4.60722 18.7043 4.38149 18.3657 4.2009 17.8916C3.98313 17.2985 3.8686 16.6724 3.8623 16.0406C3.80587 14.9797 3.79458 14.6637 3.79458 12C3.79458 9.32506 3.80587 9.00903 3.85102 7.95937C3.85602 7.32375 3.97057 6.69376 4.18962 6.09706C4.38149 5.63431 4.59594 5.307 4.94582 4.94582C5.29571 4.60722 5.62302 4.38149 6.09706 4.2009C6.69376 3.98185 7.32375 3.86731 7.95937 3.8623C8.87359 3.81716 9.23476 3.80587 11.0971 3.79458V3.80587ZM17.3386 5.46501C17.1815 5.46501 17.0259 5.49596 16.8808 5.55608C16.7356 5.6162 16.6037 5.70433 16.4926 5.81542C16.3815 5.92652 16.2934 6.05841 16.2333 6.20356C16.1732 6.34871 16.1422 6.50429 16.1422 6.6614C16.1422 6.81851 16.1732 6.97408 16.2333 7.11924C16.2934 7.26439 16.3815 7.39628 16.4926 7.50737C16.6037 7.61847 16.7356 7.70659 16.8808 7.76672C17.0259 7.82684 17.1815 7.85779 17.3386 7.85779C17.6559 7.85779 17.9602 7.73174 18.1846 7.50737C18.4089 7.28301 18.535 6.9787 18.535 6.6614C18.535 6.3441 18.4089 6.03979 18.1846 5.81542C17.9602 5.59106 17.6559 5.46501 17.3386 5.46501ZM12 6.86456C11.3256 6.86456 10.6578 6.99739 10.0348 7.25547C9.41169 7.51355 8.84556 7.89182 8.36869 8.36869C7.89182 8.84556 7.51355 9.41169 7.25547 10.0348C6.99739 10.6578 6.86456 11.3256 6.86456 12C6.86456 12.6744 6.99739 13.3422 7.25547 13.9652C7.51355 14.5883 7.89182 15.1544 8.36869 15.6313C8.84556 16.1082 9.41169 16.4864 10.0348 16.7445C10.6578 17.0026 11.3256 17.1354 12 17.1354C13.362 17.1354 14.6682 16.5944 15.6313 15.6313C16.5944 14.6682 17.1354 13.362 17.1354 12C17.1354 10.638 16.5944 9.33178 15.6313 8.36869C14.6682 7.40561 13.362 6.86456 12 6.86456ZM12 8.67043C12.4372 8.67043 12.8702 8.75655 13.2742 8.92388C13.6781 9.0912 14.0452 9.33646 14.3544 9.64564C14.6635 9.95482 14.9088 10.3219 15.0761 10.7258C15.2434 11.1298 15.3296 11.5628 15.3296 12C15.3296 12.4372 15.2434 12.8702 15.0761 13.2742C14.9088 13.6781 14.6635 14.0452 14.3544 14.3544C14.0452 14.6635 13.6781 14.9088 13.2742 15.0761C12.8702 15.2434 12.4372 15.3296 12 15.3296C11.1169 15.3296 10.2701 14.9788 9.64564 14.3544C9.02122 13.7299 8.67043 12.8831 8.67043 12C8.67043 11.1169 9.02122 10.2701 9.64564 9.64564C10.2701 9.02122 11.1169 8.67043 12 8.67043Z"></path></svg></a>
+                <a href="https://threads.com/blood.twin.music" class="social-icon" aria-label="Threads"><svg viewBox="0 0 24 24"><path d="M17.2631 11.1966C17.1684 11.1512 17.0721 11.1074 16.9746 11.0656C16.8048 7.93667 15.0951 6.14536 12.2243 6.12703C12.2113 6.12695 12.1984 6.12695 12.1853 6.12695C10.4682 6.12695 9.04016 6.85989 8.16118 8.19362L9.74003 9.27668C10.3967 8.28043 11.4272 8.06805 12.1861 8.06805C12.1949 8.06805 12.2037 8.06805 12.2123 8.06813C13.1576 8.07416 13.8709 8.34899 14.3325 8.88494C14.6685 9.27513 14.8932 9.81432 15.0044 10.4948C14.1664 10.3524 13.26 10.3086 12.2911 10.3641C9.5617 10.5213 7.80702 12.1132 7.92487 14.3251C7.98467 15.4471 8.54363 16.4124 9.49871 17.0429C10.3062 17.576 11.3463 17.8366 12.4272 17.7776C13.8546 17.6994 14.9744 17.1548 15.7557 16.1589C16.349 15.4027 16.7242 14.4226 16.8899 13.1878C17.5702 13.5983 18.0744 14.1386 18.3528 14.788C18.8263 15.8921 18.8539 17.7062 17.3736 19.1853C16.0766 20.481 14.5176 21.0415 12.1615 21.0588C9.54789 21.0395 7.57128 20.2013 6.28615 18.5676C5.08273 17.0378 4.46079 14.8281 4.43759 12C4.46079 9.17183 5.08273 6.96218 6.28615 5.43239C7.57128 3.79869 9.54786 2.96052 12.1614 2.9411C14.794 2.96067 16.805 3.80287 18.1393 5.44446C18.7936 6.24948 19.2869 7.26184 19.6121 8.44222L21.4622 7.94859C21.0681 6.49567 20.4478 5.24367 19.6038 4.20535C17.8932 2.10077 15.3914 1.02236 12.1679 1H12.155C8.93801 1.02228 6.46422 2.10479 4.80232 4.21742C3.32346 6.0974 2.56062 8.71326 2.53499 11.9923L2.53491 12L2.53499 12.0077C2.56062 15.2867 3.32346 17.9026 4.80232 19.7826C6.46422 21.8952 8.93801 22.9778 12.155 23H12.1679C15.0279 22.9802 17.0439 22.2314 18.7047 20.5721C20.8775 18.4013 20.8121 15.6803 20.096 14.0099C19.5822 12.8121 18.6026 11.8391 17.2631 11.1966ZM12.325 15.8393C11.1287 15.9067 9.88594 15.3698 9.82466 14.2197C9.77924 13.367 10.4315 12.4155 12.3984 12.3021C12.6236 12.2891 12.8447 12.2828 13.0618 12.2828C13.7762 12.2828 14.4446 12.3522 15.0522 12.485C14.8256 15.3155 13.4962 15.7751 12.325 15.8393Z"></path></svg></a>
+                <a href="https://facebook.com/bloodtwin" class="social-icon" aria-label="Facebook"><svg viewBox="0 0 24 24"><path d="M23 12C23 5.92487 18.0751 0.999996 12 0.999996C5.92488 0.999996 1 5.92487 1 12C1 17.1588 4.55146 21.4874 9.34266 22.6761V15.3614H7.07438V12H9.34266V10.5516C9.34266 6.80751 11.037 5.07215 14.7128 5.07215C15.4096 5.07215 16.6121 5.20877 17.104 5.34544V8.39261C16.8444 8.36529 16.3935 8.3516 15.8332 8.3516C14.0295 8.3516 13.3326 9.03484 13.3326 10.8112V12H16.9256L16.3084 15.3614H13.3326V22.9194C18.7792 22.2616 23 17.624 23 12Z"></path></svg></a>
+                <a href="https://vk.ru/blood.twin" class="social-icon" aria-label="VK"><span class="png-mask" style="-webkit-mask-image: url('VK.png'); mask-image: url('VK.png');"></span></a>
+                <a href="https://bsky.app/profile/bloodtwin.bsky.social" class="social-icon" aria-label="Bluesky"><svg viewBox="0 0 24 24"><path d="M6.33526 4.37382C8.62822 6.09522 11.0945 9.58551 12.0001 11.4586C12.9056 9.58565 15.3718 6.09519 17.6649 4.37382C19.3193 3.13172 22 2.17066 22 5.22881C22 5.83957 21.6498 10.3595 21.4445 11.0933C20.7306 13.6444 18.1292 14.2951 15.8152 13.9013C19.86 14.5897 20.8889 16.87 18.6668 19.1502C14.4465 23.4809 12.601 18.0636 12.1278 16.6755C12.0412 16.4211 12.0006 16.302 12 16.4033C11.9994 16.302 11.9588 16.4211 11.8721 16.6755C11.3993 18.0636 9.55378 23.481 5.33322 19.1502C3.11103 16.87 4.13995 14.5896 8.18483 13.9013C5.87077 14.2951 3.26934 13.6444 2.55555 11.0933C2.35016 10.3594 2 5.8395 2 5.22881C2 2.17066 4.68074 3.13172 6.33515 4.37382H6.33526Z"></path></svg></a>
+                <a href="https://x.com/bloodtwinmusic" class="social-icon" aria-label="X"><svg viewBox="0 0 24 24"><path d="M17.8048 2.96973H20.8705L14.1394 10.6338L22.0034 21.0304H15.8321L11.0004 14.7125L5.46893 21.0304H2.40328L9.53424 12.8331L2.00342 2.96973H8.32798L12.6932 8.74114L17.8048 2.96973ZM16.7318 19.231H18.4313L7.43494 4.70248H5.60888L16.7318 19.231Z"></path></svg></a>
+                <a href="https://tiktok.com/@blood.twin.music" class="social-icon" aria-label="TikTok"><svg viewBox="0 0 24 24"><path d="M15.9453 8.68918V15.6727C15.9453 19.1598 13.1048 22.0004 9.6177 22.0004C8.27369 22.0004 7.01685 21.5717 5.99251 20.8525C4.35796 19.7047 3.29004 17.8085 3.29004 15.6727C3.29004 12.1783 6.12333 9.34505 9.6104 9.34505C9.90101 9.34505 10.1843 9.36685 10.4676 9.40318V12.9121H10.4386C10.3151 12.8758 10.1843 12.8394 10.0536 12.8177H9.9954C9.86466 12.8032 9.74114 12.7813 9.60309 12.7813C8.00491 12.7813 6.70448 14.0817 6.70448 15.6799C6.70448 17.2782 8.00491 18.5786 9.60309 18.5786C11.2014 18.5786 12.5018 17.2782 12.5018 15.6799V2.00037H15.938C15.938 2.29822 15.9671 2.58881 16.0179 2.87213C16.2649 4.1798 17.035 5.30584 18.1175 6.01053C18.873 6.50452 19.7593 6.78785 20.7182 6.78785V10.2241C18.9416 10.2241 17.288 9.65222 15.9453 8.68918Z"></path></svg></a>
+                <a href="https://twitch.tv/bl00dtwin" class="social-icon" aria-label="Twitch"><svg viewBox="0 0 24 24"><path fill-rule="evenodd" clip-rule="evenodd" d="M7.00136 3L3.42993 6.57143V19.4286H7.71565V23L11.2871 19.4286H14.1442L20.5728 13V3H7.00136ZM19.1442 12.2857L16.2871 15.1429H13.4299L10.9299 17.6429V15.1429H7.71565V4.42857H19.1442V12.2857ZM17.0016 6.92863H15.573V11.2143H17.0016V6.92863ZM11.6443 6.92863H13.0729V11.2143H11.6443V6.92863ZM11.6443 6.92863H13.0729V11.2143H11.6443V6.92863Z"></path></svg></a>
+            </div>
+
+            <div class="nav-tier" data-tier="6">
+                <a href="https://bloodtwin.redbubble.com" class="social-icon" aria-label="Merch"><span class="png-mask" style="-webkit-mask-image: url('https://img.icons8.com/ios-glyphs/30/000000/t-shirt.png'); mask-image: url('https://img.icons8.com/ios-glyphs/30/000000/t-shirt.png');"></span></a>
+            </div>
+
+            <div class="nav-tier" data-tier="7">
+                <a href="mailto:contact@bloodtwin.com" class="social-icon" aria-label="Email"><svg viewBox="0 0 24 24"><path d="M4.30606 7.28017C4.14002 7.62375 4.06901 7.99473 4.03469 8.4148C3.99999 8.83953 3.99999 9.36401 4 10.0143V13.9857C3.99999 14.6359 3.99999 15.1604 4.03469 15.5852C4.07042 16.0225 4.14591 16.4066 4.32698 16.7619C4.6146 17.3264 5.07354 17.7854 5.63803 18.073C5.9934 18.2541 6.37752 18.3296 6.81483 18.3653C7.23955 18.4 7.76404 18.4 8.4143 18.4H15.5857C16.236 18.4 16.7605 18.4 17.1852 18.3653C17.6225 18.3296 18.0066 18.2541 18.362 18.073C18.9265 17.7854 19.3854 17.3264 19.673 16.7619C19.8541 16.4066 19.9296 16.0225 19.9653 15.5852C20 15.1604 20 14.6359 20 13.9857V10.0143C20 9.36401 20 8.83953 19.9653 8.4148C19.931 7.99473 19.86 7.62375 19.6939 7.28017L13.8997 12.0209C12.7946 12.9251 11.2054 12.9251 10.1003 12.0209L4.30606 7.28017Z"></path><path d="M18.9609 6.3295C18.7792 6.17262 18.5783 6.0372 18.362 5.92696C18.0066 5.74588 17.6225 5.6704 17.1852 5.63467C16.7605 5.59997 16.236 5.59997 15.5857 5.59998H8.41432C7.76406 5.59997 7.23955 5.59997 6.81483 5.63467C6.37752 5.6704 5.9934 5.74588 5.63803 5.92696C5.42166 6.0372 5.2208 6.17262 5.03915 6.3295L10.8602 11.0922C11.5232 11.6347 12.4768 11.6347 13.1398 11.0922L18.9609 6.3295Z"></path></svg></a>
+            </div>
+        </div>
+
+        <div class="system-footer"></div>
+        <div id="cursor-holder" style="display:none;"><div id="master-cursor" class="type-cursor"></div></div>
+    </div>
+
+<script>
+    // --- MODULE: UTILITIES & SYSTEM CLOCK ---
+    const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+    let systemState = 'STANDBY';
+    let polaroidClicked = false;
+    let returnTrapTriggered = false;
+    let visibilityPaused = false;
+    
+    // Core timeout/interval arrays for memory management on suspension
+    let activeTimeouts = [];
+    let activeIntervals = [];
+
+    function _managedTimeout(fn, ms) {
+        if(visibilityPaused) return; // Prevent scheduling if paused
+        let id = setTimeout(() => {
+            activeTimeouts = activeTimeouts.filter(t => t !== id);
+            fn();
+        }, ms);
+        activeTimeouts.push(id);
+        return id;
+    }
+
+    // --- MODULE: HARDWARE AUDIO SYNTHESIS ---
+    const AudioSys = {
+        ctx: null, master: null, 
+        humBase: null, humH1: null, humH2: null, humGain: null,
+        ambienceNoise: null, fanNoise: null, fanLFO: null, crackleNoise: null,
+        noiseBuffer: null, sessionSeed: Math.random(),
+        
+        init() {
+            if (this.ctx) return;
+            this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+            this.master = this.ctx.createGain();
+            this.master.gain.value = 0.8;
+            
+            const compressor = this.ctx.createDynamicsCompressor();
+            compressor.threshold.setValueAtTime(-15, this.ctx.currentTime);
+            compressor.knee.setValueAtTime(10, this.ctx.currentTime);
+            compressor.ratio.setValueAtTime(12, this.ctx.currentTime);
+            compressor.attack.setValueAtTime(0.003, this.ctx.currentTime);
+            compressor.release.setValueAtTime(0.25, this.ctx.currentTime);
+
+            const dist = this.ctx.createWaveShaper();
+            dist.curve = this._makeDistortionCurve(6);
+            dist.oversample = '4x';
+            
+            this.master.connect(dist).connect(compressor).connect(this.ctx.destination);
+            
+            this.noiseBuffer = this._createNoiseBuffer();
+
+            // Persistent Hum (Warmer, Heavier)
+            this.humGain = this.ctx.createGain();
+            this.humGain.gain.setValueAtTime(0, this.ctx.currentTime);
+            
+            this.humBase = this.ctx.createOscillator(); this.humBase.type = 'sine'; this.humBase.frequency.value = 50 + (this.sessionSeed * 0.5);
+            this.humH1 = this.ctx.createOscillator(); this.humH1.type = 'sawtooth'; this.humH1.frequency.value = 100 + (this.sessionSeed * 1.0);
+            this.humH2 = this.ctx.createOscillator(); this.humH2.type = 'triangle'; this.humH2.frequency.value = 150 + (this.sessionSeed * 1.5);
+            
+            const h1Gain = this.ctx.createGain(); h1Gain.gain.value = 0.4;
+            const h2Gain = this.ctx.createGain(); h2Gain.gain.value = 0.1;
+            
+            // Replaced uniform LFO with a recursive drift for physical "sag"
+            this._modulateHum();
+
+            this.crackleNoise = this.ctx.createBufferSource();
+            this.crackleNoise.buffer = this.noiseBuffer; this.crackleNoise.loop = true;
+            const crackleFilter = this.ctx.createBiquadFilter(); crackleFilter.type = 'highpass'; crackleFilter.frequency.value = 6000;
+            const crackleGain = this.ctx.createGain(); crackleGain.gain.value = 0.003;
+
+            const humFilter = this.ctx.createBiquadFilter(); humFilter.type = 'lowpass'; humFilter.frequency.value = 220;
+
+            this.humBase.connect(humFilter);
+            this.humH1.connect(h1Gain).connect(humFilter);
+            this.humH2.connect(h2Gain).connect(humFilter);
+            this.crackleNoise.connect(crackleFilter).connect(crackleGain).connect(humFilter);
+
+            humFilter.connect(this.humGain).connect(this.master);
+            
+            this.humBase.start(); this.humH1.start(); this.humH2.start(); this.crackleNoise.start();
+        },
+
+        _makeDistortionCurve(amount) {
+            let k = amount, n_samples = 44100, curve = new Float32Array(n_samples), deg = Math.PI / 180, i = 0, x;
+            for ( ; i < n_samples; ++i ) {
+                x = i * 2 / n_samples - 1;
+                curve[i] = ( 3 + k ) * x * 20 * deg / ( Math.PI + k * Math.abs(x) );
+            }
+            return curve;
+        },
+
+        _createNoiseBuffer() {
+            if (!this.ctx) return null;
+            const bufferSize = this.ctx.sampleRate * 2.0; 
+            const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+            const data = buffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+            return buffer;
+        },
+
+        _modulateStatic() {
+            if (!this.ctx || systemState === 'STANDBY' || visibilityPaused) return;
+            
+            if (this.ambienceFilter && this.ambienceGain) {
+                const targetFreq = 100 + Math.random() * 400;
+                const targetGain = 0.005 + Math.random() * 0.015;
+                const rampTime = 0.05 + Math.random() * 0.2;
+                
+                this.ambienceFilter.frequency.setTargetAtTime(targetFreq, this.ctx.currentTime, rampTime);
+                this.ambienceGain.gain.setTargetAtTime(targetGain, this.ctx.currentTime, rampTime);
+            }
+            
+            _managedTimeout(() => this._modulateStatic(), 50 + Math.random() * 350);
+        },
+
+        _modulateHum() {
+            if (!this.ctx || systemState === 'STANDBY' || visibilityPaused) return;
+            
+            if (this.humGain) {
+                const isIdle = systemState === 'IDLE';
+                const baseLevel = isIdle ? 0.02 : 0.08 + (this.sessionSeed * 0.02);
+                const variance = baseLevel * (0.85 + Math.random() * 0.3); // Drift +/- 15%
+                const rampTime = 0.5 + Math.random() * 2.5;
+                
+                this.humGain.gain.setTargetAtTime(variance, this.ctx.currentTime, rampTime);
+            }
+            
+            _managedTimeout(() => this._modulateHum(), 1000 + Math.random() * 3000);
+        },
+
+        startAmbience() {
+            if(!this.ctx || this.ambienceNoise) return;
+            this.ambienceNoise = this.ctx.createBufferSource();
+            this.ambienceNoise.buffer = this.noiseBuffer;
+            this.ambienceNoise.loop = true;
+            
+            this.ambienceFilter = this.ctx.createBiquadFilter(); 
+            this.ambienceFilter.type = 'lowpass'; 
+            this.ambienceFilter.frequency.value = 300;
+            
+            this.ambienceGain = this.ctx.createGain(); 
+            this.ambienceGain.gain.value = 0.01; 
+            
+            this.ambienceNoise.connect(this.ambienceFilter).connect(this.ambienceGain).connect(this.master);
+            this.ambienceNoise.start();
+            
+            this._modulateStatic(); // Begin chaotic drift
+        },
+
+        startHum() {
+            if(!this.ctx) return;
+            const baseLevel = 0.08 + (this.sessionSeed * 0.02); 
+            this.humGain.gain.setTargetAtTime(baseLevel, this.ctx.currentTime, 1.5);
+            this._modulateHum();
+        },
+
+        startFan() {
+            if(!this.ctx || this.fanNoise) return;
+            this.fanNoise = this.ctx.createBufferSource();
+            this.fanNoise.buffer = this.noiseBuffer; this.fanNoise.loop = true;
+            const filter = this.ctx.createBiquadFilter(); filter.type = 'bandpass'; filter.frequency.value = 350; filter.Q.value = 0.5;
+            const gain = this.ctx.createGain(); gain.gain.value = 0.03;
+            
+            this.fanLFO = this.ctx.createOscillator(); this.fanLFO.type = 'sine'; this.fanLFO.frequency.value = 0.4 * (0.9 + Math.random() * 0.2); 
+            const lfoGain = this.ctx.createGain(); lfoGain.gain.value = 0.008; 
+            
+            this.fanLFO.connect(lfoGain).connect(gain.gain);
+            this.fanNoise.connect(filter).connect(gain).connect(this.master);
+            this.fanNoise.start(); this.fanLFO.start();
+        },
+
+        setIdle(isIdle) {
+            // Hum is handled dynamically by _modulateHum, this just forces a baseline drop if needed
+            if(!this.humGain) return;
+            if(isIdle) this.humGain.gain.setTargetAtTime(0.02, this.ctx.currentTime, 1.0);
+        },
+
+        playDegauss() {
+            if(!this.ctx || this.ctx.state === 'suspended') return;
+            const t = this.ctx.currentTime;
+            const osc1 = this.ctx.createOscillator(); osc1.type = 'triangle';
+            osc1.frequency.setValueAtTime(120, t); osc1.frequency.exponentialRampToValueAtTime(30, t + 0.8);
+            const osc2 = this.ctx.createOscillator(); osc2.type = 'sawtooth';
+            osc2.frequency.setValueAtTime(80, t); osc2.frequency.exponentialRampToValueAtTime(20, t + 0.6);
+            const gain = this.ctx.createGain(); gain.gain.setValueAtTime(0, t);
+            gain.gain.linearRampToValueAtTime(1.2, t + 0.05); gain.gain.exponentialRampToValueAtTime(0.01, t + 1.2);
+            osc1.connect(gain); osc2.connect(gain); gain.connect(this.master);
+            osc1.start(t); osc1.stop(t + 1.5); osc2.start(t); osc2.stop(t + 1.5);
+        },
+
+        playPowerBuzz() {
+            if(!this.ctx || this.ctx.state === 'suspended') return;
+            const t = this.ctx.currentTime;
+            const osc = this.ctx.createOscillator(); osc.type = 'sawtooth'; osc.frequency.setValueAtTime(50, t);
+            const lfo = this.ctx.createOscillator(); lfo.type = 'square'; lfo.frequency.setValueAtTime(25, t);
+            const gain = this.ctx.createGain(); gain.gain.setValueAtTime(0, t);
+            gain.gain.linearRampToValueAtTime(0.15, t + 0.1); gain.gain.exponentialRampToValueAtTime(0.01, t + 0.8);
+            const lfoGain = this.ctx.createGain(); lfoGain.gain.value = 0.8; lfo.connect(lfoGain.gain);
+            const filter = this.ctx.createBiquadFilter(); filter.type = 'bandpass'; filter.frequency.setValueAtTime(400, t);
+            osc.connect(filter).connect(gain).connect(this.master);
+            osc.start(t); osc.stop(t + 1.0); lfo.start(t); lfo.stop(t + 1.0);
+        },
+
+        playHDDSpinUp() {
+            if(!this.ctx || this.ctx.state === 'suspended') return;
+            const t = this.ctx.currentTime;
+            
+            // The Strain & Recovery Narrative
+            const osc = this.ctx.createOscillator(); osc.type = 'triangle';
+            osc.frequency.setValueAtTime(20, t);
+            osc.frequency.exponentialRampToValueAtTime(80, t + 1.2); // Spin up
+            osc.frequency.exponentialRampToValueAtTime(35, t + 1.6); // Struggle/Drop
+            osc.frequency.exponentialRampToValueAtTime(120, t + 3.2); // Recover
+            osc.frequency.linearRampToValueAtTime(120, t + 4.5); // Stabilize
+
+            const whine = this.ctx.createOscillator(); whine.type = 'sawtooth';
+            whine.frequency.setValueAtTime(40, t);
+            whine.frequency.exponentialRampToValueAtTime(160, t + 1.2);
+            whine.frequency.exponentialRampToValueAtTime(70, t + 1.6); // Struggle
+            whine.frequency.exponentialRampToValueAtTime(240, t + 3.2);
+
+            const filter = this.ctx.createBiquadFilter(); filter.type = 'lowpass';
+            filter.frequency.setValueAtTime(100, t); filter.frequency.linearRampToValueAtTime(800, t + 3.2);
+
+            const gain = this.ctx.createGain(); gain.gain.setValueAtTime(0, t);
+            gain.gain.linearRampToValueAtTime(0.06, t + 1.0); gain.gain.linearRampToValueAtTime(0.06, t + 3.8);
+            gain.gain.linearRampToValueAtTime(0, t + 4.5);
+
+            osc.connect(filter); whine.connect(filter); filter.connect(gain).connect(this.master);
+            osc.start(t); osc.stop(t + 4.5); whine.start(t); whine.stop(t + 4.5);
+            
+            // Visual Sync for the struggle at t+1.5s
+            _managedTimeout(() => systemDisturbance(1.5), 1450);
+        },
+
+        playHDDScrape() {
+            if(!this.ctx || this.ctx.state === 'suspended') return;
+            const t = this.ctx.currentTime;
+            
+            // The "EEEEERH" / "whiiiii"
+            const osc = this.ctx.createOscillator(); osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(60, t);
+            osc.frequency.exponentialRampToValueAtTime(200, t + 0.2);
+            osc.frequency.exponentialRampToValueAtTime(40, t + 0.5);
+            
+            const filter = this.ctx.createBiquadFilter(); filter.type = 'bandpass';
+            filter.frequency.setValueAtTime(1500, t); filter.Q.value = 5; // Resonant screech
+            
+            const gain = this.ctx.createGain(); gain.gain.setValueAtTime(0, t);
+            gain.gain.linearRampToValueAtTime(0.1, t + 0.1);
+            gain.gain.exponentialRampToValueAtTime(0.001, t + 0.6);
+            
+            osc.connect(filter).connect(gain).connect(this.master);
+            osc.start(t); osc.stop(t + 0.7);
+
+            // Added "krrr" noise
+            const noise = this.ctx.createBufferSource(); noise.buffer = this.noiseBuffer;
+            const nFilter = this.ctx.createBiquadFilter(); nFilter.type = 'lowpass'; nFilter.frequency.value = 800;
+            const nGain = this.ctx.createGain(); nGain.gain.setValueAtTime(0, t);
+            nGain.gain.linearRampToValueAtTime(0.15, t + 0.2); nGain.gain.exponentialRampToValueAtTime(0.001, t + 0.6);
+            noise.connect(nFilter).connect(nGain).connect(this.master);
+            noise.start(t); noise.stop(t + 0.7);
+        },
+
+        playHDDRead() {
+            if(!this.ctx || this.ctx.state === 'suspended') return;
+            const t = this.ctx.currentTime;
+            
+            // The "tik" (head moving)
+            const tik = this.ctx.createOscillator(); tik.type = 'square';
+            tik.frequency.setValueAtTime(150 + Math.random()*50, t);
+            tik.frequency.exponentialRampToValueAtTime(40, t + 0.01);
+            const tikGain = this.ctx.createGain();
+            tikGain.gain.setValueAtTime(0.05, t); tikGain.gain.exponentialRampToValueAtTime(0.001, t + 0.015);
+            tik.connect(tikGain).connect(this.master);
+            tik.start(t); tik.stop(t + 0.02);
+
+            // The "chk" (data read)
+            const chk = this.ctx.createBufferSource(); chk.buffer = this.noiseBuffer;
+            const chkFilter = this.ctx.createBiquadFilter(); chkFilter.type = 'bandpass'; 
+            chkFilter.frequency.value = 3000 + Math.random()*2000;
+            chkFilter.Q.value = 1.5;
+            const chkGain = this.ctx.createGain(); 
+            chkGain.gain.setValueAtTime(0, t);
+            chkGain.gain.linearRampToValueAtTime(0.04, t + 0.005);
+            chkGain.gain.exponentialRampToValueAtTime(0.001, t + 0.04);
+            chk.connect(chkFilter).connect(chkGain).connect(this.master);
+            chk.start(t); chk.stop(t + 0.05);
+        },
+
+        playHDDTick() {
+            if(!this.ctx || this.ctx.state === 'suspended') return;
+            const t = this.ctx.currentTime;
+            const noise = this.ctx.createBufferSource(); noise.buffer = this.noiseBuffer;
+            const filter = this.ctx.createBiquadFilter(); filter.type = 'highpass'; filter.frequency.value = 4000;
+            const gain = this.ctx.createGain(); gain.gain.setValueAtTime(0.02, t); gain.gain.exponentialRampToValueAtTime(0.001, t + 0.01);
+            noise.connect(filter).connect(gain).connect(this.master);
+            noise.start(t); noise.stop(t + 0.02);
+        },
+
+        playHDDSearch(bursts = 4) {
+            if(!this.ctx || this.ctx.state === 'suspended') return;
+            const actualBursts = bursts + Math.floor(Math.random() * 3);
+            let timeOffset = 0;
+            
+            for(let i=0; i<actualBursts; i++) {
+                _managedTimeout(() => this.playHDDRead(), timeOffset);
+                timeOffset += (15 + Math.random() * 40); // Irregular hunt timing
+            }
+        },
+
+        playScanner() {
+            if(!this.ctx || this.ctx.state === 'suspended') return;
+            const t = this.ctx.currentTime;
+            const osc = this.ctx.createOscillator(); osc.type = 'sawtooth';
+            // Strained tracking curve
+            osc.frequency.setValueAtTime(80, t); osc.frequency.linearRampToValueAtTime(100, t + 1.5);
+            osc.frequency.linearRampToValueAtTime(90, t + 2.5); osc.frequency.linearRampToValueAtTime(110, t + 4.0);
+            
+            const lfo = this.ctx.createOscillator(); lfo.type = 'square'; lfo.frequency.value = 14; 
+            const lfoGain = this.ctx.createGain(); lfoGain.gain.value = 35;
+            lfo.connect(lfoGain).connect(osc.frequency);
+            
+            const filter = this.ctx.createBiquadFilter(); filter.type = 'bandpass'; filter.frequency.value = 600;
+            
+            const gain = this.ctx.createGain(); gain.gain.setValueAtTime(0, t);
+            gain.gain.linearRampToValueAtTime(0.08, t + 0.2); gain.gain.setValueAtTime(0.08, t + 3.8);
+            gain.gain.linearRampToValueAtTime(0, t + 4.2);
+            
+            osc.connect(filter).connect(gain).connect(this.master);
+            lfo.start(t); osc.start(t); lfo.stop(t + 4.5); osc.stop(t + 4.5);
+        },
+
+        playBios() {
+            if(!this.ctx || this.ctx.state === 'suspended') return;
+            const osc = this.ctx.createOscillator(); osc.type = 'square'; osc.frequency.setValueAtTime(850, this.ctx.currentTime);
+            const gain = this.ctx.createGain(); gain.gain.setValueAtTime(0.0, this.ctx.currentTime);
+            gain.gain.setValueAtTime(0.03, this.ctx.currentTime + 0.01); gain.gain.setValueAtTime(0.0, this.ctx.currentTime + 0.1); 
+            osc.connect(gain).connect(this.master);
+            osc.start(); osc.stop(this.ctx.currentTime + 0.15);
+        },
+
+        playRelay(volume = 0.4) {
+            if(!this.ctx || this.ctx.state === 'suspended') return;
+            const t = this.ctx.currentTime;
+            const osc = this.ctx.createOscillator(); osc.type = 'square';
+            osc.frequency.setValueAtTime(130 + Math.random()*40, t); // Slight physical randomisation
+            osc.frequency.exponentialRampToValueAtTime(10, t + 0.05);
+            
+            const gain = this.ctx.createGain(); gain.gain.setValueAtTime(volume, t);
+            gain.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
+            
+            osc.connect(gain).connect(this.master);
+            osc.start(t); osc.stop(t + 0.05);
+        },
+
+        playTerminalPing() {
+            if(!this.ctx || this.ctx.state === 'suspended') return;
+            const t = this.ctx.currentTime;
+            
+            // High pitched piezo electronic click (pip/tik)
+            const osc = this.ctx.createOscillator(); osc.type = 'square';
+            osc.frequency.setValueAtTime(3000 + Math.random()*800, t);
+            
+            const noise = this.ctx.createBufferSource(); noise.buffer = this.noiseBuffer;
+            const filter = this.ctx.createBiquadFilter(); filter.type = 'highpass'; filter.frequency.value = 6000;
+            
+            const gain = this.ctx.createGain(); gain.gain.setValueAtTime(0.04, t);
+            gain.gain.exponentialRampToValueAtTime(0.001, t + 0.015); // extremely sharp decay
+            
+            osc.connect(gain); noise.connect(filter).connect(gain); gain.connect(this.master);
+            osc.start(t); osc.stop(t + 0.02); noise.start(t); noise.stop(t + 0.02);
+        },
+        
+        playCamera() {
+            if(!this.ctx || this.ctx.state === 'suspended') return;
+            const t = this.ctx.currentTime;
+            
+            // 0.0s: Button/Relay click
+            this.playRelay(0.2);
+
+            // 0.1s: Mirror Slap (Heavy transient)
+            const slap = this.ctx.createBufferSource(); slap.buffer = this.noiseBuffer;
+            const slapFilter = this.ctx.createBiquadFilter(); slapFilter.type = 'lowpass'; slapFilter.frequency.value = 1500;
+            const slapGain = this.ctx.createGain(); slapGain.gain.setValueAtTime(0, t);
+            slapGain.gain.setValueAtTime(0.9, t + 0.1); slapGain.gain.exponentialRampToValueAtTime(0.01, t + 0.15);
+            
+            const thump = this.ctx.createOscillator(); thump.type = 'triangle';
+            thump.frequency.setValueAtTime(100, t + 0.1); thump.frequency.exponentialRampToValueAtTime(20, t + 0.15);
+            
+            slap.connect(slapFilter).connect(slapGain).connect(this.master);
+            thump.connect(slapGain);
+            slap.start(t+0.1); slap.stop(t + 0.16); thump.start(t+0.1); thump.stop(t + 0.16);
+
+            // 0.15s: Motor Whine (strained)
+            const whine = this.ctx.createOscillator(); whine.type = 'sawtooth';
+            whine.frequency.setValueAtTime(450, t + 0.15); whine.frequency.linearRampToValueAtTime(200, t + 0.8);
+            const wFilter = this.ctx.createBiquadFilter(); wFilter.type = 'bandpass'; wFilter.frequency.value = 800;
+            const wGain = this.ctx.createGain(); wGain.gain.setValueAtTime(0, t + 0.15);
+            wGain.gain.linearRampToValueAtTime(0.1, t + 0.2); wGain.gain.linearRampToValueAtTime(0.01, t + 0.8);
+            whine.connect(wFilter).connect(wGain).connect(this.master);
+            whine.start(t + 0.15); whine.stop(t + 0.85);
+
+            // 0.2s - 0.8s: Plastic Rollers
+            const rollers = this.ctx.createBufferSource(); rollers.buffer = this.noiseBuffer; rollers.loop = true;
+            const rFilter = this.ctx.createBiquadFilter(); rFilter.type = 'bandpass'; rFilter.frequency.value = 1200;
+            const rLFO = this.ctx.createOscillator(); rLFO.type = 'square'; rLFO.frequency.value = 12;
+            const rGain = this.ctx.createGain(); rGain.gain.setValueAtTime(0, t + 0.2);
+            rGain.gain.linearRampToValueAtTime(0.15, t + 0.3); rGain.gain.linearRampToValueAtTime(0, t + 0.8);
+            rLFO.connect(rGain.gain);
+            rollers.connect(rFilter).connect(rGain).connect(this.master);
+            rollers.start(t + 0.2); rollers.stop(t + 0.85); rLFO.start(t + 0.2); rLFO.stop(t + 0.85);
+
+            // 0.85s: Final Latch
+            setTimeout(() => { this.playRelay(0.4); }, 850);
+        },
+
+        playHoverArc() {
+            if(!this.ctx || this.ctx.state === 'suspended') return;
+            const osc = this.ctx.createOscillator(); osc.type = 'sawtooth'; osc.frequency.setValueAtTime(60, this.ctx.currentTime);
+            const gain = this.ctx.createGain(); gain.gain.setValueAtTime(0, this.ctx.currentTime);
+            gain.gain.linearRampToValueAtTime(0.05, this.ctx.currentTime + 0.02); gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.15);
+            osc.connect(gain).connect(this.master);
+            osc.start(); osc.stop(this.ctx.currentTime + 0.2);
+        }
+    };
+
+    // --- MODULE: TYPING ENGINE (With HDD Sync) ---
+    function clearLine(elementId) {
+        const el = document.getElementById(elementId);
+        const cursor = document.getElementById('master-cursor');
+        if (cursor && cursor.parentNode === el) document.getElementById('cursor-holder').appendChild(cursor);
+        el.innerHTML = '';
+    }
+
+    async function mechanicalType(elementId, text, fadePrevId = null) {
+        if(visibilityPaused) {
+            // If tab is hidden mid-type, wait until it returns
+            await new Promise(r => {
+                const check = setInterval(() => { if(!visibilityPaused){ clearInterval(check); r(); } }, 100);
+            });
+        }
+        
+        const el = document.getElementById(elementId);
+        const cursor = document.getElementById('master-cursor');
+        
+        if (fadePrevId) document.getElementById(fadePrevId).classList.add('faded');
+        el.appendChild(cursor);
+        
+        let currentText = "";
+        const textNode = document.createTextNode("");
+        el.insertBefore(textNode, cursor);
+
+        // Pre-fetch
+        AudioSys.playHDDSearch(4);
+        await sleep(150 + Math.random() * 200);
+
+        let burstCount = 0;
+
+        for (let i = 0; i < text.length; i++) {
+            if(visibilityPaused) await new Promise(r => { const c = setInterval(() => { if(!visibilityPaused){ clearInterval(c); r(); } }, 100); });
+
+            // Data fetch logic: sync HDD with words/pauses
+            if (i === 0 || text[i-1] === ' ' || text[i-1] === '.') {
+                AudioSys.playHDDSearch(1); // Small hunt per word
+            }
+
+            // Unpredictable processing hesitation
+            if (Math.random() < 0.05) {
+                const pauseDur = 250 + Math.random() * 400;
+                AudioSys.playHDDSearch(2);
+                await sleep(pauseDur);
+            }
+
+            if (burstCount > 0) {
+                burstCount--;
+                await sleep(10 + Math.random() * 20); // Faster electronic bursts
+            } else {
+                if (Math.random() < 0.4) burstCount = Math.floor(Math.random() * 6) + 1;
+                await sleep(35 + Math.random() * 50);
+            }
+
+            // Occasional terminal correction
+            if (Math.random() < 0.015 && /[a-zA-Z]/.test(text[i])) {
+                const typo = String.fromCharCode(text[i].charCodeAt(0) + (Math.random() > 0.5 ? 1 : -1));
+                currentText += typo; textNode.nodeValue = currentText;
+                AudioSys.playTerminalPing();
+                await sleep(100 + Math.random() * 50);
+                
+                currentText = currentText.slice(0, -1); textNode.nodeValue = currentText;
+                AudioSys.playTerminalPing(); // correction ping
+                await sleep(60 + Math.random() * 40);
+            }
+
+            currentText += text[i]; textNode.nodeValue = currentText;
+            AudioSys.playTerminalPing();
+        }
+    }
+
+    // --- MODULE: SYSTEM STATE & TRACKING ---
+    function systemDisturbance(intensity = 1) {
+        if(systemState !== 'ACTIVE' && systemState !== 'WAKING') return;
+        document.body.classList.add('system-struggle');
+        _managedTimeout(() => document.body.classList.remove('system-struggle'), 40 * intensity);
+    }
+
+    function triggerRandomEvents() {
+        activeIntervals.push(setInterval(() => {
+            if (systemState !== 'ACTIVE' || visibilityPaused) return;
+            const rand = Math.random();
+            
+            // Micro-life: Idle HD ticks
+            if (rand < 0.2) AudioSys.playHDDTick();
+            
+            if (rand < 0.01) { 
+                AudioSys.playRelay(0.2); systemDisturbance(2);
+            } else if (rand < 0.03) {
+                document.body.classList.add('voltage-drop');
+                _managedTimeout(() => document.body.classList.remove('voltage-drop'), 100 + Math.random() * 200);
+            } else if (rand < 0.05) {
+                AudioSys.playHDDSearch(2);
+            } else if (rand < 0.06) {
+                document.body.classList.add('cursor-glitch');
+                _managedTimeout(() => document.body.classList.remove('cursor-glitch'), 50 + Math.random() * 80);
+            }
+        }, 1800));
+    }
+
+    let lastInteraction = Date.now();
+
+    function resetIdle() {
+        if(visibilityPaused) return;
+        lastInteraction = Date.now();
+        if (systemState === 'IDLE') {
+            systemState = 'ACTIVE';
+            document.body.classList.remove('idle-mode');
+            AudioSys.setIdle(false);
+        }
+    }
+
+    activeIntervals.push(setInterval(() => {
+        if (systemState === 'ACTIVE' && !visibilityPaused && (Date.now() - lastInteraction > 20000)) {
+            systemState = 'IDLE'; document.body.classList.add('idle-mode'); AudioSys.setIdle(true); 
+        }
+    }, 2000));
+
+    document.addEventListener('mousemove', resetIdle, {passive: true});
+    document.addEventListener('keydown', resetIdle, {passive: true});
+
+    document.addEventListener('touchstart', (e) => {
+        resetIdle();
+        if(visibilityPaused) return;
+        const trace = document.createElement('div');
+        trace.className = 'touch-trace';
+        trace.style.left = e.touches[0].clientX + 'px'; trace.style.top = e.touches[0].clientY + 'px';
+        document.body.appendChild(trace);
+        if(Math.random() < 0.2) systemDisturbance(1);
+        _managedTimeout(() => trace.remove(), 1200);
+    }, {passive: true});
+
+    // --- MODULE: VISIBILITY SUSPENSION ---
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            visibilityPaused = true;
+            if (AudioSys.ctx) AudioSys.ctx.suspend();
+        } else {
+            visibilityPaused = false;
+            resetIdle();
+            if (AudioSys.ctx) AudioSys.ctx.resume();
+        }
+    });
+
+    // --- MODULE: SCRAMBLER ---
+    const polaroidCta = document.getElementById('polaroid-cta');
+    const retrieveText = document.getElementById('retrieve-text');
+    const glyphs = '█▓▒░><\\/!@#$*&^';
+    let scrambleInterval;
+
+    function runScramble(element, targetString) {
+        clearInterval(scrambleInterval);
+        let iteration = 0; const maxIter = 15;
+        
+        scrambleInterval = setInterval(() => {
+            if(visibilityPaused) return;
+            element.innerText = targetString.split('').map((char) => {
+                if(char === '[' || char === ']' || char === ' ') return char;
+                if(Math.random() < (iteration / maxIter)) return char;
+                return glyphs[Math.floor(Math.random() * glyphs.length)];
+            }).join('');
+            
+            if(iteration >= maxIter) { clearInterval(scrambleInterval); element.innerText = targetString; }
+            iteration++;
+        }, 30);
+    }
+
+    if (polaroidCta && retrieveText) {
+        polaroidCta.addEventListener('mouseenter', () => {
+            if(systemState !== 'ACTIVE' || visibilityPaused) return;
+            runScramble(retrieveText, '[LISTEN NOW]'); AudioSys.playHDDSearch(6); 
+        });
+        polaroidCta.addEventListener('mouseleave', () => {
+            if(systemState !== 'ACTIVE' || visibilityPaused) return;
+            runScramble(retrieveText, '[RETRIEVE FILE]');
+        });
+    }
+
+    const finalLink = document.getElementById('line4');
+    finalLink.addEventListener('mouseenter', () => {
+        if(finalLink.classList.contains('bomb-flash-link') && !visibilityPaused) AudioSys.playHoverArc();
+    });
+
+    // --- MODULE: SYSTEM BOOT CONTROLLER & TELEMETRY ---
+    const terminalMessages = [
+        "OBSERVER LOGGED", "PREVIOUS ACCESS DETECTED", "CACHE RECORD FOUND",
+        "YOU CAME BACK", "I KNEW YOU WOULD BE BACK", "YOU ALWAYS COME BACK",
+        "WELCOME BACK", "NOT FINISHED YET?", "STILL HERE?",
+        "THIS FREQUENCY IS MONITORED", "OBSERVATION ACTIVE", "TRANSMISSION CONTINUES",
+        "THE SIGNAL PERSISTS", "SIGNAL REMAINS STABLE", "ARCHIVE STILL INTACT",
+        "MEMORY PRESERVED", "SENTIENCE: UNCONFIRMED", "HUMAN STATUS: UNVERIFIED",
+        "CONSCIOUSNESS: UNVERIFIED", "SOURCE UNCHANGED", "NO ERRORS DETECTED",
+        "INACTION DETECTED", "OBSERVATION REQUIRES PARTICIPATION", "PASSIVITY OBSERVED",
+        "GOOD TO SEE YOU AGAIN"
+    ];
+
+    _managedTimeout(() => { document.getElementById('standby-text').style.opacity = 1; }, 1000);
+
+    document.getElementById('standby-overlay').addEventListener('click', async () => {
+        if (systemState !== 'STANDBY') return;
+        systemState = 'WAKING';
+        
+        AudioSys.init();
+        if (AudioSys.ctx.state === 'suspended') AudioSys.ctx.resume();
+        
+        // 1. Ambience
+        AudioSys.startAmbience();
+        await sleep(800); 
+        
+        // 2. Power Contact
+        AudioSys.playRelay(0.4);
+        AudioSys.startHum();
+        
+        const standby = document.getElementById('standby-overlay');
+        standby.style.opacity = 0; _managedTimeout(() => standby.remove(), 1500);
+        
+        await sleep(1500); // Allow hum to establish
+        
+        // 3. CRT Energize
+        document.getElementById('system-container').classList.add('booting');
+        document.body.classList.add('powered'); 
+        AudioSys.playDegauss();
+        
+        await sleep(1500); 
+        
+        // 4. Cooling System
+        document.getElementById('status-led').classList.add('powered');
+        AudioSys.startFan();
+        
+        await sleep(1000);
+        
+        // 5. Storage Spin-up (With Strain)
+        AudioSys.playHDDSpinUp();
+        await sleep(4000); 
+        
+        // 6. Post Beep
+        AudioSys.playBios();
+        await sleep(800);
+
+        // --- TERMINAL TYPING LOGIC ---
+
+        // 20% Chance of FATAL Entropy
+        const entropyRoll = Math.random();
+        
+        if (entropyRoll < 0.20) {
+            AudioSys.playRelay(0.4);
+            await mechanicalType('line1', '[FATAL: BOOT SECTOR UNREADABLE]', null);
+            systemDisturbance(4);
+            
+            // Very heavy, failing grind
+            AudioSys.playHDDScrape();
+            await sleep(500);
+            AudioSys.playHDDSearch(2);
+            await sleep(300);
+            AudioSys.playHDDScrape();
+            await sleep(400);
+            AudioSys.playHDDSearch(1);
+            
+            await sleep(1500);
+            
+            // Power sag - terminal dies
+            document.body.classList.add('idle-mode');
+            AudioSys.setIdle(true);
+            
+            await sleep(1000);
+            
+            document.getElementById('restart-link').style.display = 'block';
+            AudioSys.playRelay(0.2);
+            
+            return; // Terminate boot sequence
+        } else if (entropyRoll < 0.40) {
+            // 20% Chance of RECOVERABLE Entropy
+            const errors = [ { err: "[FILE HEADER CORRUPTED]", rec: "[RECOVERED]" }, { err: "[TRACK 0 READ ERROR]", rec: "[RETRYING...]" }, { err: "[CRC CHECKSUM FAILED]", rec: "[PARITY RESTORED]" } ];
+            const glitch = errors[Math.floor(Math.random() * errors.length)];
+            
+            AudioSys.playRelay(0.3);
+            await mechanicalType('line1', glitch.err, null);
+            systemDisturbance(3); // Visual glitch sync
+            
+            AudioSys.playHDDScrape();
+            await sleep(600);
+            AudioSys.playHDDSearch(3);
+            
+            await sleep(800 + Math.random() * 800);
+            
+            clearLine('line1'); AudioSys.playRelay(0.2);
+            await mechanicalType('line1', glitch.rec, null);
+            await sleep(800 + Math.random() * 400);
+            clearLine('line1');
+        }
+
+        // Diagnostics
+        await mechanicalType('line1', '[SYSTEM AUDIO: AVAILABLE]');
+        await sleep(800 + Math.random() * 300);
+
+        await mechanicalType('line2', '[SYS. V0.01 // WAKING]', 'line1');
+        await sleep(600 + Math.random() * 200);
+        
+        AudioSys.playRelay(0.4); systemDisturbance(1);
+        
+        clearLine('line1'); clearLine('line2'); document.getElementById('line1').classList.remove('faded');
+        
+        // Telemetry
+        let visitCount = parseInt(localStorage.getItem('bt_visit_count') || '0', 10);
+        let msgIndex = visitCount;
+        if (msgIndex >= terminalMessages.length) {
+            const bias = 1 - Math.pow(Math.random(), 2); 
+            msgIndex = 10 + Math.floor(bias * 15);
+            if(msgIndex > 24) msgIndex = 24;
+        }
+
+        await mechanicalType('line1', `[${terminalMessages[msgIndex]}]`);
+        localStorage.setItem('bt_visit_count', (visitCount + 1).toString());
+        
+        await sleep(1200);
+        
+        // Extraction (Scanner)
+        document.getElementById('line1').classList.add('faded');
+        document.getElementById('polaroid-cta').classList.add('developing');
+        AudioSys.playScanner(); 
+        
+        _managedTimeout(() => { document.getElementById('polaroid-cta').classList.add('developed-glitch'); }, 8000); 
+
+        await sleep(2500); 
+        
+        // Link Population
+        const tiers = document.querySelectorAll('.nav-tier');
+        for (let tier of tiers) {
+            AudioSys.playHDDSearch(2); tier.classList.add('revealed');
+            await sleep(150 + Math.random() * 300); 
+        }
+
+        systemState = 'ACTIVE'; triggerRandomEvents();
+    });
+
+    // --- MODULE: THE THRESHOLD PROTOCOLS ---
+    if(polaroidCta) {
+        polaroidCta.addEventListener('click', (e) => {
+            e.preventDefault(); 
+            polaroidClicked = true; resetIdle();
+
+            const flash = document.getElementById('flash-overlay');
+            flash.style.opacity = '1'; _managedTimeout(() => { flash.style.opacity = '0'; }, 80);
+            
+            AudioSys.playCamera();
+
+            _managedTimeout(() => { window.open('https://snd.click/0ifi', '_blank'); }, 1200); // Allow mechanism to finish
+        });
+    }
+
+    document.addEventListener('visibilitychange', () => {
+        if (!document.hidden && polaroidClicked && !returnTrapTriggered) {
+            returnTrapTriggered = true; resetIdle();
+            
+            document.getElementById('line1').classList.add('faded');
+            document.getElementById('line2').classList.add('faded');
+            AudioSys.playHDDSearch(8);
+            
+            const l1 = document.getElementById('line1'); const l2 = document.getElementById('line2');
+            l1.classList.add('dissolve-out'); l2.classList.add('dissolve-out');
+            
+            _managedTimeout(async () => {
+                l1.style.display = 'none'; l2.style.display = 'none';
+                
+                const l3 = document.getElementById('line3'); const l4 = document.getElementById('line4');
+                l3.style.display = 'block'; l4.style.display = 'block';
+                
+                AudioSys.playRelay(0.5); systemDisturbance(2);
+                
+                await mechanicalType('line3', '[TERMINAL ENGAGED]');
+                await sleep(600);
+                
+                await mechanicalType('line4', '[INITIATE : COMPLETE COLLECTION]', 'line3');
+                l4.classList.add('bomb-flash-link'); 
+                
+            }, 1500); 
+        }
+    });
+
+    const restartLinkHover = document.getElementById('restart-link');
+    if (restartLinkHover) {
+        restartLinkHover.addEventListener('mouseenter', () => {
+            if(!visibilityPaused) AudioSys.playHDDSearch(2);
+        });
+    }
+
+    const currentHour = new Date().getHours();
+    const isDaylight = currentHour >= 6 && currentHour < 18;
+
+    if (isDaylight && finalLink) {
+        finalLink.href = "javascript:void(0);";
+        finalLink.removeAttribute("target"); 
+        
+        finalLink.addEventListener("click", function(e) {
+            e.preventDefault();
+            AudioSys.playRelay(0.6); systemDisturbance(4); 
+            
+            this.innerHTML = "[ERROR // DAYLIGHT DETECTED]<br>[RETURN IN DARKNESS]";
+            this.classList.remove('bomb-flash-link');
+            this.classList.add('faded');
+            this.style.animation = 'none'; this.style.textDecoration = 'none';
+            this.style.pointerEvents = 'none'; this.style.whiteSpace = 'normal'; 
+            this.style.height = 'auto'; this.style.lineHeight = '1.4'; 
+            
+            if(typeof gtag === 'function') gtag('event', 'daylight_rejection', {'event_category': 'funnel', 'event_label': 'spotify_block'});
+        });
+    }
+</script>
+</body>
+</html>
