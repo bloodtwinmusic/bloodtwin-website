@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=980">
+    <title>blood.twin | EPK</title>
+    <style>
+        /* Logo Font */
+        @font-face {
+            font-family: 'Libby';
+            src: url('fonts/libby.woff2') format('woff2');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        /* Terminal Font - Regular (400) */
+        @font-face {
+            font-family: 'TerminalFont';
+            src: url('fonts/ibm-plex-mono-400.woff2') format('woff2');
+            font-weight: 400;
+            font-style: normal;
+        }
+
+        /* Terminal Font - Semi-Bold (600) */
+        @font-face {
+            font-family: 'TerminalFont';
+            src: url('fonts/ibm-plex-mono-600.woff2') format('woff2');
+            font-weight: 600;
+            font-style: normal;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* --- WEB VIEW ARCHITECTURE --- */
+        html {
+            background-color: #000000;
+            -webkit-text-size-adjust: none; 
+            text-size-adjust: none;
+        }
+
+        body {
+            background-color: #000000;
+            min-width: 980px; 
+            margin: 0;
+            padding: 30px 0; 
+            display: flex;
+            flex-direction: column; /* Allows vertical stacking of page + button */
+            align-items: center; 
+            color: #590000;
+            font-family: 'TerminalFont', monospace;
+            font-size: 11.5px; 
+            font-weight: 400;
+            line-height: 1.3;
+            text-shadow: 0 0 1px rgba(89, 0, 0, 0.4);
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        /* The strict A4 canvas */
+        .page-wrapper {
+            background-color: #000000;
+            width: 900px;
+            padding: 20px 0;
+        }
+
+        .container {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- Header Section --- */
+        .header {
+            margin-bottom: 10px; 
+            text-align: center;
+            width: 100%;
+        }
+        
+        .brand {
+            font-family: 'Libby', 'TerminalFont', monospace;
+            letter-spacing: 2px;
+            margin-bottom: 8px;
+            font-size: 15.75px; 
+        }
+        
+        .subtitle {
+            font-size: 16px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+            white-space: nowrap;
+        }
+
+        .location {
+            font-size: 13px;
+            margin-bottom: 4px;
+        }
+
+        .pronunciation {
+            font-size: 11px;
+            font-style: italic;
+            margin-bottom: 8px;
+        }
+        
+        .doctrine-header {
+            font-size: 13px;
+            margin-bottom: 4px;
+        }
+
+        .subculture-tag {
+            font-size: 11px;
+            margin-bottom: 15px; 
+        }
+
+        /* --- Strict Dual Columns (Organic Flow) --- */
+        .columns {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            width: 100%;
+            gap: 4%;
+        }
+
+        .col-left {
+            width: 58%; 
+            display: flex;
+            flex-direction: column;
+            height: auto; 
+        }
+
+        .col-right {
+            width: 38%; 
+            display: flex;
+            flex-direction: column;
+            height: auto; 
+        }
+
+        /* --- Global Box Styles --- */
+        .box {
+            border: 1px solid #590000;
+            padding: 6px; 
+            margin-bottom: 8px; 
+        }
+
+        .section {
+            margin-bottom: 10px; 
+        }
+
+        .section-header {
+            background-color: #590000;
+            color: #000000;
+            padding: 3px 6px; 
+            font-size: 13px;
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-bottom: 4px; 
+            display: block;
+            letter-spacing: 1px;
+        }
+
+        /* --- Content Specifics --- */
+        .bio-text {
+            margin-bottom: 8px;
+        }
+
+        .facts-list {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .facts-list li {
+            position: relative;
+            padding-left: 14px;
+            margin-bottom: 3px; 
+        }
+
+        .facts-list li:last-child {
+            margin-bottom: 0;
+        }
+
+        .facts-list li::before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: #590000;
+            font-weight: 600;
+        }
+
+        .tracklist-table {
+            width: 100%;
+            border-collapse: collapse;
+            border: 1px solid #590000;
+            margin-bottom: 8px;
+        }
+
+        .tracklist-table th, 
+        .tracklist-table td {
+            border: 1px solid #590000;
+            padding: 3px 5px; 
+            text-align: left;
+            vertical-align: top;
+            font-weight: 400;
+            font-size: 11px; 
+        }
+
+        .tracklist-table th {
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .col-title { width: 23%; }
+        .col-bpm { width: 7%; }
+        .col-key { width: 13%; }
+        .col-def { width: 57%; }
+
+        .doctrine {
+            margin-bottom: 0;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .quote-author {
+            display: block;
+            text-align: right;
+            margin-top: 3px;
+        }
+
+        .connect-box {
+            border: 1px solid #590000;
+        }
+
+        .connect-item {
+            padding: 5px 6px; 
+            border-bottom: 1px solid #590000;
+        }
+        
+        .connect-item:last-child {
+            border-bottom: none;
+        }
+
+        /* Maximum Width Lock prevents 9:16 aspect ratio from blowing out the height */
+        .mugshot-wrapper {
+            margin-top: 2px; 
+            margin-bottom: 8px; 
+            width: 100%;
+            max-width: 240px; /* Prevents height explosion */
+            display: block;
+        }
+
+        .mugshot-wrapper img {
+            width: 100%;
+            height: auto; /* ZERO CROPPING */
+            border: 1px solid #590000; 
+            display: block;
+        }
+
+        /* --- THE DECOUPLED DOWNLOAD BUTTON --- */
+        .download-outside {
+            width: 900px;
+            margin-top: 5px;
+            display: flex;
+            justify-content: center; /* Centered perfectly to the page-wrapper width */
+        }
+
+        .download-btn {
+            display: inline-block;
+            background-color: #590000;
+            color: #000000;
+            font-weight: 600;
+            padding: 8px 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border: 1px solid #590000;
+            transition: all 0.2s ease;
+            font-size: 12px;
+            text-align: center;
+        }
+
+        .download-btn:hover {
+            background-color: #000000;
+            color: #590000;
+            text-decoration: none;
+        }
+
+        /* =========================================
+           BALANCED PDF OVERRIDE 
+           ========================================= */
+        @media print {
+            @page {
+                size: A4 portrait;
+                margin: 0 !important; 
+            }
+
+            html, body {
+                width: 100% !important;
+                min-width: 0 !important; 
+                max-width: 100% !important;
+                background-color: #000000 !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                display: block !important; 
+                font-size: 9pt !important; 
+                line-height: 1.2 !important;
+            }
+
+            .page-wrapper {
+                width: 100% !important;
+                height: 297mm !important; 
+                max-height: 297mm !important; 
+                background-color: #000000 !important;
+                margin: 0 !important;
+                padding: 10mm 12mm !important; /* Perfect symmetrical black frame */
+                box-sizing: border-box !important;
+                overflow: hidden !important; 
+            }
+
+            .container {
+                width: 100% !important; 
+                height: 100% !important; 
+                margin: 0 !important;
+                padding: 0 !important;
+                display: block !important;
+            }
+
+            .header {
+                margin-bottom: 4mm !important;
+                clear: both !important;
+            }
+
+            .brand { font-size: 13pt !important; margin-bottom: 2mm !important; }
+            .subtitle { font-size: 12pt !important; margin-bottom: 1mm !important; }
+            .location, .doctrine-header { font-size: 9.5pt !important; margin-bottom: 1mm !important; }
+            .subculture-tag { font-size: 8.5pt !important; margin-bottom: 4mm !important; }
+
+            /* Pure, indestructible CSS Floats for printing */
+            .columns {
+                display: block !important;
+                width: 100% !important;
+            }
+
+            .col-left {
+                float: left !important;
+                width: 58% !important;
+                display: block !important;
+            }
+
+            .col-right {
+                float: right !important;
+                width: 38% !important;
+                display: block !important;
+            }
+
+            .download-outside {
+                display: none !important; /* Vanishes from PDF */
+            }
+
+            /* Natural Spacing */
+            .section { margin-bottom: 3.5mm !important; }
+            .section-header { font-size: 9.5pt !important; padding: 1mm 2mm !important; margin-bottom: 2mm !important; }
+            .box { margin-bottom: 2.5mm !important; padding: 1.5mm 2.5mm !important;}
+            .bio-text { margin-bottom: 2mm !important; }
+            .tracklist-table { margin-bottom: 3.5mm !important; }
+            .tracklist-table td, .tracklist-table th { padding: 1mm 1.5mm !important; font-size: 8pt !important; }
+
+            /* Image Constraint for Print */
+            .mugshot-wrapper {
+                max-width: 55mm !important; /* Prevents height explosion in PDF */
+                margin-top: 2mm !important; 
+                margin-bottom: 4mm !important; 
+                display: block !important;
+            }
+
+            .mugshot-wrapper img {
+                width: 100% !important;
+                height: auto !important; 
+            }
+
+            * {
+                color: #590000 !important;
+                border-color: #590000 !important;
+            }
+            
+            .section-header {
+                color: #000000 !important;
+                background-color: #590000 !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="page-wrapper">
+    <div class="container">
+        
+        <div class="header">
+            <div class="brand">• • •  B L O O D . T W I N  • • •</div>
+            <div class="pronunciation">(pronounced "blood twin" — the dot is silent)</div>
+            <div class="subtitle">[ANONYMOUS INDEPENDENT SOLO RECORDING ARTIST]</div>
+            <div class="location">London, England, United Kingdom</div>
+            <div class="doctrine-header"><i>"My music can travel to the places I cannot."</i> <strong>— blood.twin</strong></div>
+            <div class="subculture-tag"><strong>Made for club systems, dark subcultural airwaves and late-night frequency rotation.</strong></div>
+        </div>
+
+        <div class="columns">
+            <div class="col-left">
+                <div class="section">
+                    <div class="section-header">Entity</div>
+                    <div class="bio-text">
+                        A Post-Punk blend of:<br>
+                        <strong>Gothic Rock / Darkwave / Deathrock / Coldwave / Industrial / Dark Electro / EBM</strong>
+                        <br><br>
+                        Music and visual identity are developed as a single body of work—forming a cohesive audiovisual world inspired by nocturnal spaces, analogue decay and underground culture.
+                        <br><br>
+                        Every release is written, recorded, produced and self-released through d0nt.freak.0ut Records — a label with a roster of one.
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="section-header">At A Glance</div>
+                    <div class="box">
+                        <ul class="facts-list">
+                            <li>Editorial radio support from 85+ stations worldwide</li>
+                            <li>1,376+ confirmed radio spins</li>
+                            <li>54,000+ lifetime streams</li>
+                            <li>Spotify algorithmic support through Release Radar, Radio, Daylist and Mixes, alongside independent gothic, darkwave and post-punk playlists.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="section-header">Selected Releases</div>
+                    <table class="tracklist-table">
+                        <tbody>
+                            <tr><td style="width: 25%;">22 Dec 2025</td><td>(demus)</td></tr>
+                            <tr><td>26 Jan 2026</td><td>Thank You For Dying</td></tr>
+                            <tr><td>26 Feb 2026</td><td>&lt;Function&gt;_disconnect() ;</td></tr>
+                            <tr><td>15 Mar 2026</td><td>Ruins</td></tr>
+                            <tr><td>29 Apr 2026</td><td>HeadBlock</td></tr>
+                            <tr><td>08 Jun 2026</td><td>LIFE, FULLSTOP.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="section">
+                    <div class="section-header">Selected Tracks</div>
+                    <table class="tracklist-table">
+                        <thead>
+                            <tr>
+                                <th class="col-title">TITLE</th>
+                                <th class="col-bpm">BPM</th>
+                                <th class="col-key">KEY</th>
+                                <th class="col-def">TACTICAL DEFINITION</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>LIFE, FULLSTOP.</td>
+                                <td>154</td>
+                                <td>E Minor</td>
+                                <td>Hypnotic Electro-Industrial Darkwave with commanding vocals.</td>
+                            </tr>
+                            <tr>
+                                <td>Ruins (with Suski Imortella)</td>
+                                <td>168</td>
+                                <td>E Minor</td>
+                                <td>Harsh Dark Electro driven by darksynth bass.</td>
+                            </tr>
+                            <tr>
+                                <td>HeadBlock</td>
+                                <td>154</td>
+                                <td>A Minor</td>
+                                <td>Cinematic Darkwave with a Gothic core.</td>
+                            </tr>
+                            <tr>
+                                <td>&lt;Function&gt;_disconnect() ;</td>
+                                <td>151</td>
+                                <td>E Minor</td>
+                                <td>Suffocating industrial electronics. Mechanical EBM. Precision-built for high-volume playback.</td>
+                            </tr>
+                            <tr>
+                                <td>Return To Recinder</td>
+                                <td>150</td>
+                                <td>C Major</td>
+                                <td>Driving EBM bass with Martial Coldwave energy.</td>
+                            </tr>
+                            <tr>
+                                <td>UnDread</td>
+                                <td>150</td>
+                                <td>E Minor</td>
+                                <td>Motorik Hallowave. File under Post-Punk and Darkwave.</td>
+                            </tr>
+                            <tr>
+                                <td>gravebox.</td>
+                                <td>140</td>
+                                <td>E Minor</td>
+                                <td>A dirge you can dance to. Inspired by 90s UK club goth.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="box doctrine">
+                    CURRENT STATUS: Writing and recording.
+                </div>
+            </div>
+
+            <div class="col-right">
+                <div class="section">
+                    <div class="section-header">Selected Press</div>
+                    <div class="box">
+                        <i>"The Sisters Of Mercy on acid."</i>
+                        <span class="quote-author"><strong>— Rock Radio UK</strong></span>
+                    </div>
+                    
+                    <div class="box">
+                        <i>"Chillingly intense."</i>
+                        <span class="quote-author"><strong>— Revista The 13th</strong></span>
+                    </div>
+
+                    <div class="box">
+                        <i>"A mystery. Steeped in dark romanticism... cinematic... dense, atmospheric synth work."</i>
+                        <span class="quote-author"><strong>— Other Voices</strong></span>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="section-header">International Reach</div>
+                    <div class="bio-text" style="font-weight: 600;">
+                        The strongest audiences are centred in the United States, Germany, the United Kingdom and Spain.
+                    </div>
+                </div>
+
+                <div class="mugshot-wrapper">
+                    <img src="mugshot.png" alt="blood.twin">
+                </div>
+
+                <div class="section" style="margin-bottom: 0;">
+                    <div class="section-header">Contact</div>
+                    <div class="connect-box">
+                        <div class="connect-item">Website: <a href="https://bloodtwin.com" target="_blank" rel="noopener noreferrer">bloodtwin.com</a></div>
+                        <div class="connect-item">Email: <a href="mailto:contact@bloodtwin.com">contact@bloodtwin.com</a></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="download-outside">
+    <a href="epk.pdf" download="epk.pdf" class="download-btn">
+        [DOWNLOAD EPK.PDF]
+    </a>
+</div>
+
+</body>
+</html>
