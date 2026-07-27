@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <base target="_top">
+    <style>
+      body {
+        background-color: #050505;
+        color: #e0e0e0;
+        font-family: 'Courier New', Courier, monospace;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        margin: 0;
+      }
+      .container {
+        border: 2px solid #8b0000;
+        padding: 40px;
+        background-color: #111;
+        box-shadow: 4px 4px 0px #8b0000;
+        text-align: center;
+        max-width: 400px;
+        width: 80%;
+      }
+      h1 {
+        text-transform: uppercase;
+        letter-spacing: -1px;
+        color: #fff;
+        margin-top: 0;
+      }
+      input[type="email"] {
+        width: 85%;
+        padding: 12px;
+        margin: 20px 0;
+        background: #000;
+        border: 1px solid #444;
+        color: #fff;
+        font-family: inherit;
+        text-align: center;
+        box-sizing: border-box;
+      }
+      input[type="email"]:focus {
+        outline: none;
+        border-color: #8b0000;
+      }
+      button {
+        background-color: #8b0000;
+        color: #fff;
+        border: none;
+        padding: 12px 24px;
+        font-family: inherit;
+        font-weight: bold;
+        text-transform: uppercase;
+        cursor: pointer;
+        width: 100%;
+        transition: background-color 0.2s;
+        box-sizing: border-box;
+      }
+      button:hover {
+        background-color: #ff0000;
+      }
+      #result {
+        margin-top: 20px;
+        font-size: 0.9em;
+      }
+      .code-display {
+        font-size: 1.5em;
+        color: #ff3333;
+        margin: 15px 0;
+        letter-spacing: 2px;
+        word-break: break-all;
+      }
+      a {
+        color: #888;
+        text-decoration: underline;
+      }
+      a:hover {
+        color: #fff;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>I FEEL HAPPY</h1>
+      <p>Enter your email to claim your free Bandcamp download code.</p>
+      
+      <div id="form-container">
+        <input type="email" id="email" placeholder="ENTER EMAIL ADDRESS" required />
+        <button onclick="submitEmail()" id="btn">Initialise</button>
+      </div>
+      
+      <div id="result"></div>
+    </div>
+
+    <script>
+      async function submitEmail() {
+        const email = document.getElementById('email').value.trim();
+        const resultDiv = document.getElementById('result');
+        const btn = document.getElementById('btn');
+        
+        const webAppUrl = 'https://script.google.com/macros/s/AKfycbxf2mV3vqd3rFRlt7Wi12N6mrN9okpf6ZF2ocTy6GdquWAaaDWv36vrZ-YVzb9Tp-dRew/exec'; 
+        
+        if(!email) {
+          resultDiv.innerHTML = "<span style='color:#ff0000;'>[ERROR: VALID EMAIL REQUIRED]</span>";
+          return;
+        }
+        
+        btn.disabled = true;
+        btn.innerText = "PROCESSING...";
+        resultDiv.innerHTML = "";
+        
+        try {
+          const response = await fetch(webAppUrl, {
+            method: 'POST',
+            body: JSON.stringify({ email: email }),
+            headers: {
+              'Content-Type': 'text/plain;charset=utf-8', 
+            }
+          });
+          
+          const data = await response.json();
+          
+          btn.style.display = 'none';
+          document.getElementById('email').style.display = 'none';
+          
+          if(data.error) {
+            resultDiv.innerHTML = "<span style='color:#ff0000;'>[ " + data.error + " ]</span>";
+            btn.style.display = 'block';
+            btn.disabled = false;
+            btn.innerText = "RETRY";
+            document.getElementById('email').style.display = 'block';
+          } else {
+            resultDiv.innerHTML = "<p>" + data.message + "</p>" + 
+                                  "<div class='code-display'>" + data.code + "</div>" + 
+                                  "<p><a href='https://bandcamp.com/yum' target='_blank'>Redeem Code Here</a></p>";
+          }
+        } catch (error) {
+          resultDiv.innerHTML = "<span style='color:#ff0000;'>[ERROR: NETWORK FAILURE. CHECK CONSOLE.]</span>";
+          btn.disabled = false;
+          btn.innerText = "RETRY";
+        }
+      }
+    </script>
+  </body>
+</html>
