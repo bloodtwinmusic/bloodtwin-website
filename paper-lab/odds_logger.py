@@ -4,80 +4,203 @@ import os
 import sys
 import urllib.parse
 import urllib.request
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
 
 API_KEY = os.environ.get("ODDS_API_KEY")
-
 BASE_URL = "https://api.the-odds-api.com/v4"
-
-# v0.1 deliberately starts cheaply:
-# UK bookmakers + H2H only.
 REGIONS = "uk"
-MARKETS = "h2h"
 ODDS_FORMAT = "decimal"
-
 DATA_DIR = Path(__file__).resolve().parent / "data"
 LONDON = ZoneInfo("Europe/London")
+
+PAPER_ONLY_SPORTS = [
+    "soccer",
+    "tennis",
+    "basketball",
+    "american_football",
+    "baseball",
+    "ice_hockey",
+]
+
+
+def default_market_keys():
+    configured = os.environ.get("ODDS_MARKETS", "h2h")
+    markets = [item.strip() for item in configured.split(",") if item.strip()]
+    return markets or ["h2h"]
+
+
+def default_request_budget():
+    raw_value = os.environ.get("ODDS_REQUEST_BUDGET", "10")
+    try:
+        return max(0, int(raw_value))
+    except ValueError:
+        return 10
+
+
+def format_utc_timestamp(value):
+    if value is None:
+        return None
+    parsed = value if isinstance(value, datetime) else datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    return parsed.astimezone(timezone.utc).isoformat()
+
+
+def format_london_timestamp(value):
+    if value is None:
+        return None
+    parsed = value if isinstance(value, datetime) else datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    return parsed.astimezone(LONDON).isoformat()
 
 
 def api_get(endpoint, params=None):
     if not API_KEY:
-        raise RuntimeError(
-            "ODDS_API_KEY is missing. Store it as a GitHub Actions secret."
-        )
+        raise RuntimeError("ODDS_API_KEY is missing. Store it in the environment.")
 
     query = dict(params or {})
     query["apiKey"] = API_KEY
-
     url = f"{BASE_URL}{endpoint}?{urllib.parse.urlencode(query)}"
 
     request = urllib.request.Request(
         url,
-        headers={"User-Agent": "blood.twin-paper-lab/0.1"},
+        headers={"User-Agent": "blood.twin-paper-lab/0.2"},
     )
 
     with urllib.request.urlopen(request, timeout=30) as response:
         body = json.loads(response.read().decode("utf-8"))
-
         quota = {
             "requests_last": response.headers.get("x-requests-last"),
             "requests_used": response.headers.get("x-requests-used"),
             "requests_remaining": response.headers.get("x-requests-remaining"),
+            "credits_used": response.headers.get("x-requests-used"),
+            "credits_remaining": response.headers.get("x-requests-remaining"),
         }
 
     return body, quota
 
 
 def get_active_sports():
-    # /sports does not consume odds quota.
-    sports, quota = api_get("/sports/")
-    return [sport for sport in sports if sport.get("active")], quota
+    sports, quota = api_get("/sports")
+    active = [
+        sport
+        for sport in (sports or [])
+        if sport.get("active") and sport.get("key") in PAPER_ONLY_SPORTS
+    ]
+    return sorted(active, key=lambda sport: (sport.get("title") or "").lower()), quota
 
 
-def get_odds(sport_key):
+def default_collection_window(now=None):
+    if now is None:
+        now = datetime.now(timezone.utc)
+    start_hours = int(os.environ.get("PAPER_LAB_START_HOURS", "0"))
+    end_hours = int(os.environ.get("PAPER_LAB_END_HOURS", "168"))
+    start = now + timedelta(hours=start_hours)
+    end = now + timedelta(hours=end_hours)
+    return start, end
+
+
+def filter_upcoming_events(events, now=None, start_hours=0, end_hours=168):
+    if now is None:
+        now = datetime.now(timezone.utc)
+    start = now + timedelta(hours=start_hours)
+    end = now + timedelta(hours=end_hours)
+
+    filtered = []
+    for event in events or []:
+        commence_time = event.get("commence_time")
+        if not commence_time:
+            continue
+        parsed = datetime.fromisoformat(str(commence_time).replace("Z", "+00:00"))
+        if parsed.tzinfo is None:
+            parsed = parsed.replace(tzinfo=timezone.utc)
+        if start <= parsed <= end:
+            filtered.append(event)
+    return filtered
+
+
+def get_odds(sport_key, markets=None):
+    if markets is None:
+        markets = default_market_keys()
     return api_get(
         f"/sports/{urllib.parse.quote(sport_key, safe='')}/odds/",
         {
             "regions": REGIONS,
-            "markets": MARKETS,
+            "markets": ",".join(markets),
             "oddsFormat": ODDS_FORMAT,
             "dateFormat": "iso",
         },
     )
 
 
+def compute_market_de_vigged_probabilities(rows):
+    grouped = {}
+
+    for row in rows:
+        item = dict(row)
+        item["raw_implied_probability"] = item.get("raw_implied_probability")
+        if item["raw_implied_probability"] is None and item.get("price_decimal"):
+            item["raw_implied_probability"] = 1.0 / float(item["price_decimal"])
+
+        market = item.get("market")
+        event_id = item.get("event_id")
+        bookmaker_key = item.get("bookmaker_key")
+        point = item.get("point")
+
+        if market in {"h2h"}:
+            key = (event_id, bookmaker_key, market)
+        elif market in {"spreads", "totals"} and point is not None:
+            key = (event_id, bookmaker_key, market, round(abs(float(point)), 4))
+        else:
+            key = (event_id, bookmaker_key, market, item.get("outcome"))
+
+        grouped.setdefault(key, []).append(item)
+
+    flattened = []
+    for group in grouped.values():
+        if len(group) <= 1:
+            for item in group:
+                item["market_de_vigged_probability"] = 1.0
+                flattened.append(item)
+            continue
+
+        total_probability = sum(float(item.get("raw_implied_probability", 0.0)) for item in group)
+        if total_probability <= 0:
+            for item in group:
+                item["market_de_vigged_probability"] = 1.0
+                flattened.append(item)
+            continue
+
+        for item in group:
+            item["market_de_vigged_probability"] = (
+                float(item.get("raw_implied_probability", 0.0)) / total_probability
+            )
+            flattened.append(item)
+
+    return flattened
+
+
 def flatten_events(events, observed_utc, observed_london):
     rows = []
 
-    for event in events:
-        commence_time = event.get("commence_time")
+    for event in events or []:
+        commence_time_utc = event.get("commence_time")
+        commence_time_london = None
+        if commence_time_utc:
+            commence_time_london = format_london_timestamp(commence_time_utc)
 
         for bookmaker in event.get("bookmakers", []):
             for market in bookmaker.get("markets", []):
                 for outcome in market.get("outcomes", []):
+                    price_decimal = outcome.get("price")
+                    raw_probability = None
+                    if price_decimal:
+                        raw_probability = 1.0 / float(price_decimal)
+
                     rows.append(
                         {
                             "observed_at_utc": observed_utc,
@@ -85,7 +208,8 @@ def flatten_events(events, observed_utc, observed_london):
                             "event_id": event.get("id"),
                             "sport_key": event.get("sport_key"),
                             "sport_title": event.get("sport_title"),
-                            "commence_time": commence_time,
+                            "commence_time_utc": format_utc_timestamp(commence_time_utc),
+                            "commence_time_london": commence_time_london,
                             "home_team": event.get("home_team"),
                             "away_team": event.get("away_team"),
                             "bookmaker_key": bookmaker.get("key"),
@@ -93,8 +217,10 @@ def flatten_events(events, observed_utc, observed_london):
                             "bookmaker_last_update": bookmaker.get("last_update"),
                             "market": market.get("key"),
                             "outcome": outcome.get("name"),
-                            "price_decimal": outcome.get("price"),
+                            "price_decimal": price_decimal,
                             "point": outcome.get("point"),
+                            "raw_implied_probability": raw_probability,
+                            "market_de_vigged_probability": 1.0,
                         }
                     )
 
@@ -117,7 +243,8 @@ def save_snapshot(rows, metadata):
         "event_id",
         "sport_key",
         "sport_title",
-        "commence_time",
+        "commence_time_utc",
+        "commence_time_london",
         "home_team",
         "away_team",
         "bookmaker_key",
@@ -127,16 +254,15 @@ def save_snapshot(rows, metadata):
         "outcome",
         "price_decimal",
         "point",
+        "raw_implied_probability",
+        "market_de_vigged_probability",
     ]
 
     file_exists = csv_path.exists()
-
     with csv_path.open("a", newline="", encoding="utf-8") as handle:
         writer = csv.DictWriter(handle, fieldnames=fieldnames)
-
         if not file_exists:
             writer.writeheader()
-
         writer.writerows(rows)
 
     with metadata_path.open("w", encoding="utf-8") as handle:
@@ -149,62 +275,115 @@ def main():
     observed = datetime.now(timezone.utc)
     observed_utc = observed.isoformat()
     observed_london = observed.astimezone(LONDON).isoformat()
+    start_time_utc, end_time_utc = default_collection_window(observed)
 
     sports, sports_quota = get_active_sports()
+    sports_discovered = sports
+    sports_queried = []
+    chargeable_requests_made = 0
+    budget_limit = default_request_budget()
+    events_returned = 0
+    rows_recorded = 0
+    quota_history = []
+    all_rows = []
 
-    print(f"Active sports discovered: {len(sports)}")
-    print("Beginning controlled v0.1 collection.")
+    print(f"Sports discovered: {len(sports_discovered)}")
+    print(f"Sports queried: 0")
+    print(f"Chargeable requests made: 0")
+    print(f"Events returned: 0")
+    print(f"Rows recorded: 0")
+    print(f"Credits used: 0")
+    print(f"Credits remaining: {sports_quota.get('requests_remaining', 'n/a')}")
 
-    # IMPORTANT:
-    # v0.1 intentionally queries only ONE active sport.
-    # This lets us measure real API credit consumption before scaling up.
-    if not sports:
-        print("No active sports returned.")
+    if not sports_discovered:
+        print("No active paper-only sports available for this collection window.")
         return
 
-    sport = sports[0]
+    for sport in sports_discovered:
+        if chargeable_requests_made >= budget_limit:
+            print(f"Request budget reached at {budget_limit} chargeable odds requests.")
+            break
 
-    print(
-        f"Test sport: {sport.get('title')} "
-        f"({sport.get('key')})"
-    )
+        sport_key = sport.get("key")
+        if not sport_key:
+            continue
 
-    events, odds_quota = get_odds(sport["key"])
+        requested_markets = default_market_keys()
+        events, odds_quota = get_odds(sport_key, requested_markets)
+        chargeable_requests_made += 1
+        quota_history.append(
+            {
+                "sport_key": sport_key,
+                "sport_title": sport.get("title"),
+                "requested_markets": requested_markets,
+                "quota_headers": odds_quota,
+            }
+        )
+        sports_queried.append(sport)
 
-    rows = flatten_events(
-        events,
-        observed_utc,
-        observed_london,
-    )
+        filtered_events = filter_upcoming_events(
+            events,
+            observed,
+            start_hours=0,
+            end_hours=(end_time_utc - observed).total_seconds() / 3600,
+        )
+        events_returned += len(filtered_events)
+
+        rows = flatten_events(filtered_events, observed_utc, observed_london)
+        if rows:
+            rows = compute_market_de_vigged_probabilities(rows)
+            all_rows.extend(rows)
+            rows_recorded += len(rows)
+
+        print(
+            f"Querying {sport.get('title')} ({sport_key}) — "
+            f"market(s): {', '.join(requested_markets)}"
+        )
 
     metadata = {
         "paper_only": True,
-        "version": "0.1",
+        "version": "0.2",
         "observed_at_utc": observed_utc,
         "observed_at_london": observed_london,
+        "collection_window_start_utc": format_utc_timestamp(start_time_utc),
+        "collection_window_end_utc": format_utc_timestamp(end_time_utc),
+        "collection_window_start_london": format_london_timestamp(start_time_utc),
+        "collection_window_end_london": format_london_timestamp(end_time_utc),
         "regions": REGIONS,
-        "markets": MARKETS,
+        "markets": default_market_keys(),
         "odds_format": ODDS_FORMAT,
-        "sport": sport,
-        "events_returned": len(events),
-        "rows_recorded": len(rows),
-        "quota_after_sports_request": sports_quota,
-        "quota_after_odds_request": odds_quota,
+        "request_budget_limit": budget_limit,
+        "chargeable_requests_made": chargeable_requests_made,
+        "sports_discovered": len(sports_discovered),
+        "sports_queried": len(sports_queried),
+        "events_returned": events_returned,
+        "rows_recorded": rows_recorded,
+        "quota_history": quota_history,
     }
 
-    csv_path, metadata_path = save_snapshot(rows, metadata)
+    if all_rows:
+        csv_path, metadata_path = save_snapshot(all_rows, metadata)
+    else:
+        csv_path = DATA_DIR / f"odds-{datetime.now(LONDON).strftime('%Y-%m-%d')}.csv"
+        metadata_path = DATA_DIR / f"run-{datetime.now(LONDON).strftime('%Y%m%dT%H%M%S%z')}.json"
 
-    print(f"Events returned: {len(events)}")
-    print(f"Odds rows recorded: {len(rows)}")
+    print(f"Sports discovered: {len(sports_discovered)}")
+    print(f"Sports queried: {len(sports_queried)}")
+    print(f"Chargeable requests made: {chargeable_requests_made}")
+    print(f"Events returned: {events_returned}")
+    print(f"Rows recorded: {rows_recorded}")
+
+    credits_used = None
+    credits_remaining = None
+    if quota_history:
+        last_quota = quota_history[-1]["quota_headers"]
+        credits_used = last_quota.get("requests_used")
+        credits_remaining = last_quota.get("requests_remaining")
+
+    print(f"Credits used: {credits_used if credits_used is not None else 'n/a'}")
+    print(f"Credits remaining: {credits_remaining if credits_remaining is not None else 'n/a'}")
     print(f"CSV: {csv_path}")
     print(f"Metadata: {metadata_path}")
-
-    print(
-        "API credits — "
-        f"last: {odds_quota['requests_last']}, "
-        f"used: {odds_quota['requests_used']}, "
-        f"remaining: {odds_quota['requests_remaining']}"
-    )
 
 
 if __name__ == "__main__":
