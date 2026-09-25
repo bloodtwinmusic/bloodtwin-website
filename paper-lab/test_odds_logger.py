@@ -1,4 +1,6 @@
+import csv
 import sys
+import tempfile
 import unittest
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -113,6 +115,125 @@ class OddsLoggerTests(unittest.TestCase):
         filtered = odds_logger.filter_upcoming_events(events, now=now, start_hours=1, end_hours=168)
         self.assertEqual([event["id"] for event in filtered], ["evt-1"])
         self.assertEqual([sport["key"] for sport in sport_payload if sport["active"]], ["soccer_epl"])
+
+    def test_save_snapshot_uses_versioned_csv_when_existing_header_is_incompatible(self):
+        v1_header = [
+            "observed_at_utc",
+            "observed_at_london",
+            "event_id",
+            "sport_key",
+            "sport_title",
+            "commence_time",
+            "home_team",
+            "away_team",
+            "bookmaker_key",
+            "bookmaker_title",
+            "bookmaker_last_update",
+            "market",
+            "outcome",
+            "price_decimal",
+            "point",
+        ]
+        legacy_row = {
+            "observed_at_utc": "2026-09-25T18:42:01.911829+00:00",
+            "observed_at_london": "2026-09-25T19:42:01.911829+01:00",
+            "event_id": "evt-legacy",
+            "sport_key": "americanfootball_cfl",
+            "sport_title": "CFL",
+            "commence_time": "2026-09-26T00:00:00Z",
+            "home_team": "Winnipeg Blue Bombers",
+            "away_team": "Toronto Argonauts",
+            "bookmaker_key": "leovegas",
+            "bookmaker_title": "LeoVegas",
+            "bookmaker_last_update": "2026-09-25T18:41:05Z",
+            "market": "h2h",
+            "outcome": "Toronto Argonauts",
+            "price_decimal": 1.85,
+            "point": "",
+        }
+        v2_row = {
+            "observed_at_utc": "2026-09-25T20:20:00.134530+00:00",
+            "observed_at_london": "2026-09-25T21:20:00.134530+01:00",
+            "event_id": "evt-v2",
+            "sport_key": "soccer_brazil_serie_b",
+            "sport_title": "Brazil Série B",
+            "commence_time_utc": "2026-09-29T22:30:00+00:00",
+            "commence_time_london": "2026-09-29T23:30:00+01:00",
+            "home_team": "Botafogo-SP",
+            "away_team": "Ponte Preta",
+            "bookmaker_key": "betway",
+            "bookmaker_title": "Betway",
+            "bookmaker_last_update": "2026-09-25T20:19:49Z",
+            "market": "h2h",
+            "outcome": "Botafogo-SP",
+            "price_decimal": 1.22,
+            "point": "",
+            "raw_implied_probability": 0.819672131147541,
+            "market_de_vigged_probability": 0.755810479775348,
+            "schema_version": "0.2",
+        }
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            data_dir = Path(tmpdir)
+            legacy_path = data_dir / "odds-2026-09-25.csv"
+            with legacy_path.open("w", newline="", encoding="utf-8") as handle:
+                writer = csv.DictWriter(handle, fieldnames=v1_header)
+                writer.writeheader()
+                writer.writerow(legacy_row)
+
+            with patch.object(odds_logger, "DATA_DIR", data_dir):
+                csv_path, metadata_path = odds_logger.save_snapshot([v2_row], {"schema_version": "0.2"})
+
+            self.assertEqual(csv_path.name, "odds-2026-09-25-v0.2.csv")
+            self.assertTrue(csv_path.exists())
+            self.assertTrue(metadata_path.exists())
+            with csv_path.open("r", newline="", encoding="utf-8") as handle:
+                header = next(csv.reader(handle))
+            self.assertIn("schema_version", header)
+            self.assertEqual(len(header), len(odds_logger.CSV_FIELDNAMES))
+            with legacy_path.open("r", newline="", encoding="utf-8") as handle:
+                legacy_rows = list(csv.reader(handle))
+            self.assertEqual(len(legacy_rows), 2)
+
+    def test_save_snapshot_appends_with_same_schema_to_default_csv(self):
+        row = {
+            "observed_at_utc": "2026-09-25T20:20:00.134530+00:00",
+            "observed_at_london": "2026-09-25T21:20:00.134530+01:00",
+            "event_id": "evt-v2-same",
+            "sport_key": "soccer_brazil_serie_b",
+            "sport_title": "Brazil Série B",
+            "commence_time_utc": "2026-09-29T22:30:00+00:00",
+            "commence_time_london": "2026-09-29T23:30:00+01:00",
+            "home_team": "Botafogo-SP",
+            "away_team": "Ponte Preta",
+            "bookmaker_key": "betway",
+            "bookmaker_title": "Betway",
+            "bookmaker_last_update": "2026-09-25T20:19:49Z",
+            "market": "h2h",
+            "outcome": "Ponte Preta",
+            "price_decimal": 11.0,
+            "point": "",
+            "raw_implied_probability": 0.09090909090909091,
+            "market_de_vigged_probability": 0.0838262532114477,
+            "schema_version": "0.2",
+        }
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            data_dir = Path(tmpdir)
+            target_path = data_dir / "odds-2026-09-25.csv"
+            with target_path.open("w", newline="", encoding="utf-8") as handle:
+                writer = csv.DictWriter(handle, fieldnames=odds_logger.CSV_FIELDNAMES)
+                writer.writeheader()
+                writer.writerow(row)
+
+            with patch.object(odds_logger, "DATA_DIR", data_dir):
+                csv_path, _ = odds_logger.save_snapshot([row], {"schema_version": "0.2"})
+
+            self.assertEqual(csv_path.name, "odds-2026-09-25.csv")
+            with csv_path.open("r", newline="", encoding="utf-8") as handle:
+                rows = list(csv.DictReader(handle))
+            self.assertEqual(len(rows), 2)
+            self.assertEqual(rows[1]["schema_version"], "0.2")
 
 
 if __name__ == "__main__":

@@ -16,6 +16,49 @@ ODDS_FORMAT = "decimal"
 DATA_DIR = Path(__file__).resolve().parent / "data"
 LONDON = ZoneInfo("Europe/London")
 
+CSV_V0_1_FIELDNAMES = [
+    "observed_at_utc",
+    "observed_at_london",
+    "event_id",
+    "sport_key",
+    "sport_title",
+    "commence_time",
+    "home_team",
+    "away_team",
+    "bookmaker_key",
+    "bookmaker_title",
+    "bookmaker_last_update",
+    "market",
+    "outcome",
+    "price_decimal",
+    "point",
+]
+
+CSV_V0_2_FIELDNAMES = [
+    "observed_at_utc",
+    "observed_at_london",
+    "event_id",
+    "sport_key",
+    "sport_title",
+    "commence_time_utc",
+    "commence_time_london",
+    "home_team",
+    "away_team",
+    "bookmaker_key",
+    "bookmaker_title",
+    "bookmaker_last_update",
+    "market",
+    "outcome",
+    "price_decimal",
+    "point",
+    "raw_implied_probability",
+    "market_de_vigged_probability",
+    "schema_version",
+]
+
+CSV_FIELDNAMES = CSV_V0_2_FIELDNAMES
+CSV_SCHEMA_VERSIONS = {"0.1": CSV_V0_1_FIELDNAMES, "0.2": CSV_V0_2_FIELDNAMES}
+
 PAPER_ONLY_SPORTS = [
     "soccer",
     "tennis",
@@ -266,10 +309,44 @@ def flatten_events(events, observed_utc, observed_london):
                             "point": outcome.get("point"),
                             "raw_implied_probability": raw_probability,
                             "market_de_vigged_probability": 1.0,
+                            "schema_version": "0.2",
                         }
                     )
 
     return rows
+
+
+def detect_csv_schema(csv_path):
+    if not csv_path or not csv_path.exists():
+        return None
+    try:
+        with csv_path.open("r", newline="", encoding="utf-8") as handle:
+            reader = csv.reader(handle)
+            header = next(reader, None)
+    except OSError:
+        return None
+
+    if not header:
+        return None
+
+    normalized = [column.strip() for column in header]
+    for schema_version, fieldnames in CSV_SCHEMA_VERSIONS.items():
+        if normalized == fieldnames:
+            return schema_version
+    return "unknown"
+
+
+def resolve_snapshot_path(day, schema_version="0.2"):
+    default_path = DATA_DIR / f"odds-{day}.csv"
+    if not default_path.exists():
+        return default_path
+
+    existing_schema = detect_csv_schema(default_path)
+    if existing_schema == schema_version:
+        return default_path
+    if existing_schema in (None, schema_version):
+        return default_path
+    return DATA_DIR / f"odds-{day}-v{schema_version}.csv"
 
 
 def save_snapshot(rows, metadata):
@@ -278,40 +355,30 @@ def save_snapshot(rows, metadata):
     now_london = datetime.now(LONDON)
     day = now_london.strftime("%Y-%m-%d")
     stamp = now_london.strftime("%Y%m%dT%H%M%S%z")
+    schema_version = str(metadata.get("schema_version") or metadata.get("version") or "0.2")
+    if schema_version not in CSV_SCHEMA_VERSIONS:
+        schema_version = "0.2"
 
-    csv_path = DATA_DIR / f"odds-{day}.csv"
-    metadata_path = DATA_DIR / f"run-{stamp}.json"
+    csv_path = resolve_snapshot_path(day, schema_version)
+    metadata_path = DATA_DIR / f"run-{stamp}-v{schema_version}.json"
 
-    fieldnames = [
-        "observed_at_utc",
-        "observed_at_london",
-        "event_id",
-        "sport_key",
-        "sport_title",
-        "commence_time_utc",
-        "commence_time_london",
-        "home_team",
-        "away_team",
-        "bookmaker_key",
-        "bookmaker_title",
-        "bookmaker_last_update",
-        "market",
-        "outcome",
-        "price_decimal",
-        "point",
-        "raw_implied_probability",
-        "market_de_vigged_probability",
-    ]
+    rows_to_write = []
+    for row in rows or []:
+        normalized_row = dict(row)
+        normalized_row.setdefault("schema_version", schema_version)
+        rows_to_write.append({field: normalized_row.get(field) for field in CSV_SCHEMA_VERSIONS[schema_version]})
 
     file_exists = csv_path.exists()
     with csv_path.open("a", newline="", encoding="utf-8") as handle:
-        writer = csv.DictWriter(handle, fieldnames=fieldnames)
+        writer = csv.DictWriter(handle, fieldnames=CSV_SCHEMA_VERSIONS[schema_version])
         if not file_exists:
             writer.writeheader()
-        writer.writerows(rows)
+        writer.writerows(rows_to_write)
 
+    safe_metadata = dict(metadata)
+    safe_metadata["schema_version"] = schema_version
     with metadata_path.open("w", encoding="utf-8") as handle:
-        json.dump(metadata, handle, indent=2)
+        json.dump(safe_metadata, handle, indent=2)
 
     return csv_path, metadata_path
 
@@ -388,6 +455,7 @@ def main():
     metadata = {
         "paper_only": True,
         "version": "0.2",
+        "schema_version": "0.2",
         "observed_at_utc": observed_utc,
         "observed_at_london": observed_london,
         "collection_window_start_utc": format_utc_timestamp(start_time_utc),
