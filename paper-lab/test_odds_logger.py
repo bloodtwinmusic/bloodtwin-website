@@ -211,7 +211,8 @@ class OddsLoggerTests(unittest.TestCase):
                 writer.writeheader()
                 writer.writerow(legacy_row)
 
-            with patch.object(odds_logger, "DATA_DIR", data_dir):
+            with patch.object(odds_logger, "DATA_DIR", data_dir), patch.object(odds_logger, "datetime") as mock_datetime:
+                mock_datetime.now.return_value = datetime(2026, 9, 25, 21, 20, tzinfo=timezone.utc).astimezone(odds_logger.LONDON)
                 csv_path, metadata_path = odds_logger.save_snapshot([v2_row], {"schema_version": "0.2"})
 
             self.assertEqual(csv_path.name, "odds-2026-09-25-v0.2.csv")
@@ -256,7 +257,8 @@ class OddsLoggerTests(unittest.TestCase):
                 writer.writeheader()
                 writer.writerow(row)
 
-            with patch.object(odds_logger, "DATA_DIR", data_dir):
+            with patch.object(odds_logger, "DATA_DIR", data_dir), patch.object(odds_logger, "datetime") as mock_datetime:
+                mock_datetime.now.return_value = datetime(2026, 9, 25, 21, 20, tzinfo=timezone.utc).astimezone(odds_logger.LONDON)
                 csv_path, _ = odds_logger.save_snapshot([row], {"schema_version": "0.2"})
 
             self.assertEqual(csv_path.name, "odds-2026-09-25.csv")
