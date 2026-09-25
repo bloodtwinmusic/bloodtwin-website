@@ -1,4 +1,4 @@
-# £10 Paper Lab Odds Logger v0.2
+# £10 Paper Lab Odds Logger v0.3
 
 Paper-only research for the blood.twin £10 Paper Lab.
 
@@ -17,7 +17,16 @@ The logger captures pre-event market snapshots so the experiment can analyse:
 
 Historical observations are append-only and preserved rather than reconstructed after results are known.
 
-## v0.2 changes
+## v0.3 changes
+
+- Uses an explicit Europe/London-aware collection window from observation time to the next 10:00 London boundary.
+- A 10:00 London run therefore covers the next 24 hours; a 16:30 London refresh covers that evening/overnight period through 10:00 the next day.
+- Handles BST/GMT transitions using the Europe/London timezone rather than fixed UTC offsets.
+- Filters events against the exact start/end timestamps used in run metadata.
+- Diversifies the finite request budget across sport families instead of allowing alphabetical league order to consume the scan.
+- This is a budget-limited sampled worldwide scan, not an exhaustive scan of every league.
+
+## v0.2 foundation
 
 - Uses The Odds API v4 with the `ODDS_API_KEY` environment variable only.
 - Uses Europe/London timestamps for human-readable observation and event times while preserving UTC timestamps.
@@ -37,11 +46,9 @@ The logger is intentionally conservative because The Odds API credit budget is l
 - Default request budget: 10 chargeable odds requests per run.
 - No automatic querying of every active sport.
 - Sports are filtered through the allowlist before any odds requests are made.
-- The collection window is configurable via environment variables:
-  - `PAPER_LAB_START_HOURS`: number of hours ahead to start collection from now
-  - `PAPER_LAB_END_HOURS`: number of hours ahead to stop collection from now
-  - `ODDS_REQUEST_BUDGET`: hard cap for chargeable odds requests in one run
-  - `ODDS_MARKETS`: comma-separated market list, defaulting to `h2h`
+- The collection window runs from observation time to the next 10:00 Europe/London boundary.
+- `ODDS_REQUEST_BUDGET`: hard cap for chargeable odds requests in one run.
+- `ODDS_MARKETS`: comma-separated market list, defaulting to `h2h`.
 
 ## Snapshot fields
 
