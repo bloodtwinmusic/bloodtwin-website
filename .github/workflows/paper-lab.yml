@@ -1,0 +1,63 @@
+name: Paper Lab
+
+on:
+  push:
+    branches:
+      - paper-lab-odds-logger
+    paths:
+      - "paper-lab/**"
+      - ".github/workflows/paper-lab.yml"
+  pull_request:
+    paths:
+      - "paper-lab/**"
+      - ".github/workflows/paper-lab.yml"
+  workflow_dispatch:
+    inputs:
+      collect_live_odds:
+        description: "Run the live paper-only odds collector (uses API credits)"
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Run zero-credit local tests
+        run: python -m unittest paper-lab/test_odds_logger.py
+
+  collect:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.collect_live_odds == true }}
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Run Paper Lab odds logger
+        env:
+          ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
+        run: python paper-lab/odds_logger.py
+      - name: Commit snapshot
+        run: |
+          git config user.name "Paper Lab Bot"
+          git config user.email "paper-lab@users.noreply.github.com"
+          git add paper-lab/data/
+          if git diff --cached --quiet; then
+            echo "No new snapshot to commit."
+          else
+            git commit -m "Paper Lab odds snapshot"
+            git push
+          fi
