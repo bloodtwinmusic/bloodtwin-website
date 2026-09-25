@@ -181,6 +181,46 @@ def get_active_sports():
     ]
     return sorted(active, key=lambda sport: (sport.get("title") or "").lower()), quota
 
+def sport_family(sport):
+    candidates = [
+        normalize_sport_name(sport.get("key")),
+        normalize_sport_name(sport.get("group")),
+        normalize_sport_name(sport.get("title")),
+    ]
+    for family, aliases in PAPER_ONLY_SPORT_ALIASES.items():
+        normalized_aliases = {normalize_sport_name(alias) for alias in aliases}
+        if any(
+            candidate == alias or candidate.startswith(f"{alias}_")
+            for candidate in candidates
+            for alias in normalized_aliases
+        ):
+            return family
+    return "other"
+
+def select_sports_for_budget(sports, budget):
+    """Round-robin across sport families so an alphabetical list cannot consume the budget."""
+    budget = max(0, int(budget))
+    if budget == 0:
+        return []
+    buckets = {}
+    family_order = list(PAPER_ONLY_SPORTS) + ["other"]
+    for sport in sports or []:
+        buckets.setdefault(sport_family(sport), []).append(sport)
+    for bucket in buckets.values():
+        bucket.sort(key=lambda sport: (sport.get("title") or "").lower())
+
+    selected = []
+    while len(selected) < budget:
+        added = False
+        for family in family_order:
+            bucket = buckets.get(family, [])
+            if bucket and len(selected) < budget:
+                selected.append(bucket.pop(0))
+                added = True
+        if not added:
+            break
+    return selected
+
 
 def default_collection_window(now=None):
     if now is None:
@@ -411,10 +451,8 @@ def main():
         print("No active paper-only sports available for this collection window.")
         return
 
-    for sport in sports_discovered:
-        if chargeable_requests_made >= budget_limit:
-            print(f"Request budget reached at {budget_limit} chargeable odds requests.")
-            break
+    sports_selected = select_sports_for_budget(sports_discovered, budget_limit)
+    for sport in sports_selected:
 
         sport_key = sport.get("key")
         if not sport_key:
