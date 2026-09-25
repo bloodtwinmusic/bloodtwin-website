@@ -134,6 +134,38 @@ class OddsLoggerTests(unittest.TestCase):
         selected = odds_logger.select_sports_for_budget(sports, 3)
         self.assertEqual([sport["key"] for sport in selected], ["soccer_a", "tennis_atp", "soccer_b"])
 
+    def test_morning_window_ends_at_next_10am_london(self):
+        now = datetime(2026, 9, 25, 9, 0, tzinfo=timezone.utc)  # 10:00 BST
+        start, end = odds_logger.default_collection_window(now)
+        self.assertEqual(start, now)
+        self.assertEqual(end, datetime(2026, 9, 26, 9, 0, tzinfo=timezone.utc))
+
+    def test_evening_window_ends_at_next_10am_london(self):
+        now = datetime(2026, 9, 25, 15, 30, tzinfo=timezone.utc)  # 16:30 BST
+        start, end = odds_logger.default_collection_window(now)
+        self.assertEqual(start, now)
+        self.assertEqual(end, datetime(2026, 9, 26, 9, 0, tzinfo=timezone.utc))
+
+    def test_window_handles_uk_dst_change(self):
+        now = datetime(2026, 10, 24, 15, 30, tzinfo=timezone.utc)  # 16:30 BST
+        start, end = odds_logger.default_collection_window(now)
+        self.assertEqual(start, now)
+        self.assertEqual(end, datetime(2026, 10, 25, 10, 0, tzinfo=timezone.utc))
+        self.assertEqual(end - start, timedelta(hours=18, minutes=30))
+
+    def test_explicit_window_filter_respects_boundaries(self):
+        start = datetime(2026, 9, 25, 15, 30, tzinfo=timezone.utc)
+        end = datetime(2026, 9, 26, 9, 0, tzinfo=timezone.utc)
+        events = [
+            {"id": "before", "commence_time": "2026-09-25T15:29:59Z"},
+            {"id": "start", "commence_time": "2026-09-25T15:30:00Z"},
+            {"id": "inside", "commence_time": "2026-09-26T01:15:00Z"},
+            {"id": "end", "commence_time": "2026-09-26T09:00:00Z"},
+            {"id": "after", "commence_time": "2026-09-26T09:00:01Z"},
+        ]
+        filtered = odds_logger.filter_events_between(events, start, end)
+        self.assertEqual([event["id"] for event in filtered], ["start", "inside", "end"])
+
     def test_collection_window_filters_events_not_sports(self):
         now = datetime(2026, 9, 25, 10, 0, tzinfo=timezone.utc)
         sport_payload = [{"key": "soccer_epl", "group": "Soccer", "title": "English Premier League", "active": True}]
