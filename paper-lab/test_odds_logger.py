@@ -104,6 +104,36 @@ class OddsLoggerTests(unittest.TestCase):
         self.assertEqual([sport["key"] for sport in sports], ["soccer_epl", "basketball_nba", "americanfootball_nfl"])
         self.assertEqual(quota["requests_remaining"], "499")
 
+    def test_budget_selection_round_robins_across_sport_families(self):
+        sports = [
+            {"key": "soccer_a", "group": "Soccer", "title": "A Soccer"},
+            {"key": "soccer_b", "group": "Soccer", "title": "B Soccer"},
+            {"key": "soccer_c", "group": "Soccer", "title": "C Soccer"},
+            {"key": "tennis_atp", "group": "Tennis", "title": "ATP"},
+            {"key": "basketball_nba", "group": "Basketball", "title": "NBA"},
+            {"key": "americanfootball_nfl", "group": "American Football", "title": "NFL"},
+            {"key": "baseball_mlb", "group": "Baseball", "title": "MLB"},
+            {"key": "icehockey_nhl", "group": "Ice Hockey", "title": "NHL"},
+        ]
+
+        selected = odds_logger.select_sports_for_budget(sports, 6)
+        families = [odds_logger.sport_family(sport) for sport in selected]
+
+        self.assertEqual(
+            families,
+            ["soccer", "tennis", "basketball", "american_football", "baseball", "ice_hockey"],
+        )
+        self.assertEqual(len(selected), 6)
+
+    def test_budget_selection_cycles_after_family_coverage(self):
+        sports = [
+            {"key": "soccer_a", "group": "Soccer", "title": "A Soccer"},
+            {"key": "soccer_b", "group": "Soccer", "title": "B Soccer"},
+            {"key": "tennis_atp", "group": "Tennis", "title": "ATP"},
+        ]
+        selected = odds_logger.select_sports_for_budget(sports, 3)
+        self.assertEqual([sport["key"] for sport in selected], ["soccer_a", "tennis_atp", "soccer_b"])
+
     def test_collection_window_filters_events_not_sports(self):
         now = datetime(2026, 9, 25, 10, 0, tzinfo=timezone.utc)
         sport_payload = [{"key": "soccer_epl", "group": "Soccer", "title": "English Premier League", "active": True}]
