@@ -1,6 +1,7 @@
 import csv
 import json
 import os
+import re
 import sys
 import urllib.parse
 import urllib.request
@@ -9,7 +10,6 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 
 
-API_KEY = os.environ.get("ODDS_API_KEY")
 BASE_URL = "https://api.the-odds-api.com/v4"
 REGIONS = "uk"
 ODDS_FORMAT = "decimal"
@@ -25,6 +25,15 @@ PAPER_ONLY_SPORTS = [
     "ice_hockey",
 ]
 
+PAPER_ONLY_SPORT_ALIASES = {
+    "soccer": {"soccer"},
+    "tennis": {"tennis"},
+    "basketball": {"basketball"},
+    "american_football": {"american_football", "americanfootball"},
+    "baseball": {"baseball"},
+    "ice_hockey": {"ice_hockey", "icehockey"},
+}
+
 
 def default_market_keys():
     configured = os.environ.get("ODDS_MARKETS", "h2h")
@@ -38,6 +47,41 @@ def default_request_budget():
         return max(0, int(raw_value))
     except ValueError:
         return 10
+
+
+def env_int(name, default):
+    raw_value = os.environ.get(name, str(default))
+    try:
+        return int(raw_value)
+    except (TypeError, ValueError):
+        return default
+
+
+def normalize_sport_name(value):
+    if value is None:
+        return ""
+    text = str(value).strip().lower().replace("-", "_")
+    text = re.sub(r"[^a-z0-9]+", "_", text)
+    return text.strip("_")
+
+
+def sport_is_paper_lab_allowed(sport):
+    if not isinstance(sport, dict):
+        return False
+
+    sport_key = normalize_sport_name(sport.get("key"))
+    sport_group = normalize_sport_name(sport.get("group"))
+    sport_title = normalize_sport_name(sport.get("title"))
+    candidates = {sport_key, sport_group, sport_title}
+
+    for base, aliases in PAPER_ONLY_SPORT_ALIASES.items():
+        for alias in aliases:
+            normalized_alias = normalize_sport_name(alias)
+            if any(candidate == normalized_alias or candidate.startswith(f"{normalized_alias}_") for candidate in candidates):
+                return True
+            if base in candidates:
+                return True
+    return False
 
 
 def format_utc_timestamp(value):
@@ -59,11 +103,12 @@ def format_london_timestamp(value):
 
 
 def api_get(endpoint, params=None):
-    if not API_KEY:
+    api_key = os.environ.get("ODDS_API_KEY")
+    if not api_key:
         raise RuntimeError("ODDS_API_KEY is missing. Store it in the environment.")
 
     query = dict(params or {})
-    query["apiKey"] = API_KEY
+    query["apiKey"] = api_key
     url = f"{BASE_URL}{endpoint}?{urllib.parse.urlencode(query)}"
 
     request = urllib.request.Request(
@@ -89,7 +134,7 @@ def get_active_sports():
     active = [
         sport
         for sport in (sports or [])
-        if sport.get("active") and sport.get("key") in PAPER_ONLY_SPORTS
+        if sport.get("active") and sport_is_paper_lab_allowed(sport)
     ]
     return sorted(active, key=lambda sport: (sport.get("title") or "").lower()), quota
 
@@ -97,8 +142,8 @@ def get_active_sports():
 def default_collection_window(now=None):
     if now is None:
         now = datetime.now(timezone.utc)
-    start_hours = int(os.environ.get("PAPER_LAB_START_HOURS", "0"))
-    end_hours = int(os.environ.get("PAPER_LAB_END_HOURS", "168"))
+    start_hours = env_int("PAPER_LAB_START_HOURS", 0)
+    end_hours = env_int("PAPER_LAB_END_HOURS", 168)
     start = now + timedelta(hours=start_hours)
     end = now + timedelta(hours=end_hours)
     return start, end
