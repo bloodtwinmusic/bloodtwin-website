@@ -1,0 +1,163 @@
+{
+  "paper_only": true,
+  "version": "0.2",
+  "observed_at_utc": "2026-09-25T20:20:00.134530+00:00",
+  "observed_at_london": "2026-09-25T21:20:00.134530+01:00",
+  "collection_window_start_utc": "2026-09-25T20:20:00.134530+00:00",
+  "collection_window_end_utc": "2026-10-02T20:20:00.134530+00:00",
+  "collection_window_start_london": "2026-09-25T21:20:00.134530+01:00",
+  "collection_window_end_london": "2026-10-02T21:20:00.134530+01:00",
+  "regions": "uk",
+  "markets": [
+    "h2h"
+  ],
+  "odds_format": "decimal",
+  "request_budget_limit": 10,
+  "chargeable_requests_made": 10,
+  "sports_discovered": 67,
+  "sports_queried": 10,
+  "events_returned": 26,
+  "rows_recorded": 725,
+  "quota_history": [
+    {
+      "sport_key": "soccer_germany_liga3",
+      "sport_title": "3. Liga - Germany",
+      "requested_markets": [
+        "h2h"
+      ],
+      "quota_headers": {
+        "requests_last": "1",
+        "requests_used": "2",
+        "requests_remaining": "498",
+        "credits_used": "2",
+        "credits_remaining": "498"
+      }
+    },
+    {
+      "sport_key": "soccer_australia_aleague",
+      "sport_title": "A-League",
+      "requested_markets": [
+        "h2h"
+      ],
+      "quota_headers": {
+        "requests_last": "1",
+        "requests_used": "3",
+        "requests_remaining": "497",
+        "credits_used": "3",
+        "credits_remaining": "497"
+      }
+    },
+    {
+      "sport_key": "soccer_sweden_allsvenskan",
+      "sport_title": "Allsvenskan - Sweden",
+      "requested_markets": [
+        "h2h"
+      ],
+      "quota_headers": {
+        "requests_last": "1",
+        "requests_used": "4",
+        "requests_remaining": "496",
+        "credits_used": "4",
+        "credits_remaining": "496"
+      }
+    },
+    {
+      "sport_key": "soccer_austria_bundesliga",
+      "sport_title": "Austrian Football Bundesliga",
+      "requested_markets": [
+        "h2h"
+      ],
+      "quota_headers": {
+        "requests_last": "1",
+        "requests_used": "5",
+        "requests_remaining": "495",
+        "credits_used": "5",
+        "credits_remaining": "495"
+      }
+    },
+    {
+      "sport_key": "basketball_euroleague",
+      "sport_title": "Basketball Euroleague",
+      "requested_markets": [
+        "h2h"
+      ],
+      "quota_headers": {
+        "requests_last": "1",
+        "requests_used": "6",
+        "requests_remaining": "494",
+        "credits_used": "6",
+        "credits_remaining": "494"
+      }
+    },
+    {
+      "sport_key": "soccer_belgium_first_div",
+      "sport_title": "Belgium First Div",
+      "requested_markets": [
+        "h2h"
+      ],
+      "quota_headers": {
+        "requests_last": "1",
+        "requests_used": "7",
+        "requests_remaining": "493",
+        "credits_used": "7",
+        "credits_remaining": "493"
+      }
+    },
+    {
+      "sport_key": "soccer_brazil_campeonato",
+      "sport_title": "Brazil S\u00e9rie A",
+      "requested_markets": [
+        "h2h"
+      ],
+      "quota_headers": {
+        "requests_last": "1",
+        "requests_used": "8",
+        "requests_remaining": "492",
+        "credits_used": "8",
+        "credits_remaining": "492"
+      }
+    },
+    {
+      "sport_key": "soccer_brazil_serie_b",
+      "sport_title": "Brazil S\u00e9rie B",
+      "requested_markets": [
+        "h2h"
+      ],
+      "quota_headers": {
+        "requests_last": "1",
+        "requests_used": "9",
+        "requests_remaining": "491",
+        "credits_used": "9",
+        "credits_remaining": "491"
+      }
+    },
+    {
+      "sport_key": "soccer_germany_bundesliga",
+      "sport_title": "Bundesliga - Germany",
+      "requested_markets": [
+        "h2h"
+      ],
+      "quota_headers": {
+        "requests_last": "1",
+        "requests_used": "10",
+        "requests_remaining": "490",
+        "credits_used": "10",
+        "credits_remaining": "490"
+      }
+    },
+    {
+      "sport_key": "soccer_germany_bundesliga2",
+      "sport_title": "Bundesliga 2 - Germany",
+      "requested_markets": [
+        "h2h"
+      ],
+      "quota_headers": {
+        "requests_last": "1",
+        "requests_used": "11",
+        "requests_remaining": "489",
+        "credits_used": "11",
+        "credits_remaining": "489"
+      }
+    }
+  ]
+}
