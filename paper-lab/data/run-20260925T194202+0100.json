@@ -1,0 +1,29 @@
+{
+  "paper_only": true,
+  "version": "0.1",
+  "observed_at_utc": "2026-09-25T18:42:01.911829+00:00",
+  "observed_at_london": "2026-09-25T19:42:01.911829+01:00",
+  "regions": "uk",
+  "markets": "h2h",
+  "odds_format": "decimal",
+  "sport": {
+    "key": "americanfootball_cfl",
+    "group": "American Football",
+    "title": "CFL",
+    "description": "Canadian Football League",
+    "active": true,
+    "has_outrights": false
+  },
+  "events_returned": 4,
+  "rows_recorded": 48,
+  "quota_after_sports_request": {
+    "requests_last": "0",
+    "requests_used": "0",
+    "requests_remaining": "500"
+  },
+  "quota_after_odds_request": {
+    "requests_last": "1",
+    "requests_used": "1",
+    "requests_remaining": "499"
+  }
+}
