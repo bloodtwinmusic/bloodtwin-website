@@ -142,6 +142,11 @@ class OddsLoggerTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 odds_logger.default_oddsrelay_acquisition_products()
 
+    def test_main_skips_oddsrelay_when_secret_absent(self):
+        with patch.object(odds_logger, "oddsrelay_key_present", return_value=False), patch.object(odds_logger, "run_oddsrelay_collection") as relay:
+            self.assertFalse(odds_logger.oddsrelay_key_present())
+            relay.assert_not_called()
+
     def test_default_market_config_is_h2h_only(self):
         self.assertEqual(odds_logger.default_market_keys(), ["h2h"])
 
