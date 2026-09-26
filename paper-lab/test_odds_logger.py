@@ -132,6 +132,16 @@ class OddsLoggerTests(unittest.TestCase):
         self.assertEqual(snap["observations"][0]["price_decimal"], 2.1)
         self.assertEqual(snap["raw_source_refs"]["oddsrelay"], "raw.json")
 
+    def test_oddsrelay_default_acquisition_is_standard_only(self):
+        with patch.dict(os.environ, {}, clear=False):
+            os.environ.pop("ODDSRELAY_PRODUCTS", None)
+            self.assertEqual(odds_logger.default_oddsrelay_acquisition_products(), ["standard"])
+
+    def test_oddsrelay_acquisition_products_reject_unknown(self):
+        with patch.dict(os.environ, {"ODDSRELAY_PRODUCTS":"standard,mystery"}):
+            with self.assertRaises(ValueError):
+                odds_logger.default_oddsrelay_acquisition_products()
+
     def test_default_market_config_is_h2h_only(self):
         self.assertEqual(odds_logger.default_market_keys(), ["h2h"])
 
