@@ -122,6 +122,16 @@ class OddsLoggerTests(unittest.TestCase):
         bad = {"sport":"soccer","start_time":"x","home_team":"A","away_team":"B","bookmaker":"book","market":"h2h","selection":"A","odds":"EVS"}
         self.assertEqual(odds_logger.normalize_oddsrelay_payload("standard", bad, "now"), [])
 
+    def test_unified_snapshot_dedupes_cross_provider_overlap(self):
+        observed = datetime(2026, 9, 26, 13, 0, tzinfo=timezone.utc)
+        base = {"sport_key":"soccer","commence_time_utc":"2026-09-26T18:00:00Z","home":"A","away":"B","bookmaker_key":"book","market_key":"h2h","outcome_name":"A","point":None}
+        a = dict(base, observed_at_utc="2026-09-26T12:59:00Z", price_decimal=2.0)
+        b = dict(base, observed_at_utc="2026-09-26T13:00:00Z", price_decimal=2.1)
+        snap = odds_logger.unified_snapshot_envelope(observed, observed, observed, [a], [b], {"oddsrelay":"raw.json"})
+        self.assertEqual(snap["source_counts"], {"the_odds_api":1,"oddsrelay":1,"canonical":1})
+        self.assertEqual(snap["observations"][0]["price_decimal"], 2.1)
+        self.assertEqual(snap["raw_source_refs"]["oddsrelay"], "raw.json")
+
     def test_default_market_config_is_h2h_only(self):
         self.assertEqual(odds_logger.default_market_keys(), ["h2h"])
 
