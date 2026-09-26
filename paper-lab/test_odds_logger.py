@@ -97,6 +97,19 @@ class OddsLoggerTests(unittest.TestCase):
         self.assertEqual(snap["schema_version"], "0.5")
         self.assertEqual(snap["version"], "0.5")
 
+    def test_cross_provider_dedupe_keeps_newest_same_market(self):
+        base = {"sport_key":"soccer","commence_time_utc":"2026-09-26T18:00:00Z","home":"A","away":"B","bookmaker_key":"book","market_key":"h2h","outcome_name":"A","point":None}
+        old = dict(base, provider="the_odds_api", observed_at_utc="2026-09-26T10:00:00Z", price_decimal=2.0)
+        new = dict(base, provider="oddsrelay", observed_at_utc="2026-09-26T10:01:00Z", price_decimal=2.1)
+        result = odds_logger.dedupe_normalized_observations([old, new])
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0]["price_decimal"], 2.1)
+
+    def test_cross_provider_dedupe_preserves_distinct_lines(self):
+        base = {"sport_key":"soccer","commence_time_utc":"2026-09-26T18:00:00Z","home":"A","away":"B","bookmaker_key":"book","market_key":"spreads","outcome_name":"A","observed_at_utc":"2026-09-26T10:00:00Z"}
+        rows = [dict(base, point=-1.5), dict(base, point=-2.5)]
+        self.assertEqual(len(odds_logger.dedupe_normalized_observations(rows)), 2)
+
     def test_default_market_config_is_h2h_only(self):
         self.assertEqual(odds_logger.default_market_keys(), ["h2h"])
 
