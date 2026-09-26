@@ -320,6 +320,30 @@ def oddsrelay_execute_plan(plan, allowed_products=None):
         results[product] = {"data": body, "usage": usage}
     return results
 
+
+def oddsrelay_snapshot_envelope(observed, start_time, end_time, acquisitions):
+    """Provider-aware v0.5 envelope; deliberately separate from legacy v0.2 CSV."""
+    return {
+        "paper_only": True,
+        "version": "0.5",
+        "schema_version": "0.5",
+        "provider": "oddsrelay",
+        "observed_at_utc": format_utc_timestamp(observed),
+        "observed_at_london": format_london_timestamp(observed),
+        "collection_window_start_utc": format_utc_timestamp(start_time),
+        "collection_window_end_utc": format_utc_timestamp(end_time),
+        "products": acquisitions,
+    }
+
+
+def write_oddsrelay_snapshot(snapshot, data_dir=None):
+    directory = Path(data_dir or Path(__file__).parent / "data" / "v0.5")
+    directory.mkdir(parents=True, exist_ok=True)
+    stamp = snapshot["observed_at_utc"].replace(":", "").replace("+", "_")
+    path = directory / f"oddsrelay_{stamp}.json"
+    path.write_text(json.dumps(snapshot, indent=2, sort_keys=True), encoding="utf-8")
+    return path
+
 def get_active_sports():
     sports, quota = api_get("/sports")
     active = [sport for sport in (sports or []) if sport.get("active")]
