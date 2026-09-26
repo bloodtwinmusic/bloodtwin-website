@@ -147,6 +147,19 @@ class OddsLoggerTests(unittest.TestCase):
             self.assertFalse(odds_logger.oddsrelay_key_present())
             relay.assert_not_called()
 
+    def test_dual_provider_pipeline_can_be_exercised_without_network_or_spend(self):
+        observed = datetime(2026, 9, 26, 13, 0, tzinfo=timezone.utc)
+        plan = {"products":["standard"], "params":{"region":"uk"}}
+        with patch.object(odds_logger, "oddsrelay_build_acquisition_plan", return_value=plan), \\
+             patch.object(odds_logger, "default_oddsrelay_acquisition_products", return_value=["standard"]), \\
+             patch.object(odds_logger, "oddsrelay_execute_plan", return_value={"standard":{"data":[],"usage":{"tokens_cost":"10000"}}}), \\
+             patch.object(odds_logger, "write_oddsrelay_snapshot", return_value=Path("raw.json")):
+            rows, raw_path, returned_plan, acquisitions = odds_logger.run_oddsrelay_collection(observed, observed, observed)
+        self.assertEqual(rows, [])
+        self.assertEqual(raw_path, Path("raw.json"))
+        self.assertEqual(returned_plan, plan)
+        self.assertIn("standard", acquisitions)
+
     def test_default_market_config_is_h2h_only(self):
         self.assertEqual(odds_logger.default_market_keys(), ["h2h"])
 
