@@ -156,7 +156,7 @@ def api_get(endpoint, params=None):
 
     request = urllib.request.Request(
         url,
-        headers={"User-Agent": "blood.twin-paper-lab/0.2"},
+        headers={"User-Agent": "blood.twin-paper-lab/0.3"},
     )
 
     with urllib.request.urlopen(request, timeout=30) as response:
@@ -223,20 +223,28 @@ def select_sports_for_budget(sports, budget):
 
 
 def default_collection_window(now=None):
+    """Collect from observation time until the next 10:00 Europe/London boundary."""
     if now is None:
         now = datetime.now(timezone.utc)
-    start_hours = env_int("PAPER_LAB_START_HOURS", 0)
-    end_hours = env_int("PAPER_LAB_END_HOURS", 168)
-    start = now + timedelta(hours=start_hours)
-    end = now + timedelta(hours=end_hours)
-    return start, end
+    if now.tzinfo is None:
+        now = now.replace(tzinfo=timezone.utc)
+
+    start = now.astimezone(timezone.utc)
+    local_now = start.astimezone(LONDON)
+    end_local = local_now.replace(hour=10, minute=0, second=0, microsecond=0)
+    if local_now >= end_local:
+        end_local += timedelta(days=1)
+    return start, end_local.astimezone(timezone.utc)
 
 
-def filter_upcoming_events(events, now=None, start_hours=0, end_hours=168):
-    if now is None:
-        now = datetime.now(timezone.utc)
-    start = now + timedelta(hours=start_hours)
-    end = now + timedelta(hours=end_hours)
+def filter_events_between(events, start, end):
+    """Return events whose commence time falls inside explicit aware boundaries."""
+    if start.tzinfo is None or end.tzinfo is None:
+        raise ValueError("Collection boundaries must be timezone-aware")
+    start = start.astimezone(timezone.utc)
+    end = end.astimezone(timezone.utc)
+    if end < start:
+        raise ValueError("Collection window end precedes start")
 
     filtered = []
     for event in events or []:
@@ -246,9 +254,19 @@ def filter_upcoming_events(events, now=None, start_hours=0, end_hours=168):
         parsed = datetime.fromisoformat(str(commence_time).replace("Z", "+00:00"))
         if parsed.tzinfo is None:
             parsed = parsed.replace(tzinfo=timezone.utc)
+        parsed = parsed.astimezone(timezone.utc)
         if start <= parsed <= end:
             filtered.append(event)
     return filtered
+
+
+def filter_upcoming_events(events, now=None, start_hours=0, end_hours=168):
+    """Compatibility wrapper for explicit hour-offset tests and callers."""
+    if now is None:
+        now = datetime.now(timezone.utc)
+    start = now + timedelta(hours=start_hours)
+    end = now + timedelta(hours=end_hours)
+    return filter_events_between(events, start, end)
 
 
 def get_odds(sport_key, markets=None):
@@ -471,12 +489,7 @@ def main():
         )
         sports_queried.append(sport)
 
-        filtered_events = filter_upcoming_events(
-            events,
-            observed,
-            start_hours=0,
-            end_hours=(end_time_utc - observed).total_seconds() / 3600,
-        )
+        filtered_events = filter_events_between(events, start_time_utc, end_time_utc)
         events_returned += len(filtered_events)
 
         rows = flatten_events(filtered_events, observed_utc, observed_london)
@@ -492,7 +505,7 @@ def main():
 
     metadata = {
         "paper_only": True,
-        "version": "0.2",
+        "version": "0.3",
         "schema_version": "0.2",
         "observed_at_utc": observed_utc,
         "observed_at_london": observed_london,
