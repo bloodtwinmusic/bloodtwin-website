@@ -237,6 +237,18 @@ def oddsrelay_discover_catalogue():
         catalogue[name] = {"data": body, "usage": usage}
     return catalogue
 
+
+def oddsrelay_window_params(start_time, end_time, region="uk"):
+    return {
+        "region": region,
+        "commenceTimeFrom": format_utc_timestamp(start_time).replace("+00:00", "Z"),
+        "commenceTimeTo": format_utc_timestamp(end_time).replace("+00:00", "Z"),
+    }
+
+
+def oddsrelay_quote_collection_window(start_time, end_time, region="uk"):
+    return oddsrelay_quote_catalogue(oddsrelay_window_params(start_time, end_time, region))
+
 def get_active_sports():
     sports, quota = api_get("/sports")
     active = [sport for sport in (sports or []) if sport.get("active")]
