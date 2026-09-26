@@ -70,8 +70,10 @@ jobs:
           print(f"OddsRelay catalogue: OK; sports_payload_items={count}")
           print("OddsRelay quote preflight: " + ", ".join(f"{name}={result['status']}" for name, result in summary["quotes"].items()))
           print("OddsRelay token headers: " + ", ".join(f"{name}={result.get('tokens_cost') or '0/free/unspecified'}" for name, result in summary["quotes"].items()))
-          failures = [name for name, result in summary["quotes"].items() if result["status"] != "OK"]
+          failures = [name for name, result in quotes.items() if "error" in result]
           if failures:
+              for name in failures:
+                  print(f"OddsRelay {name} diagnostic: {quotes[name].get('error')}: {quotes[name].get('detail', '')}")
               raise SystemExit("OddsRelay quote preflight failed: " + ", ".join(failures))
           PY
 
