@@ -207,7 +207,12 @@ def oddsrelay_api_get(endpoint, params=None):
             "User-Agent": "blood.twin-paper-lab/0.4",
         },
     )
-    with urllib.request.urlopen(request, timeout=30) as response:
+    try:
+        response = urllib.request.urlopen(request, timeout=30)
+    except urllib.error.HTTPError as exc:
+        raw_error = exc.read().decode("utf-8", errors="replace")[:500]
+        raise RuntimeError(f"OddsRelay HTTP {exc.code}: {raw_error}") from None
+    with response:
         raw = response.read().decode("utf-8")
         body = json.loads(raw) if raw else None
         usage = {
