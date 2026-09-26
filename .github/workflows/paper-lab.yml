@@ -17,7 +17,7 @@ on:
   workflow_dispatch:
     inputs:
       collect_live_odds:
-        description: "Run the live paper-only odds collector (uses API credits)"
+        description: "Run the live paper-only odds collector (uses API credits/tokens)"
         required: true
         default: false
         type: boolean
