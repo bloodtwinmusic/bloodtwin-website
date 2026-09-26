@@ -1,0 +1,164 @@
+{
+  "paper_only": true,
+  "version": "0.4",
+  "schema_version": "0.2",
+  "observed_at_utc": "2026-09-26T17:51:09.140035+00:00",
+  "observed_at_london": "2026-09-26T18:51:09.140035+01:00",
+  "collection_window_start_utc": "2026-09-26T17:51:09.140035+00:00",
+  "collection_window_end_utc": "2026-09-27T09:00:00+00:00",
+  "collection_window_start_london": "2026-09-26T18:51:09.140035+01:00",
+  "collection_window_end_london": "2026-09-27T10:00:00+01:00",
+  "regions": "uk",
+  "markets": [
+    "h2h"
+  ],
+  "odds_format": "decimal",
+  "request_budget_limit": 10,
+  "chargeable_requests_made": 10,
+  "sports_discovered": 78,
+  "sports_queried": 10,
+  "events_returned": 62,
+  "rows_recorded": 822,
+  "quota_history": [
+    {
+      "sport_key": "soccer_germany_liga3",
+      "sport_title": "3. Liga - Germany",
+      "requested_markets": [
+        "h2h"
+      ],
+      "quota_headers": {
+        "requests_last": "1",
+        "requests_used": "22",
+        "requests_remaining": "478",
+        "credits_used": "22",
+        "credits_remaining": "478"
+      }
+    },
+    {
+      "sport_key": "tennis_wta_singapore_open",
+      "sport_title": "WTA Singapore Open",
+      "requested_markets": [
+        "h2h"
+      ],
+      "quota_headers": {
+        "requests_last": "1",
+        "requests_used": "23",
+        "requests_remaining": "477",
+        "credits_used": "23",
+        "credits_remaining": "477"
+      }
+    },
+    {
+      "sport_key": "basketball_euroleague",
+      "sport_title": "Basketball Euroleague",
+      "requested_markets": [
+        "h2h"
+      ],
+      "quota_headers": {
+        "requests_last": "1",
+        "requests_used": "24",
+        "requests_remaining": "476",
+        "credits_used": "24",
+        "credits_remaining": "476"
+      }
+    },
+    {
+      "sport_key": "americanfootball_cfl",
+      "sport_title": "CFL",
+      "requested_markets": [
+        "h2h"
+      ],
+      "quota_headers": {
+        "requests_last": "1",
+        "requests_used": "25",
+        "requests_remaining": "475",
+        "credits_used": "25",
+        "credits_remaining": "475"
+      }
+    },
+    {
+      "sport_key": "baseball_kbo",
+      "sport_title": "KBO",
+      "requested_markets": [
+        "h2h"
+      ],
+      "quota_headers": {
+        "requests_last": "1",
+        "requests_used": "26",
+        "requests_remaining": "474",
+        "credits_used": "26",
+        "credits_remaining": "474"
+      }
+    },
+    {
+      "sport_key": "icehockey_sweden_allsvenskan",
+      "sport_title": "HockeyAllsvenskan",
+      "requested_markets": [
+        "h2h"
+      ],
+      "quota_headers": {
+        "requests_last": "1",
+        "requests_used": "27",
+        "requests_remaining": "473",
+        "credits_used": "27",
+        "credits_remaining": "473"
+      }
+    },
+    {
+      "sport_key": "aussierules_aflw",
+      "sport_title": "AFL Women's",
+      "requested_markets": [
+        "h2h"
+      ],
+      "quota_headers": {
+        "requests_last": "1",
+        "requests_used": "28",
+        "requests_remaining": "472",
+        "credits_used": "28",
+        "credits_remaining": "472"
+      }
+    },
+    {
+      "sport_key": "soccer_australia_aleague",
+      "sport_title": "A-League",
+      "requested_markets": [
+        "h2h"
+      ],
+      "quota_headers": {
+        "requests_last": "1",
+        "requests_used": "29",
+        "requests_remaining": "471",
+        "credits_used": "29",
+        "credits_remaining": "471"
+      }
+    },
+    {
+      "sport_key": "basketball_nba",
+      "sport_title": "NBA",
+      "requested_markets": [
+        "h2h"
+      ],
+      "quota_headers": {
+        "requests_last": "1",
+        "requests_used": "30",
+        "requests_remaining": "470",
+        "credits_used": "30",
+        "credits_remaining": "470"
+      }
+    },
+    {
+      "sport_key": "americanfootball_ncaaf",
+      "sport_title": "NCAAF",
+      "requested_markets": [
+        "h2h"
+      ],
+      "quota_headers": {
+        "requests_last": "1",
+        "requests_used": "31",
+        "requests_remaining": "469",
+        "credits_used": "31",
+        "credits_remaining": "469"
+      }
+    }
+  ]
+}
