@@ -70,6 +70,13 @@ class OddsLoggerTests(unittest.TestCase):
         self.assertEqual(summary["quotes"]["standard"]["status"], "OK")
         self.assertEqual(summary["catalogue"]["sports"]["items"], 1)
 
+    def test_oddsrelay_acquisition_plan_only_selects_successful_quotes(self):
+        quotes = {
+            "standard": {"quote": {"tokens": 10}, "usage": {"tokens_cost": "0"}},
+            "raw": {"error": "RuntimeError", "detail": "bad request"},
+        }
+        self.assertEqual(odds_logger.oddsrelay_choose_products_from_quotes(quotes), ["standard"])
+
     def test_default_market_config_is_h2h_only(self):
         self.assertEqual(odds_logger.default_market_keys(), ["h2h"])
 
