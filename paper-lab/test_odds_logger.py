@@ -53,6 +53,14 @@ class OddsLoggerTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             odds_logger.oddsrelay_quote("mystery-board")
 
+    def test_oddsrelay_window_uses_exact_paper_lab_boundaries(self):
+        start = datetime(2026, 9, 26, 9, 0, tzinfo=timezone.utc)
+        end = datetime(2026, 9, 27, 9, 0, tzinfo=timezone.utc)
+        params = odds_logger.oddsrelay_window_params(start, end)
+        self.assertEqual(params["region"], "uk")
+        self.assertEqual(params["commenceTimeFrom"], "2026-09-26T09:00:00+00:00".replace("+00:00", "Z"))
+        self.assertEqual(params["commenceTimeTo"], "2026-09-27T09:00:00+00:00".replace("+00:00", "Z"))
+
     def test_default_market_config_is_h2h_only(self):
         self.assertEqual(odds_logger.default_market_keys(), ["h2h"])
 
