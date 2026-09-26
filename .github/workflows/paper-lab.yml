@@ -63,8 +63,10 @@ jobs:
           now = odds_logger.datetime.now(odds_logger.timezone.utc)
           start, end = odds_logger.default_collection_window(now)
           quotes = odds_logger.oddsrelay_quote_collection_window(start, end)
+          summary = odds_logger.summarize_oddsrelay_preflight(catalogue, quotes)
           print(f"OddsRelay catalogue: OK; sports_payload_items={count}")
-          print("OddsRelay quote preflight: " + ", ".join(f"{name}={'OK' if 'quote' in result else 'ERROR'}" for name, result in quotes.items()))
+          print("OddsRelay quote preflight: " + ", ".join(f"{name}={result['status']}" for name, result in summary["quotes"].items()))
+          print("OddsRelay token headers: " + ", ".join(f"{name}={result.get('tokens_cost') or '0/free/unspecified'}" for name, result in summary["quotes"].items()))
           PY
 
   collect:
