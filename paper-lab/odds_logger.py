@@ -300,6 +300,26 @@ def oddsrelay_build_acquisition_plan(start_time, end_time, region="uk"):
         "products": oddsrelay_choose_products_from_quotes(quotes),
     }
 
+
+def oddsrelay_acquire_product(product, params):
+    """Token-consuming call. Caller must supply a quote-validated product."""
+    if product not in ODDSRELAY_MATCHED_PRODUCTS and product != "raw":
+        raise ValueError(f"Unsupported OddsRelay product: {product}")
+    query = dict(params or {})
+    query.pop("quote", None)
+    return oddsrelay_api_get(f"/v2/odds/{product}", query)
+
+
+def oddsrelay_execute_plan(plan, allowed_products=None):
+    """Acquire only products present in a quote-gated plan and explicit allow-list."""
+    planned = set(plan.get("products", []))
+    allowed = set(allowed_products or [])
+    results = {}
+    for product in sorted(planned & allowed):
+        body, usage = oddsrelay_acquire_product(product, plan.get("params", {}))
+        results[product] = {"data": body, "usage": usage}
+    return results
+
 def get_active_sports():
     sports, quota = api_get("/sports")
     active = [sport for sport in (sports or []) if sport.get("active")]
