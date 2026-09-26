@@ -165,6 +165,17 @@ def api_get(endpoint, params=None):
     return body, quota
 
 
+def oddsrelay_key_present():
+    return bool(os.environ.get("ODDSRELAY_KEY"))
+
+
+def provider_status():
+    return {
+        "the_odds_api": bool(os.environ.get("ODDS_API_KEY")),
+        "oddsrelay": oddsrelay_key_present(),
+    }
+
+
 def get_active_sports():
     sports, quota = api_get("/sports")
     active = [sport for sport in (sports or []) if sport.get("active")]
