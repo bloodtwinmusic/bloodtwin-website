@@ -280,6 +280,26 @@ def summarize_oddsrelay_preflight(catalogue, quotes):
             }
     return summary
 
+
+def oddsrelay_choose_products_from_quotes(quotes):
+    """Return only quote-validated OddsRelay products; no acquisition occurs here."""
+    chosen = []
+    for product, result in quotes.items():
+        if "error" not in result and "quote" in result:
+            chosen.append(product)
+    return chosen
+
+
+def oddsrelay_build_acquisition_plan(start_time, end_time, region="uk"):
+    """Zero-purchase planning stage: quote first, then expose validated products."""
+    params = oddsrelay_window_params(start_time, end_time, region)
+    quotes = oddsrelay_quote_catalogue(params)
+    return {
+        "params": params,
+        "quotes": quotes,
+        "products": oddsrelay_choose_products_from_quotes(quotes),
+    }
+
 def get_active_sports():
     sports, quota = api_get("/sports")
     active = [sport for sport in (sports or []) if sport.get("active")]
