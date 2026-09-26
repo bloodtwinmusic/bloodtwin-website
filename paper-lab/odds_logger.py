@@ -222,6 +222,21 @@ def oddsrelay_api_get(endpoint, params=None):
 def get_oddsrelay_sports():
     return oddsrelay_api_get("/v2/sports")
 
+
+def oddsrelay_discover_catalogue():
+    endpoints = {
+        "sports": "/v2/sports",
+        "bookmakers": "/v2/bookmakers",
+        "regions": "/v2/regions",
+        "usage": "/v2/usage",
+        "pricing": "/v2/pricing",
+    }
+    catalogue = {}
+    for name, endpoint in endpoints.items():
+        body, usage = oddsrelay_api_get(endpoint)
+        catalogue[name] = {"data": body, "usage": usage}
+    return catalogue
+
 def get_active_sports():
     sports, quota = api_get("/sports")
     active = [sport for sport in (sports or []) if sport.get("active")]
