@@ -176,6 +176,14 @@ def provider_status():
     }
 
 
+def require_provider_credentials():
+    status = provider_status()
+    missing = [name for name, present in status.items() if not present]
+    if missing:
+        raise RuntimeError("Missing provider credential(s): " + ", ".join(missing))
+    return status
+
+
 def get_active_sports():
     sports, quota = api_get("/sports")
     active = [sport for sport in (sports or []) if sport.get("active")]
