@@ -190,6 +190,38 @@ def print_provider_readiness():
     return status
 
 
+ODDSRELAY_BASE_URL = os.environ.get("ODDSRELAY_BASE_URL", "https://api.oddsrelay.io")
+
+
+def oddsrelay_api_get(endpoint, params=None):
+    api_key = os.environ.get("ODDSRELAY_KEY")
+    if not api_key:
+        raise RuntimeError("ODDSRELAY_KEY is missing. Store it in the environment.")
+    query = urllib.parse.urlencode(dict(params or {}))
+    url = f"{ODDSRELAY_BASE_URL}{endpoint}" + (f"?{query}" if query else "")
+    request = urllib.request.Request(
+        url,
+        headers={
+            "Authorization": f"Bearer {api_key}",
+            "Accept": "application/json",
+            "User-Agent": "blood.twin-paper-lab/0.4",
+        },
+    )
+    with urllib.request.urlopen(request, timeout=30) as response:
+        raw = response.read().decode("utf-8")
+        body = json.loads(raw) if raw else None
+        usage = {
+            "tokens_cost": response.headers.get("X-Tokens-Cost"),
+            "tokens_used": response.headers.get("X-Tokens-Used"),
+            "tokens_remaining": response.headers.get("X-Tokens-Remaining"),
+            "etag": response.headers.get("ETag"),
+        }
+    return body, usage
+
+
+def get_oddsrelay_sports():
+    return oddsrelay_api_get("/v2/sports")
+
 def get_active_sports():
     sports, quota = api_get("/sports")
     active = [sport for sport in (sports or []) if sport.get("active")]
