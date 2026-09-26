@@ -34,6 +34,16 @@ class OddsLoggerTests(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, "ODDSRELAY_KEY"):
                 odds_logger.get_oddsrelay_sports()
 
+    def test_oddsrelay_catalogue_uses_only_named_discovery_endpoints(self):
+        calls = []
+        def fake_get(endpoint, params=None):
+            calls.append(endpoint)
+            return [], {"tokens_cost": "0"}
+        with patch.object(odds_logger, "oddsrelay_api_get", side_effect=fake_get):
+            result = odds_logger.oddsrelay_discover_catalogue()
+        self.assertEqual(set(result), {"sports", "bookmakers", "regions", "usage", "pricing"})
+        self.assertEqual(calls, ["/v2/sports", "/v2/bookmakers", "/v2/regions", "/v2/usage", "/v2/pricing"])
+
     def test_default_market_config_is_h2h_only(self):
         self.assertEqual(odds_logger.default_market_keys(), ["h2h"])
 
