@@ -184,6 +184,12 @@ def require_provider_credentials():
     return status
 
 
+def print_provider_readiness():
+    status = provider_status()
+    print("Provider readiness: " + ", ".join(f"{name}={'READY' if ready else 'MISSING'}" for name, ready in status.items()))
+    return status
+
+
 def get_active_sports():
     sports, quota = api_get("/sports")
     active = [sport for sport in (sports or []) if sport.get("active")]
