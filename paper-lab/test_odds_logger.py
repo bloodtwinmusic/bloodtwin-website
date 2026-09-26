@@ -90,6 +90,13 @@ class OddsLoggerTests(unittest.TestCase):
             odds_logger.oddsrelay_execute_plan(plan, ["raw"])
         mocked.assert_not_called()
 
+    def test_oddsrelay_snapshot_is_provider_aware_and_separate_schema(self):
+        observed = datetime(2026, 9, 26, 13, 0, tzinfo=timezone.utc)
+        snap = odds_logger.oddsrelay_snapshot_envelope(observed, observed, observed, {"standard": {"data": []}})
+        self.assertEqual(snap["provider"], "oddsrelay")
+        self.assertEqual(snap["schema_version"], "0.5")
+        self.assertEqual(snap["version"], "0.5")
+
     def test_default_market_config_is_h2h_only(self):
         self.assertEqual(odds_logger.default_market_keys(), ["h2h"])
 
