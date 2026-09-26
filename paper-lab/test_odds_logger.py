@@ -12,6 +12,10 @@ import odds_logger
 
 
 class OddsLoggerTests(unittest.TestCase):
+    def test_provider_status_detects_both_keys_without_exposing_values(self):
+        with patch.dict("os.environ", {"ODDS_API_KEY": "secret-a", "ODDSRELAY_KEY": "secret-b"}, clear=False):
+            self.assertEqual(odds_logger.provider_status(), {"the_odds_api": True, "oddsrelay": True})
+
     def test_default_market_config_is_h2h_only(self):
         self.assertEqual(odds_logger.default_market_keys(), ["h2h"])
 
