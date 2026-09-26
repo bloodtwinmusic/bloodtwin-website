@@ -669,5 +669,5 @@ def oddsrelay_quote_catalogue(params=None):
             body, usage = oddsrelay_quote(product, params)
             quotes[product] = {"quote": body, "usage": usage}
         except Exception as exc:
-            quotes[product] = {"error": type(exc).__name__}
+            quotes[product] = {"error": type(exc).__name__, "detail": str(exc)[:300]}
     return quotes
