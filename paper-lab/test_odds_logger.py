@@ -61,6 +61,15 @@ class OddsLoggerTests(unittest.TestCase):
         self.assertEqual(params["commenceTimeFrom"], "2026-09-26T09:00:00+00:00".replace("+00:00", "Z"))
         self.assertEqual(params["commenceTimeTo"], "2026-09-27T09:00:00+00:00".replace("+00:00", "Z"))
 
+    def test_oddsrelay_preflight_summary_never_contains_credentials(self):
+        catalogue = {"sports": {"data": [{"key": "football"}], "usage": {"tokens_cost": "0"}}}
+        quotes = {"standard": {"quote": {"tokens": 10000}, "usage": {"tokens_cost": "0"}}}
+        summary = odds_logger.summarize_oddsrelay_preflight(catalogue, quotes)
+        rendered = repr(summary)
+        self.assertNotIn("ODDSRELAY_KEY", rendered)
+        self.assertEqual(summary["quotes"]["standard"]["status"], "OK")
+        self.assertEqual(summary["catalogue"]["sports"]["items"], 1)
+
     def test_default_market_config_is_h2h_only(self):
         self.assertEqual(odds_logger.default_market_keys(), ["h2h"])
 
