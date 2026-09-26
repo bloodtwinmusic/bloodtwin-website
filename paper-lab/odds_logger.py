@@ -387,6 +387,55 @@ def dedupe_normalized_observations(rows):
             deduped[key] = row
     return list(deduped.values())
 
+
+def _walk_dicts(value):
+    if isinstance(value, dict):
+        yield value
+        for child in value.values():
+            yield from _walk_dicts(child)
+    elif isinstance(value, list):
+        for child in value:
+            yield from _walk_dicts(child)
+
+
+def normalize_oddsrelay_payload(product, payload, observed_at_utc):
+    """Conservative adapter: emit rows only when canonical betting fields are explicit."""
+    rows = []
+    for item in _walk_dicts(payload):
+        price = item.get("price_decimal", item.get("decimal_odds", item.get("odds")))
+        market = item.get("market_key", item.get("market"))
+        outcome = item.get("outcome_name", item.get("outcome", item.get("selection")))
+        bookmaker = item.get("bookmaker_key", item.get("bookmaker"))
+        commence = item.get("commence_time_utc", item.get("commence_time", item.get("start_time")))
+        sport = item.get("sport_key", item.get("sport"))
+        home = item.get("home", item.get("home_team"))
+        away = item.get("away", item.get("away_team"))
+        if None in (price, market, outcome, bookmaker, commence, sport, home, away):
+            continue
+        try:
+            decimal_price = float(price)
+        except (TypeError, ValueError):
+            continue
+        if decimal_price <= 1.0:
+            continue
+        rows.append({
+            "provider": "oddsrelay", "product": product,
+            "observed_at_utc": observed_at_utc,
+            "sport_key": str(sport), "commence_time_utc": str(commence),
+            "home": str(home), "away": str(away),
+            "bookmaker_key": str(bookmaker), "market_key": str(market),
+            "outcome_name": str(outcome), "point": item.get("point", item.get("line")),
+            "price_decimal": decimal_price,
+        })
+    return rows
+
+
+def normalize_oddsrelay_acquisitions(acquisitions, observed_at_utc):
+    rows = []
+    for product, result in acquisitions.items():
+        rows.extend(normalize_oddsrelay_payload(product, result.get("data"), observed_at_utc))
+    return dedupe_normalized_observations(rows)
+
 def get_active_sports():
     sports, quota = api_get("/sports")
     active = [sport for sport in (sports or []) if sport.get("active")]
