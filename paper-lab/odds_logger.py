@@ -249,6 +249,27 @@ def oddsrelay_window_params(start_time, end_time, region="uk"):
 def oddsrelay_quote_collection_window(start_time, end_time, region="uk"):
     return oddsrelay_quote_catalogue(oddsrelay_window_params(start_time, end_time, region))
 
+
+def summarize_oddsrelay_preflight(catalogue, quotes):
+    summary = {"catalogue": {}, "quotes": {}}
+    for name, result in catalogue.items():
+        data = result.get("data")
+        count = len(data) if isinstance(data, (list, dict)) else None
+        summary["catalogue"][name] = {
+            "items": count,
+            "tokens_cost": result.get("usage", {}).get("tokens_cost"),
+        }
+    for name, result in quotes.items():
+        if "error" in result:
+            summary["quotes"][name] = {"status": "ERROR", "error": result["error"]}
+        else:
+            summary["quotes"][name] = {
+                "status": "OK",
+                "tokens_cost": result.get("usage", {}).get("tokens_cost"),
+                "quote": result.get("quote"),
+            }
+    return summary
+
 def get_active_sports():
     sports, quota = api_get("/sports")
     active = [sport for sport in (sports or []) if sport.get("active")]
