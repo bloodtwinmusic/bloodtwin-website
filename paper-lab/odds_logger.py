@@ -204,6 +204,7 @@ def oddsrelay_api_get(endpoint, params=None):
         headers={
             "Authorization": f"Bearer {api_key}",
             "Accept": "application/json",
+            "Accept-Encoding": "gzip",
             "User-Agent": "blood.twin-paper-lab/0.4",
         },
     )
@@ -213,7 +214,11 @@ def oddsrelay_api_get(endpoint, params=None):
         raw_error = exc.read().decode("utf-8", errors="replace")[:500]
         raise RuntimeError(f"OddsRelay HTTP {exc.code}: {raw_error}") from None
     with response:
-        raw = response.read().decode("utf-8")
+        payload = response.read()
+        if response.headers.get("Content-Encoding", "").lower() == "gzip":
+            import gzip
+            payload = gzip.decompress(payload)
+        raw = payload.decode("utf-8")
         body = json.loads(raw) if raw else None
         usage = {
             "tokens_cost": response.headers.get("X-Tokens-Cost"),
