@@ -885,13 +885,6 @@ def main():
     print(f"Metadata: {metadata_path}")
 
 
-if __name__ == "__main__":
-    try:
-        main()
-    except Exception as exc:
-        print(f"Paper Lab logger failed: {exc}", file=sys.stderr)
-        sys.exit(1)
-
 ODDSRELAY_MATCHED_PRODUCTS = ("standard", "2up", "dutching", "each-way", "extra-place", "bog")
 
 
@@ -912,3 +905,11 @@ def oddsrelay_quote_catalogue(params=None):
         except Exception as exc:
             quotes[product] = {"error": type(exc).__name__, "detail": str(exc)[:300]}
     return quotes
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except Exception as exc:
+        print(f"Paper Lab logger failed: {exc}", file=sys.stderr)
+        sys.exit(1)
