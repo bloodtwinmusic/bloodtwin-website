@@ -29,6 +29,11 @@ class OddsLoggerTests(unittest.TestCase):
             self.assertNotIn("never-print-a", rendered)
             self.assertNotIn("never-print-b", rendered)
 
+    def test_oddsrelay_discovery_requires_secret(self):
+        with patch.dict("os.environ", {}, clear=True):
+            with self.assertRaisesRegex(RuntimeError, "ODDSRELAY_KEY"):
+                odds_logger.get_oddsrelay_sports()
+
     def test_default_market_config_is_h2h_only(self):
         self.assertEqual(odds_logger.default_market_keys(), ["h2h"])
 
