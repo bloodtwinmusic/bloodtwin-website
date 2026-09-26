@@ -436,6 +436,38 @@ def normalize_oddsrelay_acquisitions(acquisitions, observed_at_utc):
         rows.extend(normalize_oddsrelay_payload(product, result.get("data"), observed_at_utc))
     return dedupe_normalized_observations(rows)
 
+
+def unified_snapshot_envelope(observed, start_time, end_time, the_odds_api_rows, oddsrelay_rows, raw_refs=None):
+    """v0.5 canonical observation universe with provider provenance retained per row."""
+    api_rows = [dict(row, provider=row.get("provider", "the_odds_api")) for row in the_odds_api_rows]
+    relay_rows = [dict(row, provider=row.get("provider", "oddsrelay")) for row in oddsrelay_rows]
+    combined = dedupe_normalized_observations(api_rows + relay_rows)
+    return {
+        "paper_only": True,
+        "version": "0.5",
+        "schema_version": "0.5",
+        "observed_at_utc": format_utc_timestamp(observed),
+        "observed_at_london": format_london_timestamp(observed),
+        "collection_window_start_utc": format_utc_timestamp(start_time),
+        "collection_window_end_utc": format_utc_timestamp(end_time),
+        "source_counts": {
+            "the_odds_api": len(api_rows),
+            "oddsrelay": len(relay_rows),
+            "canonical": len(combined),
+        },
+        "raw_source_refs": raw_refs or {},
+        "observations": combined,
+    }
+
+
+def write_unified_snapshot(snapshot, data_dir=None):
+    directory = Path(data_dir or Path(__file__).parent / "data" / "v0.5")
+    directory.mkdir(parents=True, exist_ok=True)
+    stamp = snapshot["observed_at_utc"].replace(":", "").replace("+", "_")
+    path = directory / f"unified_{stamp}.json"
+    path.write_text(json.dumps(snapshot, indent=2, sort_keys=True), encoding="utf-8")
+    return path
+
 def get_active_sports():
     sports, quota = api_get("/sports")
     active = [sport for sport in (sports or []) if sport.get("active")]
