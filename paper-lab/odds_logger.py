@@ -733,6 +733,28 @@ def save_snapshot(rows, metadata):
     return csv_path, metadata_path
 
 
+
+def default_oddsrelay_acquisition_products():
+    """Broad matched-board baseline; specialist/promotional boards stay opt-in."""
+    configured = os.environ.get("ODDSRELAY_PRODUCTS", "standard")
+    requested = [p.strip().lower() for p in configured.split(",") if p.strip()]
+    valid = set(ODDSRELAY_MATCHED_PRODUCTS) | {"raw"}
+    unknown = [p for p in requested if p not in valid]
+    if unknown:
+        raise ValueError("Unsupported ODDSRELAY_PRODUCTS: " + ", ".join(unknown))
+    return requested
+
+
+def run_oddsrelay_collection(observed, start_time, end_time):
+    """Quote-gated live OddsRelay collection; acquisition products are explicit."""
+    plan = oddsrelay_build_acquisition_plan(start_time, end_time)
+    allowed = default_oddsrelay_acquisition_products()
+    acquisitions = oddsrelay_execute_plan(plan, allowed)
+    raw_snapshot = oddsrelay_snapshot_envelope(observed, start_time, end_time, acquisitions)
+    raw_path = write_oddsrelay_snapshot(raw_snapshot)
+    rows = normalize_oddsrelay_acquisitions(acquisitions, format_utc_timestamp(observed))
+    return rows, raw_path, plan, acquisitions
+
 def main():
     observed = datetime.now(timezone.utc)
     observed_utc = observed.isoformat()
