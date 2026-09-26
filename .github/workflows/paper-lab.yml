@@ -57,6 +57,8 @@ jobs:
           import sys
           sys.path.insert(0, "paper-lab")
           import odds_logger
+          odds_logger.require_provider_credentials()
+          odds_logger.print_provider_readiness()
           catalogue = odds_logger.oddsrelay_discover_catalogue()
           sports = catalogue["sports"]["data"]
           count = len(sports) if isinstance(sports, list) else len(sports or {})
