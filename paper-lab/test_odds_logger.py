@@ -77,6 +77,19 @@ class OddsLoggerTests(unittest.TestCase):
         }
         self.assertEqual(odds_logger.oddsrelay_choose_products_from_quotes(quotes), ["standard"])
 
+    def test_oddsrelay_executor_requires_explicit_allow_list(self):
+        plan = {"products": ["standard", "raw"], "params": {"region": "uk"}}
+        with patch.object(odds_logger, "oddsrelay_acquire_product") as mocked:
+            result = odds_logger.oddsrelay_execute_plan(plan)
+        self.assertEqual(result, {})
+        mocked.assert_not_called()
+
+    def test_oddsrelay_executor_cannot_acquire_unplanned_product(self):
+        plan = {"products": ["standard"], "params": {"region": "uk"}}
+        with patch.object(odds_logger, "oddsrelay_acquire_product", return_value=([], {})) as mocked:
+            odds_logger.oddsrelay_execute_plan(plan, ["raw"])
+        mocked.assert_not_called()
+
     def test_default_market_config_is_h2h_only(self):
         self.assertEqual(odds_logger.default_market_keys(), ["h2h"])
 
