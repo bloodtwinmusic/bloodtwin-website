@@ -817,6 +817,27 @@ def main():
             f"market(s): {', '.join(requested_markets)}"
         )
 
+    oddsrelay_rows = []
+    oddsrelay_raw_path = None
+    oddsrelay_plan = None
+    oddsrelay_acquisitions = {}
+    if oddsrelay_key_present():
+        oddsrelay_rows, oddsrelay_raw_path, oddsrelay_plan, oddsrelay_acquisitions = run_oddsrelay_collection(
+            observed, start_time_utc, end_time_utc
+        )
+        unified = unified_snapshot_envelope(
+            observed, start_time_utc, end_time_utc, all_rows, oddsrelay_rows,
+            {"oddsrelay": str(oddsrelay_raw_path)} if oddsrelay_raw_path else {},
+        )
+        unified_path = write_unified_snapshot(unified)
+        print(f"OddsRelay normalized rows: {len(oddsrelay_rows)}")
+        print(f"OddsRelay acquired products: {', '.join(sorted(oddsrelay_acquisitions)) or 'none'}")
+        for product, result in sorted(oddsrelay_acquisitions.items()):
+            usage = result.get("usage", {})
+            print(f"OddsRelay {product} tokens cost: {usage.get('tokens_cost') or 'unspecified'}")
+        print(f"Unified v0.5 rows: {len(unified['observations'])}")
+        print(f"Unified snapshot: {unified_path}")
+
     metadata = {
         "paper_only": True,
         "version": "0.4",
