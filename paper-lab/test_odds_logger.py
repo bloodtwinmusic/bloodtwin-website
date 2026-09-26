@@ -21,6 +21,14 @@ class OddsLoggerTests(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, "oddsrelay"):
                 odds_logger.require_provider_credentials()
 
+    def test_readiness_output_never_prints_secret_values(self):
+        with patch.dict("os.environ", {"ODDS_API_KEY": "never-print-a", "ODDSRELAY_KEY": "never-print-b"}, clear=True), patch("builtins.print") as mocked_print:
+            odds_logger.print_provider_readiness()
+            rendered = " ".join(str(call) for call in mocked_print.call_args_list)
+            self.assertIn("READY", rendered)
+            self.assertNotIn("never-print-a", rendered)
+            self.assertNotIn("never-print-b", rendered)
+
     def test_default_market_config_is_h2h_only(self):
         self.assertEqual(odds_logger.default_market_keys(), ["h2h"])
 
