@@ -1,4 +1,4 @@
-# £10 Paper Lab Odds Logger v0.3
+# £10 Paper Lab Odds Logger v0.4
 
 Paper-only research for the blood.twin £10 Paper Lab.
 
@@ -17,6 +17,12 @@ The logger captures pre-event market snapshots so the experiment can analyse:
 
 Historical observations are append-only and preserved rather than reconstructed after results are known.
 
+## v0.4 changes
+
+- Discovers every active sport returned by The Odds API instead of restricting discovery to the original six-family allowlist.
+- Keeps finite chargeable odds acquisition budgeted and family-diversified; broad discovery does not imply indiscriminate credit spend.
+- OddsRelay is the second planned source. Its key is stored only as the `ODDSRELAY_KEY` repository secret; integration must use free discovery/quotes before token-consuming calls.
+
 ## v0.3 changes
 
 - Uses an explicit Europe/London-aware collection window from observation time to the next 10:00 London boundary.
@@ -31,7 +37,6 @@ Historical observations are append-only and preserved rather than reconstructed 
 - Uses The Odds API v4 with the `ODDS_API_KEY` environment variable only.
 - Uses Europe/London timestamps for human-readable observation and event times while preserving UTC timestamps.
 - Uses the free `/sports` endpoint to discover active sports.
-- Restricts collection to a curated allowlist of paper-lab relevant sports: soccer, tennis, basketball, american football, baseball, and ice hockey.
 - Defaults to a tightly controlled H2H market configuration only. Other supported markets are configured explicitly via the market list and remain opt-in.
 - Enforces an API request budget of 10 chargeable odds requests by default and stops before exceeding the limit.
 - Keeps the UK region and decimal odds format for this research stream.
