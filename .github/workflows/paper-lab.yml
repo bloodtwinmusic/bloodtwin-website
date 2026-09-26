@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - paper-lab-odds-logger
+      - paper-lab-v0.3
+      - paper-lab-v0.4-scheduling
     paths:
       - "paper-lab/**"
       - ".github/workflows/paper-lab.yml"
