@@ -344,6 +344,49 @@ def write_oddsrelay_snapshot(snapshot, data_dir=None):
     path.write_text(json.dumps(snapshot, indent=2, sort_keys=True), encoding="utf-8")
     return path
 
+
+def canonical_text(value):
+    return " ".join(str(value or "").strip().lower().split())
+
+
+def canonical_event_key(sport, commence_time, home, away):
+    """Cross-provider event identity without relying on provider-specific IDs."""
+    return "|".join([
+        canonical_text(sport),
+        canonical_text(commence_time),
+        canonical_text(home),
+        canonical_text(away),
+    ])
+
+
+def canonical_market_key(provider, sport, commence_time, home, away, bookmaker, market, outcome, point=None):
+    event = canonical_event_key(sport, commence_time, home, away)
+    return "|".join([
+        event,
+        canonical_text(bookmaker),
+        canonical_text(market),
+        canonical_text(outcome),
+        canonical_text(point),
+    ])
+
+
+def dedupe_normalized_observations(rows):
+    """Deduplicate provider-overlap while preserving the newest observation."""
+    deduped = {}
+    for row in rows:
+        key = canonical_market_key(
+            row.get("provider"), row.get("sport_key") or row.get("sport"),
+            row.get("commence_time_utc") or row.get("commence_time"),
+            row.get("home"), row.get("away"),
+            row.get("bookmaker_key") or row.get("bookmaker"),
+            row.get("market_key") or row.get("market"),
+            row.get("outcome_name") or row.get("outcome"), row.get("point"),
+        )
+        current = deduped.get(key)
+        if current is None or str(row.get("observed_at_utc", "")) >= str(current.get("observed_at_utc", "")):
+            deduped[key] = row
+    return list(deduped.values())
+
 def get_active_sports():
     sports, quota = api_get("/sports")
     active = [sport for sport in (sports or []) if sport.get("active")]
