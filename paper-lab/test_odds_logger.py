@@ -110,6 +110,18 @@ class OddsLoggerTests(unittest.TestCase):
         rows = [dict(base, point=-1.5), dict(base, point=-2.5)]
         self.assertEqual(len(odds_logger.dedupe_normalized_observations(rows)), 2)
 
+    def test_oddsrelay_normalizer_emits_only_complete_decimal_rows(self):
+        good = {"sport":"soccer","start_time":"2026-09-26T18:00:00Z","home_team":"A","away_team":"B","bookmaker":"book","market":"h2h","selection":"A","odds":"2.10"}
+        incomplete = {"market":"h2h","odds":"3.0"}
+        rows = odds_logger.normalize_oddsrelay_payload("standard", {"items":[good, incomplete]}, "2026-09-26T14:00:00Z")
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0]["price_decimal"], 2.1)
+        self.assertEqual(rows[0]["provider"], "oddsrelay")
+
+    def test_oddsrelay_normalizer_rejects_non_decimal_or_invalid_price(self):
+        bad = {"sport":"soccer","start_time":"x","home_team":"A","away_team":"B","bookmaker":"book","market":"h2h","selection":"A","odds":"EVS"}
+        self.assertEqual(odds_logger.normalize_oddsrelay_payload("standard", bad, "now"), [])
+
     def test_default_market_config_is_h2h_only(self):
         self.assertEqual(odds_logger.default_market_keys(), ["h2h"])
 
