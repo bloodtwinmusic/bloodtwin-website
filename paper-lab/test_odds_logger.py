@@ -16,6 +16,11 @@ class OddsLoggerTests(unittest.TestCase):
         with patch.dict("os.environ", {"ODDS_API_KEY": "secret-a", "ODDSRELAY_KEY": "secret-b"}, clear=False):
             self.assertEqual(odds_logger.provider_status(), {"the_odds_api": True, "oddsrelay": True})
 
+    def test_missing_provider_secret_fails_without_revealing_values(self):
+        with patch.dict("os.environ", {"ODDS_API_KEY": "secret-a"}, clear=True):
+            with self.assertRaisesRegex(RuntimeError, "oddsrelay"):
+                odds_logger.require_provider_credentials()
+
     def test_default_market_config_is_h2h_only(self):
         self.assertEqual(odds_logger.default_market_keys(), ["h2h"])
 
