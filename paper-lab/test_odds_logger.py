@@ -44,6 +44,15 @@ class OddsLoggerTests(unittest.TestCase):
         self.assertEqual(set(result), {"sports", "bookmakers", "regions", "usage", "pricing"})
         self.assertEqual(calls, ["/v2/sports", "/v2/bookmakers", "/v2/regions", "/v2/usage", "/v2/pricing"])
 
+    def test_oddsrelay_quote_forces_quote_mode(self):
+        with patch.object(odds_logger, "oddsrelay_api_get", return_value=({"tokens": 123}, {"tokens_cost": "0"})) as mocked:
+            odds_logger.oddsrelay_quote("standard", {"region": "uk"})
+        mocked.assert_called_once_with("/v2/odds/standard", {"region": "uk", "quote": "true"})
+
+    def test_oddsrelay_quote_rejects_unknown_product(self):
+        with self.assertRaises(ValueError):
+            odds_logger.oddsrelay_quote("mystery-board")
+
     def test_default_market_config_is_h2h_only(self):
         self.assertEqual(odds_logger.default_market_keys(), ["h2h"])
 
