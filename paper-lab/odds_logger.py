@@ -59,14 +59,7 @@ CSV_V0_2_FIELDNAMES = [
 CSV_FIELDNAMES = CSV_V0_2_FIELDNAMES
 CSV_SCHEMA_VERSIONS = {"0.1": CSV_V0_1_FIELDNAMES, "0.2": CSV_V0_2_FIELDNAMES}
 
-PAPER_ONLY_SPORTS = [
-    "soccer",
-    "tennis",
-    "basketball",
-    "american_football",
-    "baseball",
-    "ice_hockey",
-]
+PAPER_ONLY_SPORTS = []
 
 PAPER_ONLY_SPORT_ALIASES = {
     "soccer": {"soccer"},
@@ -156,7 +149,7 @@ def api_get(endpoint, params=None):
 
     request = urllib.request.Request(
         url,
-        headers={"User-Agent": "blood.twin-paper-lab/0.3"},
+        headers={"User-Agent": "blood.twin-paper-lab/0.4"},
     )
 
     with urllib.request.urlopen(request, timeout=30) as response:
@@ -174,11 +167,7 @@ def api_get(endpoint, params=None):
 
 def get_active_sports():
     sports, quota = api_get("/sports")
-    active = [
-        sport
-        for sport in (sports or [])
-        if sport.get("active") and sport_is_paper_lab_allowed(sport)
-    ]
+    active = [sport for sport in (sports or []) if sport.get("active")]
     return sorted(active, key=lambda sport: (sport.get("title") or "").lower()), quota
 
 def sport_family(sport):
@@ -203,7 +192,7 @@ def select_sports_for_budget(sports, budget):
     if budget == 0:
         return []
     buckets = {}
-    family_order = list(PAPER_ONLY_SPORTS) + ["other"]
+    family_order = list(PAPER_ONLY_SPORT_ALIASES) + ["other"]
     for sport in sports or []:
         buckets.setdefault(sport_family(sport), []).append(sport)
     for bucket in buckets.values():
@@ -505,7 +494,7 @@ def main():
 
     metadata = {
         "paper_only": True,
-        "version": "0.3",
+        "version": "0.4",
         "schema_version": "0.2",
         "observed_at_utc": observed_utc,
         "observed_at_london": observed_london,

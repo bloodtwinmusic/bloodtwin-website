@@ -101,7 +101,7 @@ class OddsLoggerTests(unittest.TestCase):
         with patch.object(odds_logger, "api_get", return_value=(payload, {"requests_remaining": "499"})):
             sports, quota = odds_logger.get_active_sports()
 
-        self.assertEqual([sport["key"] for sport in sports], ["soccer_epl", "basketball_nba", "americanfootball_nfl"])
+        self.assertEqual([sport["key"] for sport in sports], ["boxing", "soccer_epl", "basketball_nba", "americanfootball_nfl"])
         self.assertEqual(quota["requests_remaining"], "499")
 
     def test_budget_selection_round_robins_across_sport_families(self):
