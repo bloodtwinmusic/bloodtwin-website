@@ -38,6 +38,30 @@ jobs:
       - name: Run zero-credit local tests
         run: python -m unittest paper-lab/test_odds_logger.py
 
+  oddsrelay_preflight:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.collect_live_odds == false }}
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Verify OddsRelay discovery connection
+        env:
+          ODDSRELAY_KEY: ${{ secrets.ODDSRELAY_KEY }}
+        run: |
+          python - <<'PY'
+          import sys
+          sys.path.insert(0, "paper-lab")
+          import odds_logger
+          sports, usage = odds_logger.get_oddsrelay_sports()
+          count = len(sports) if isinstance(sports, list) else len(sports or {})
+          print(f"OddsRelay discovery: OK; payload_items={count}; tokens_cost={usage.get('tokens_cost') or '0/free'}")
+          PY
+
   collect:
     if: ${{ github.event_name == 'workflow_dispatch' && inputs.collect_live_odds == true }}
     needs: test
