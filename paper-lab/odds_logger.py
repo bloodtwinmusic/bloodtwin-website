@@ -617,3 +617,24 @@ if __name__ == "__main__":
     except Exception as exc:
         print(f"Paper Lab logger failed: {exc}", file=sys.stderr)
         sys.exit(1)
+
+ODDSRELAY_MATCHED_PRODUCTS = ("standard", "2up", "dutching", "each-way", "extra-place", "bog")
+
+
+def oddsrelay_quote(product, params=None):
+    if product not in ODDSRELAY_MATCHED_PRODUCTS and product != "raw":
+        raise ValueError(f"Unsupported OddsRelay product: {product}")
+    query = dict(params or {})
+    query["quote"] = "true"
+    return oddsrelay_api_get(f"/v2/odds/{product}", query)
+
+
+def oddsrelay_quote_catalogue(params=None):
+    quotes = {}
+    for product in ODDSRELAY_MATCHED_PRODUCTS + ("raw",):
+        try:
+            body, usage = oddsrelay_quote(product, params)
+            quotes[product] = {"quote": body, "usage": usage}
+        except Exception as exc:
+            quotes[product] = {"error": type(exc).__name__}
+    return quotes
