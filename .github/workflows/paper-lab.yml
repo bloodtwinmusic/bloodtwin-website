@@ -2,9 +2,9 @@ name: Paper Lab
 
 on:
   schedule:
-    - cron: "0 10 * * *"
+    - cron: "57 9 * * *"
       timezone: "Europe/London"
-    - cron: "30 16 * * *"
+    - cron: "27 16 * * *"
       timezone: "Europe/London"
   push:
     branches:
