@@ -6,6 +6,7 @@ import os
 import re
 import sys
 import unicodedata
+import urllib.error
 import urllib.parse
 import urllib.request
 from difflib import SequenceMatcher
@@ -21,6 +22,16 @@ DATA_DIR = Path(__file__).resolve().parent / "data"
 RAW_DATA_DIR = DATA_DIR / "raw"
 V0_5_DATA_DIR = DATA_DIR / "v0.5"
 LONDON = ZoneInfo("Europe/London")
+
+
+class OddsAPIRequestError(RuntimeError):
+    """A structured provider failure without credentials or request URLs."""
+
+    def __init__(self, status, detail, quota=None):
+        self.status = int(status)
+        self.detail = str(detail)
+        self.quota = dict(quota or {})
+        super().__init__(f"The Odds API HTTP {self.status}: {self.detail}")
 
 CSV_V0_1_FIELDNAMES = [
     "observed_at_utc",
@@ -168,7 +179,20 @@ def api_get(endpoint, params=None):
         headers={"User-Agent": "blood.twin-paper-lab/0.4"},
     )
 
-    with urllib.request.urlopen(request, timeout=30) as response:
+    try:
+        response = urllib.request.urlopen(request, timeout=30)
+    except urllib.error.HTTPError as exc:
+        quota = {
+            "requests_last": exc.headers.get("x-requests-last"),
+            "requests_used": exc.headers.get("x-requests-used"),
+            "requests_remaining": exc.headers.get("x-requests-remaining"),
+            "credits_used": exc.headers.get("x-requests-used"),
+            "credits_remaining": exc.headers.get("x-requests-remaining"),
+        }
+        detail = exc.read().decode("utf-8", errors="replace")[:500]
+        raise OddsAPIRequestError(exc.code, detail, quota) from None
+
+    with response:
         body = json.loads(response.read().decode("utf-8"))
         quota = {
             "requests_last": response.headers.get("x-requests-last"),
@@ -1028,7 +1052,8 @@ def plan_the_odds_api_requests(sports, credit_budget, max_requests=None, markets
     upgrade_cost = max(0, len(deep_markets) - 1)
     deep_count = 1 if upgrade_cost and credit_budget >= len(deep_markets) else 0
     sport_count = min(max_requests, credit_budget - (deep_count * upgrade_cost))
-    selected = select_sports_for_budget(sports, sport_count, cycle=cycle)
+    core_event_sports = [sport for sport in sports or [] if not sport.get("has_outrights")]
+    selected = select_sports_for_budget(core_event_sports, sport_count, cycle=cycle)
     plan = []
     for index, sport in enumerate(selected):
         sport_markets = deep_markets if index < deep_count else ["h2h"]
@@ -1294,6 +1319,7 @@ def main():
     sports, sports_quota = get_active_sports()
     sports_discovered = sports
     sports_queried = []
+    request_attempts = 0
     chargeable_requests_made = 0
     request_budget_limit = default_request_budget()
     configured_credit_budget = default_credit_budget()
@@ -1330,7 +1356,36 @@ def main():
             continue
 
         requested_markets = planned_request["markets"]
-        events, odds_quota = get_odds(sport_key, requested_markets)
+        print(
+            f"Querying {sport.get('title')} ({sport_key}) — "
+            f"market(s): {', '.join(requested_markets)}"
+        )
+        request_attempts += 1
+        try:
+            events, odds_quota = get_odds(sport_key, requested_markets)
+        except OddsAPIRequestError as exc:
+            try:
+                error_cost = int(exc.quota.get("requests_last") or 0)
+            except (TypeError, ValueError):
+                error_cost = 0
+            credits_spent += error_cost
+            if error_cost:
+                chargeable_requests_made += 1
+            quota_history.append(
+                {
+                    "sport_key": sport_key,
+                    "sport_title": sport.get("title"),
+                    "requested_markets": requested_markets,
+                    "estimated_credits": planned_request["estimated_credits"],
+                    "quota_headers": exc.quota,
+                    "error": {"status": exc.status, "detail": exc.detail},
+                }
+            )
+            if exc.status in {400, 404, 422}:
+                print(f"Skipping unsupported/stale sport {sport_key}: HTTP {exc.status} {exc.detail}")
+                continue
+            raise
+
         chargeable_requests_made += 1
         try:
             credits_spent += int(odds_quota.get("requests_last") or planned_request["estimated_credits"])
@@ -1355,11 +1410,6 @@ def main():
             rows = compute_market_de_vigged_probabilities(rows)
             all_rows.extend(rows)
             rows_recorded += len(rows)
-
-        print(
-            f"Querying {sport.get('title')} ({sport_key}) — "
-            f"market(s): {', '.join(requested_markets)}"
-        )
 
     oddsrelay_rows = []
     oddsrelay_raw_path = None
@@ -1409,6 +1459,7 @@ def main():
         "credits_before": credits_before,
         "credits_spent": credits_spent,
         "chargeable_requests_made": chargeable_requests_made,
+        "request_attempts": request_attempts,
         "sports_discovered": len(sports_discovered),
         "sports_queried": len(sports_queried),
         "events_returned": events_returned,
@@ -1424,6 +1475,7 @@ def main():
 
     print(f"Sports discovered: {len(sports_discovered)}")
     print(f"Sports queried: {len(sports_queried)}")
+    print(f"Requests attempted: {request_attempts}")
     print(f"Chargeable requests made: {chargeable_requests_made}")
     print(f"Events returned: {events_returned}")
     print(f"Rows recorded: {rows_recorded}")
@@ -1439,6 +1491,7 @@ def main():
         "the_odds_api": {
             "sports_discovered": len(sports_discovered),
             "sports_queried": len(sports_queried),
+            "request_attempts": request_attempts,
             "requests": chargeable_requests_made,
             "credits_spent": credits_spent,
             "credits_remaining": credits_remaining,

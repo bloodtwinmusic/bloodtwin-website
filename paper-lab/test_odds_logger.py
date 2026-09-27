@@ -5,6 +5,7 @@ import os
 import sys
 import tempfile
 import unittest
+import urllib.error
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from unittest.mock import patch
@@ -316,6 +317,35 @@ class OddsLoggerTests(unittest.TestCase):
 
         self.assertEqual([sport["key"] for sport in sports], ["boxing", "soccer_epl", "basketball_nba", "americanfootball_nfl"])
         self.assertEqual(quota["requests_remaining"], "499")
+
+    def test_request_plan_excludes_outright_only_catalogue_entries(self):
+        sports = [
+            {"key": "golf_masters", "group": "Golf", "title": "Masters", "has_outrights": True},
+            {"key": "soccer_epl", "group": "Soccer", "title": "EPL", "has_outrights": False},
+        ]
+        plan = odds_logger.plan_the_odds_api_requests(
+            sports, credit_budget=1, max_requests=1, markets=["h2h"], cycle=0
+        )
+        self.assertEqual([item["sport"]["key"] for item in plan], ["soccer_epl"])
+
+    def test_odds_api_http_error_retains_safe_quota_details(self):
+        headers = {
+            "x-requests-last": "0",
+            "x-requests-used": "35",
+            "x-requests-remaining": "465",
+        }
+        error = urllib.error.HTTPError(
+            "https://redacted.invalid", 422, "Unprocessable Entity", headers, None
+        )
+        error.read = lambda: b'{"error_code":"INVALID_SPORT","message":"Sport is stale"}'
+        with patch.dict(os.environ, {"ODDS_API_KEY": "never-expose"}), patch.object(
+            urllib.request, "urlopen", side_effect=error
+        ):
+            with self.assertRaises(odds_logger.OddsAPIRequestError) as captured:
+                odds_logger.api_get("/sports/stale/odds/")
+        self.assertEqual(captured.exception.status, 422)
+        self.assertEqual(captured.exception.quota["requests_remaining"], "465")
+        self.assertNotIn("never-expose", str(captured.exception))
 
     def test_budget_selection_round_robins_across_sport_families(self):
         sports = [
