@@ -21,6 +21,7 @@ ODDS_FORMAT = "decimal"
 DATA_DIR = Path(__file__).resolve().parent / "data"
 RAW_DATA_DIR = DATA_DIR / "raw"
 V0_5_DATA_DIR = DATA_DIR / "v0.5"
+LATEST_ANALYSIS_BOARD_PATH = V0_5_DATA_DIR / "latest-analysis-board.json"
 LONDON = ZoneInfo("Europe/London")
 
 
@@ -948,6 +949,118 @@ def write_unified_snapshot(snapshot, data_dir=None):
     return path
 
 
+def build_analysis_board(snapshot, market_limit=160):
+    """Build a connector-readable rolling index while full evidence stays off Git."""
+    observations = list(snapshot.get("observations") or [])
+    events = {}
+    grouped_markets = {}
+    for row in observations:
+        event_id = row.get("canonical_event_id")
+        if not event_id:
+            continue
+        event = events.setdefault(event_id, {
+            "id": event_id,
+            "sport": row.get("sport_key"),
+            "family": row.get("sport_family"),
+            "start": row.get("commence_time_utc"),
+            "home": row.get("home"),
+            "away": row.get("away"),
+            "sources": set(),
+        })
+        event["sources"].update(row.get("source_providers") or [row.get("provider")])
+        if row.get("price_side") != "back":
+            continue
+        point = row.get("point")
+        line = round(abs(float(point)), 4) if point is not None else None
+        key = (event_id, row.get("market_key"), row.get("market_metric"), line)
+        grouped_markets.setdefault(key, []).append(row)
+
+    summaries = []
+    for (event_id, market, metric, line), rows in grouped_markets.items():
+        by_role = {}
+        providers = set()
+        bookmakers = set()
+        for row in rows:
+            role = row.get("outcome_role")
+            if role:
+                by_role.setdefault(role, []).append(row)
+            providers.update(row.get("source_providers") or [row.get("provider")])
+            bookmakers.add(row.get("bookmaker_key"))
+        if len(by_role) < 2:
+            continue
+        outcomes = []
+        dispersion = 0.0
+        for role, quotes in sorted(by_role.items()):
+            quotes = sorted(quotes, key=lambda item: float(item.get("price_decimal") or 0), reverse=True)
+            prices = sorted(float(item["price_decimal"]) for item in quotes)
+            median = prices[len(prices) // 2]
+            best = quotes[0]
+            dispersion = max(dispersion, (float(best["price_decimal"]) / median) - 1.0 if median else 0.0)
+            outcomes.append({
+                "role": role,
+                "best_price": round(float(best["price_decimal"]), 4),
+                "bookmaker": best.get("bookmaker_key"),
+                "de_vigged_probability": (
+                    round(float(best["market_de_vigged_probability"]), 6)
+                    if best.get("market_de_vigged_probability") is not None else None
+                ),
+                "median_price": round(median, 4),
+                "quotes": len(quotes),
+            })
+        summaries.append({
+            "event_id": event_id,
+            "market": market,
+            "metric": metric,
+            "line": line,
+            "bookmakers": len(bookmakers),
+            "sources": sorted(provider for provider in providers if provider),
+            "dispersion": round(dispersion, 6),
+            "outcomes": outcomes,
+            "family": events[event_id].get("family") or "other",
+        })
+
+    summaries.sort(key=lambda item: (-item["dispersion"], -item["bookmakers"], item["event_id"]))
+    buckets = {}
+    for item in summaries:
+        buckets.setdefault(item.pop("family"), []).append(item)
+    selected = []
+    families = sorted(buckets)
+    while len(selected) < max(0, int(market_limit)):
+        added = False
+        for family in families:
+            if buckets[family] and len(selected) < market_limit:
+                selected.append(buckets[family].pop(0))
+                added = True
+        if not added:
+            break
+
+    event_index = []
+    for event in sorted(events.values(), key=lambda item: (item.get("start") or "", item["id"])):
+        item = dict(event)
+        item["sources"] = sorted(provider for provider in item["sources"] if provider)
+        event_index.append(item)
+    return {
+        "paper_only": True,
+        "schema_version": "0.5-analysis-1",
+        "observed_at_utc": snapshot.get("observed_at_utc"),
+        "collection_window_start_utc": snapshot.get("collection_window_start_utc"),
+        "collection_window_end_utc": snapshot.get("collection_window_end_utc"),
+        "full_board": snapshot.get("source_counts", {}),
+        "event_count": len(event_index),
+        "measured_market_count": len(selected),
+        "selection_method": "All canonical events plus a sport-family round-robin of complete back-price markets ranked by bookmaker dispersion; measurement only, not betting advice.",
+        "events": event_index,
+        "measured_markets": selected,
+    }
+
+
+def write_analysis_board(snapshot, path=None):
+    target = Path(path or LATEST_ANALYSIS_BOARD_PATH)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(json.dumps(build_analysis_board(snapshot), separators=(",", ":"), sort_keys=True) + "\n", encoding="utf-8")
+    return target
+
+
 def file_integrity(path):
     digest = hashlib.sha256()
     with Path(path).open("rb") as handle:
@@ -958,7 +1071,11 @@ def file_integrity(path):
         "filename": filename,
         "bytes": Path(path).stat().st_size,
         "sha256": digest.hexdigest(),
-        "storage_class": "durable_release" if filename.startswith("unified_") else "workflow_artifact_30_days",
+        "storage_class": (
+            "durable_release" if filename.startswith("unified_")
+            else "rolling_git_index" if filename == "latest-analysis-board.json"
+            else "workflow_artifact_30_days"
+        ),
     }
 
 
@@ -1417,6 +1534,7 @@ def main():
     oddsrelay_acquisitions = {}
     unified = None
     unified_path = None
+    analysis_board_path = None
     if oddsrelay_key_present():
         oddsrelay_rows, oddsrelay_raw_path, oddsrelay_plan, oddsrelay_acquisitions = run_oddsrelay_collection(
             observed, start_time_utc, end_time_utc
@@ -1426,6 +1544,7 @@ def main():
             {"oddsrelay": oddsrelay_raw_path.name} if oddsrelay_raw_path else {},
         )
         unified_path = write_unified_snapshot(unified)
+        analysis_board_path = write_analysis_board(unified)
         print(f"OddsRelay normalized rows: {len(oddsrelay_rows)}")
         print(f"OddsRelay selected products: {', '.join(oddsrelay_plan.get('selected_products', [])) or 'none'}")
         print(f"OddsRelay acquired products: {', '.join(sorted(oddsrelay_acquisitions)) or 'none'}")
@@ -1439,6 +1558,7 @@ def main():
             observed, start_time_utc, end_time_utc, all_rows, [], {}
         )
         unified_path = write_unified_snapshot(unified)
+        analysis_board_path = write_analysis_board(unified)
 
     metadata = {
         "paper_only": True,
@@ -1507,7 +1627,7 @@ def main():
     }
     manifest_path = write_collection_manifest(
         observed,
-        [oddsrelay_raw_path, unified_path],
+        [oddsrelay_raw_path, unified_path, analysis_board_path],
         manifest_summary,
     )
 

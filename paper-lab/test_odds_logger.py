@@ -419,6 +419,24 @@ class OddsLoggerTests(unittest.TestCase):
             self.assertEqual(manifest["files"][0]["filename"], raw_path.name)
             self.assertEqual(len(manifest["files"][0]["sha256"]), 64)
 
+    def test_analysis_board_is_small_plain_text_with_broad_event_index(self):
+        observed = datetime(2026, 9, 26, 13, 0, tzinfo=timezone.utc)
+        relay = odds_logger.normalize_oddsrelay_payload(
+            "standard", self.oddsrelay_fixture, "2026-09-26T17:51:09.140035Z"
+        )
+        unified = odds_logger.unified_snapshot_envelope(
+            observed, observed, observed + timedelta(days=1), [], relay
+        )
+        board = odds_logger.build_analysis_board(unified)
+        self.assertEqual(board["event_count"], 1)
+        self.assertEqual(board["events"][0]["home"], "Fernandez, Leylah Annie")
+        self.assertTrue(board["measured_markets"])
+        self.assertNotIn("observations", board)
+        with tempfile.TemporaryDirectory() as tmpdir:
+            path = odds_logger.write_analysis_board(unified, Path(tmpdir) / "latest-analysis-board.json")
+            self.assertLess(path.stat().st_size, 10000)
+            self.assertEqual(json.loads(path.read_text(encoding="utf-8"))["schema_version"], "0.5-analysis-1")
+
     def test_morning_window_ends_at_next_10am_london(self):
         now = datetime(2026, 9, 25, 9, 0, tzinfo=timezone.utc)  # 10:00 BST
         start, end = odds_logger.default_collection_window(now)

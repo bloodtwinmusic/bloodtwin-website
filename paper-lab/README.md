@@ -47,11 +47,14 @@ Large per-cycle JSON is never added to ordinary Git history:
 - raw and canonical payloads are compact gzip files under ignored `data/raw/`;
 - both are uploaded as a 30-day workflow evidence artifact for debugging;
 - canonical boards are also stored durably as monthly GitHub Release assets;
+- `data/v0.5/latest-analysis-board.json` is a small rolling plain-text index that connected tools can read directly: every canonical event plus 160 sport-family-diversified complete market measurements;
 - small committed manifests retain SHA-256 hashes, byte sizes, allowance usage and source/deduplication counts.
 
 The existing 54 MB run #81 specimen remains in history because it is the first successful live-schema evidence. Future collections follow the external archive policy.
 
 Run #85 (`36293695650`) proved the complete v0.5 path with real data. It used the bounded 10-credit/10,000-token cycle, produced 36 The Odds API rows plus 12,711 OddsRelay rows, reconciled 32 cross-provider duplicates into 12,715 canonical rows and uploaded both the short-retention evidence artifact and durable unified release asset. Its committed integrity record is `data/v0.5/manifest_2026-09-27T041401.958332_0000.json`.
+
+The rolling analysis index is deliberately not the research conclusion or an automatic bet list. It gives the 10:15/16:45 analysis task connector-readable discovery coverage and bookmaker-dispersion measurements; full canonical evidence remains in release/artifact storage.
 
 ## Verification
 
