@@ -34,9 +34,13 @@ Free discovery and quote calls happen before paid acquisition. Empty or unavaila
 
 The live zero-token quote check in run #83 (`36293353951`) returned these acquisition estimates: Standard 10,000; 2Up 300; Dutching 8,000; each-way 250; extra-place 100; BOG 100; Raw 6,271. The default remains Standard-only because it supplies the core cross-sport board. The specialist promotion and horse-racing products stay quote-visible but require an explicit usefulness decision before token expenditure.
 
-## Schedule
+## Schedule and health diagnostics
 
-GitHub Actions prepares the **10:00** and **16:30 Europe/London** cycles at **09:57** and **16:27** using timezone-aware schedules, including BST/GMT changes. The non-round minutes avoid GitHub's documented start-of-hour scheduling congestion while leaving 18 minutes for the board to reach the 10:15/16:45 analysis tasks. A concurrency lock prevents overlapping paid collections. Manual live runs require the `collect_live_odds` workflow input. A maintainer can also perform a deliberate one-off end-to-end verification by including `[live-check]` in a commit message; ordinary pushes and pull requests run tests only.
+GitHub Actions prepares the **10:00** and **16:30 Europe/London** cycles through redundant non-round schedule opportunities: **09:42/09:57** and **16:12/16:27**. A repository-wide concurrency lock serializes them, and the locked freshness gate suppresses the later opportunity after the first one publishes a board. This provides scheduler redundancy without spending a second set of provider credits or tokens. Timezone-aware schedules preserve the local times across BST/GMT changes.
+
+The explicit morning cycle always ends at the following day's 10:00 London boundary, even though preparation starts just before 10:00. This avoids the previous three-minute-window edge case. Manual live runs still require the `collect_live_odds` workflow input. A maintainer can also perform a deliberate one-off end-to-end verification by including `[live-check]` in a commit message; ordinary pushes and pull requests run tests only.
+
+`Paper Lab Health` runs at **10:08** and **16:38 Europe/London**, before the 10:15/16:45 analysis tasks. It reads only GitHub workflow metadata, the committed analysis board and the collection run's secret-free diagnostic artifact. It has no provider secrets and cannot contact OddsRelay or The Odds API. Its report distinguishes a missing scheduled event, test failure, provider/API failure, normalization failure, board/manifest failure, commit/publish failure and a fully successful fresh board. Every collection run uploads `paper-lab-diagnostic-<run-id>` even after a failed step.
 
 The window starts at observation time and ends at the next 10:00 London boundary. The morning run covers the next 24 hours. The 16:30 refresh covers that evening and overnight through 10:00.
 
@@ -54,6 +58,8 @@ The existing 54 MB run #81 specimen remains in history because it is the first s
 
 Run #85 (`36293695650`) proved the complete v0.5 path with real data. It used the bounded 10-credit/10,000-token cycle, produced 36 The Odds API rows plus 12,711 OddsRelay rows, reconciled 32 cross-provider duplicates into 12,715 canonical rows and uploaded both the short-retention evidence artifact and durable unified release asset. Its committed integrity record is `data/v0.5/manifest_2026-09-27T041401.958332_0000.json`.
 
+Run #90 (`36342976765`) is the first recorded scheduled event. GitHub created it at 20:04 BST on 27 September, 3 hours 37 minutes after the intended 16:27 cycle. Once created, every job and publishing step succeeded. The run spent 10 The Odds API credits and acquired the quote-gated OddsRelay Standard product; its integrity record is `data/v0.5/manifest_2026-09-27T190423.279542_0000.json`. This incident is why schedule redundancy and the independent zero-cost health workflow exist.
+
 The rolling analysis index is deliberately not the research conclusion or an automatic bet list. It gives the 10:15/16:45 analysis task connector-readable discovery coverage and bookmaker-dispersion measurements; full canonical evidence remains in release/artifact storage.
 
 ## Verification
@@ -61,7 +67,7 @@ The rolling analysis index is deliberately not the research conclusion or an aut
 Run the zero-credit suite with:
 
 ```bash
-python -m unittest paper-lab/test_odds_logger.py
+python -m unittest discover -s paper-lab -p "test_*.py"
 ```
 
 Tests use mocks and compact fixtures only. They do not call either provider or consume credits/tokens.

@@ -443,6 +443,18 @@ class OddsLoggerTests(unittest.TestCase):
         self.assertEqual(start, now)
         self.assertEqual(end, datetime(2026, 9, 26, 9, 0, tzinfo=timezone.utc))
 
+    def test_preparation_cycle_just_before_ten_covers_the_following_day(self):
+        now = datetime(2026, 9, 28, 8, 57, tzinfo=timezone.utc)  # 09:57 BST
+        start, end = odds_logger.default_collection_window(now, cycle="morning")
+        self.assertEqual(start, now)
+        self.assertEqual(end, datetime(2026, 9, 29, 9, 0, tzinfo=timezone.utc))
+
+    def test_unscheduled_pre_ten_window_keeps_legacy_next_boundary_semantics(self):
+        now = datetime(2026, 9, 28, 8, 57, tzinfo=timezone.utc)  # 09:57 BST
+        start, end = odds_logger.default_collection_window(now)
+        self.assertEqual(start, now)
+        self.assertEqual(end, datetime(2026, 9, 28, 9, 0, tzinfo=timezone.utc))
+
     def test_evening_window_ends_at_next_10am_london(self):
         now = datetime(2026, 9, 25, 15, 30, tzinfo=timezone.utc)  # 16:30 BST
         start, end = odds_logger.default_collection_window(now)

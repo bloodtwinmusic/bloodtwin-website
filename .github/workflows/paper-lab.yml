@@ -1,8 +1,15 @@
 name: Paper Lab
+run-name: Paper Lab — ${{ github.event_name == 'schedule' && github.event.schedule || github.event_name }}
 
 on:
   schedule:
+    # Redundant opportunities are safe: the concurrency-locked freshness gate
+    # permits at most one paid collection per morning/evening cycle.
+    - cron: "42 9 * * *"
+      timezone: "Europe/London"
     - cron: "57 9 * * *"
+      timezone: "Europe/London"
+    - cron: "12 16 * * *"
       timezone: "Europe/London"
     - cron: "27 16 * * *"
       timezone: "Europe/London"
@@ -42,7 +49,7 @@ jobs:
         with:
           python-version: "3.12"
       - name: Run zero-credit local tests
-        run: python -m unittest paper-lab/test_odds_logger.py
+        run: python -m unittest discover -s paper-lab -p "test_*.py"
 
   oddsrelay_preflight:
     if: ${{ (github.event_name == 'workflow_dispatch' && inputs.collect_live_odds == false) || (github.event_name == 'push' && contains(github.event.head_commit.message, '[quote-check]')) }}
@@ -102,8 +109,10 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     concurrency:
-      group: paper-lab-live-collection
+      group: paper-lab-pipeline
       cancel-in-progress: false
+    env:
+      PAPER_LAB_STATUS_PATH: paper-lab-pipeline-status.json
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -111,7 +120,29 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - name: Check cycle freshness without provider calls
+        id: freshness
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          SCHEDULE_EXPRESSION: ${{ github.event.schedule }}
+        run: |
+          cycle="manual"
+          case "$SCHEDULE_EXPRESSION" in
+            "42 9 * * *"|"57 9 * * *") cycle="morning" ;;
+            "12 16 * * *"|"27 16 * * *") cycle="evening" ;;
+          esac
+          python paper-lab/pipeline_diagnostics.py gate \
+            --cycle "$cycle" \
+            --board paper-lab/data/v0.5/latest-analysis-board.json \
+            --status "$PAPER_LAB_STATUS_PATH" \
+            --github-output "$GITHUB_OUTPUT" \
+            --run-id "$GITHUB_RUN_ID" \
+            --event "$EVENT_NAME" \
+            --schedule "$SCHEDULE_EXPRESSION" \
+            --sha "$GITHUB_SHA"
       - name: Run Paper Lab odds logger
+        id: collector
+        if: ${{ steps.freshness.outputs.collect_required == 'true' }}
         env:
           ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
           ODDSRELAY_KEY: ${{ secrets.ODDSRELAY_KEY }}
@@ -121,8 +152,11 @@ jobs:
           ODDS_MARKETS: "h2h,spreads,totals"
           ODDSRELAY_PRODUCTS: "standard"
           ODDSRELAY_TOKEN_BUDGET: "10000"
+          PAPER_LAB_CYCLE: ${{ steps.freshness.outputs.cycle }}
         run: python paper-lab/odds_logger.py
       - name: Preserve raw and canonical evidence for 30 days
+        id: evidence
+        if: ${{ steps.collector.outcome == 'success' }}
         uses: actions/upload-artifact@v4
         with:
           name: paper-lab-evidence-${{ github.run_id }}
@@ -131,6 +165,8 @@ jobs:
           retention-days: 30
           compression-level: 0
       - name: Archive canonical board outside Git history
+        id: archive
+        if: ${{ steps.collector.outcome == 'success' }}
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -140,7 +176,9 @@ jobs:
             gh release create "$archive_tag" --title "Paper Lab archive $(date -u +%Y-%m)" --notes "Durable compressed canonical Paper Lab observations. Raw provider payloads remain short-retention workflow artifacts; integrity manifests remain in Git."
           fi
           gh release upload "$archive_tag" paper-lab/data/raw/unified_*.json.gz --clobber
-      - name: Commit snapshot
+      - name: Commit and publish snapshot
+        id: commit
+        if: ${{ steps.collector.outcome == 'success' && steps.archive.outcome == 'success' }}
         run: |
           git config user.name "Paper Lab Bot"
           git config user.email "paper-lab@users.noreply.github.com"
@@ -149,5 +187,30 @@ jobs:
             echo "No new snapshot to commit."
           else
             git commit -m "Paper Lab odds snapshot"
-            git push
+            git pull --rebase origin main
+            git push origin HEAD:main
           fi
+      - name: Finalize pipeline diagnostic
+        if: ${{ always() }}
+        env:
+          GATE_OUTCOME: ${{ steps.freshness.outcome }}
+          COLLECT_REQUIRED: ${{ steps.freshness.outputs.collect_required }}
+          COLLECTOR_OUTCOME: ${{ steps.collector.outcome }}
+          ARCHIVE_OUTCOME: ${{ steps.archive.outcome }}
+          COMMIT_OUTCOME: ${{ steps.commit.outcome }}
+        run: |
+          python paper-lab/pipeline_diagnostics.py finalize \
+            --status "$PAPER_LAB_STATUS_PATH" \
+            --gate "$GATE_OUTCOME" \
+            --collect-required "${COLLECT_REQUIRED:-false}" \
+            --collector "$COLLECTOR_OUTCOME" \
+            --archive "$ARCHIVE_OUTCOME" \
+            --commit "$COMMIT_OUTCOME"
+      - name: Preserve stage diagnostic without provider calls
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: paper-lab-diagnostic-${{ github.run_id }}
+          path: paper-lab-pipeline-status.json
+          if-no-files-found: warn
+          retention-days: 30

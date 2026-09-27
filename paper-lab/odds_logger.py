@@ -25,6 +25,42 @@ LATEST_ANALYSIS_BOARD_PATH = V0_5_DATA_DIR / "latest-analysis-board.json"
 LONDON = ZoneInfo("Europe/London")
 
 
+def pipeline_mark(stage, **details):
+    """Persist a secret-free stage marker when CI supplies a diagnostic path."""
+    path = os.environ.get("PAPER_LAB_STATUS_PATH")
+    if not path:
+        return None
+    try:
+        import pipeline_diagnostics
+        return pipeline_diagnostics.update_status(path, stage, **details)
+    except Exception as exc:
+        print(f"Pipeline diagnostic write warning: {type(exc).__name__}", file=sys.stderr)
+        return None
+
+
+def pipeline_fail(exc):
+    """Record the stage that failed without persisting provider responses or secrets."""
+    path = os.environ.get("PAPER_LAB_STATUS_PATH")
+    if not path:
+        return None
+    try:
+        import pipeline_diagnostics
+        status = pipeline_diagnostics.load_json(path, {})
+        failed_at = status.get("current_stage", "collector_started")
+        return pipeline_diagnostics.update_status(
+            path,
+            "collector_failed",
+            failed_at_stage=failed_at,
+            error_type=type(exc).__name__,
+        )
+    except Exception as diagnostic_exc:
+        print(
+            f"Pipeline diagnostic failure warning: {type(diagnostic_exc).__name__}",
+            file=sys.stderr,
+        )
+        return None
+
+
 class OddsAPIRequestError(RuntimeError):
     """A structured provider failure without credentials or request URLs."""
 
@@ -1182,8 +1218,13 @@ def plan_the_odds_api_requests(sports, credit_budget, max_requests=None, markets
     return plan
 
 
-def default_collection_window(now=None):
-    """Collect from observation time until the next 10:00 Europe/London boundary."""
+def default_collection_window(now=None, cycle=None):
+    """Collect until the next 10:00 London boundary for the requested cycle.
+
+    The scheduled morning preparation runs just before 10:00.  Its explicit
+    ``morning`` cycle therefore rolls to tomorrow's boundary instead of
+    accidentally creating a three-minute collection window.
+    """
     if now is None:
         now = datetime.now(timezone.utc)
     if now.tzinfo is None:
@@ -1191,8 +1232,9 @@ def default_collection_window(now=None):
 
     start = now.astimezone(timezone.utc)
     local_now = start.astimezone(LONDON)
+    cycle = cycle or os.environ.get("PAPER_LAB_CYCLE")
     end_local = local_now.replace(hour=10, minute=0, second=0, microsecond=0)
-    if local_now >= end_local:
+    if local_now >= end_local or cycle == "morning":
         end_local += timedelta(days=1)
     return start, end_local.astimezone(timezone.utc)
 
@@ -1415,25 +1457,96 @@ def default_oddsrelay_acquisition_products():
 
 def run_oddsrelay_collection(observed, start_time, end_time):
     """Quote-gated live OddsRelay collection; acquisition products are explicit."""
+    pipeline_mark(
+        "provider_api_started",
+        provider_contacted=True,
+        providers={"oddsrelay": {"contacted": True, "operation": "zero_token_quote"}},
+    )
     plan = oddsrelay_build_acquisition_plan(start_time, end_time)
     allowed = default_oddsrelay_acquisition_products()
     selected, estimates = oddsrelay_select_products_from_quotes(plan.get("quotes", {}), allowed)
     plan["selected_products"] = selected
     plan["token_estimates"] = estimates
     plan["token_budget"] = default_oddsrelay_token_budget()
+    pipeline_mark(
+        "provider_api_succeeded",
+        providers={
+            "oddsrelay": {
+                "contacted": True,
+                "quote_succeeded": True,
+                "selected_products": selected,
+                "token_estimates": estimates,
+            }
+        },
+    )
+    pipeline_mark(
+        "provider_api_started",
+        provider_contacted=True,
+        paid_call_attempted=bool(selected),
+        paid_resource_consumption_status="unknown_after_attempt" if selected else "not_attempted",
+        providers={
+            "oddsrelay": {
+                "paid_call_attempted": bool(selected),
+                "operation": "quote_gated_acquisition",
+            }
+        },
+    )
     acquisitions = oddsrelay_execute_plan(plan, allowed)
+    usage_by_product = {
+        product: {
+            key: result.get("usage", {}).get(key)
+            for key in ("tokens_cost", "tokens_used", "tokens_remaining")
+        }
+        for product, result in acquisitions.items()
+    }
+    known_costs = []
+    for usage in usage_by_product.values():
+        try:
+            known_costs.append(int(usage.get("tokens_cost")))
+        except (TypeError, ValueError):
+            pass
+    pipeline_mark(
+        "provider_api_succeeded",
+        paid_resources_consumed=bool(acquisitions),
+        paid_resource_consumption_status="confirmed" if acquisitions else "confirmed_zero",
+        providers={
+            "oddsrelay": {
+                "acquired_products": sorted(acquisitions),
+                "usage": usage_by_product,
+                "known_token_cost_total": sum(known_costs) if known_costs else None,
+            }
+        },
+    )
     raw_snapshot = oddsrelay_snapshot_envelope(observed, start_time, end_time, acquisitions)
+    pipeline_mark("evidence_write_started")
     raw_path = write_oddsrelay_snapshot(raw_snapshot)
+    pipeline_mark("normalization_started")
     rows = normalize_oddsrelay_acquisitions(acquisitions, format_utc_timestamp(observed))
+    pipeline_mark("normalization_succeeded", providers={"oddsrelay": {"rows": len(rows)}})
     return rows, raw_path, plan, acquisitions
 
 def main():
+    pipeline_mark("collector_started")
     observed = datetime.now(timezone.utc)
     observed_utc = observed.isoformat()
     observed_london = observed.astimezone(LONDON).isoformat()
     start_time_utc, end_time_utc = default_collection_window(observed)
 
+    pipeline_mark(
+        "provider_api_started",
+        provider_contacted=True,
+        providers={"the_odds_api": {"contacted": True, "operation": "sport_discovery"}},
+    )
     sports, sports_quota = get_active_sports()
+    pipeline_mark(
+        "provider_api_succeeded",
+        providers={
+            "the_odds_api": {
+                "discovery_succeeded": True,
+                "sports_discovered": len(sports),
+            }
+        },
+    )
     sports_discovered = sports
     sports_queried = []
     request_attempts = 0
@@ -1478,6 +1591,19 @@ def main():
             f"market(s): {', '.join(requested_markets)}"
         )
         request_attempts += 1
+        pipeline_mark(
+            "provider_api_started",
+            provider_contacted=True,
+            paid_call_attempted=True,
+            paid_resource_consumption_status="unknown_after_attempt",
+            providers={
+                "the_odds_api": {
+                    "paid_call_attempted": True,
+                    "request_attempts": request_attempts,
+                    "current_sport": sport_key,
+                }
+            },
+        )
         try:
             events, odds_quota = get_odds(sport_key, requested_markets)
         except OddsAPIRequestError as exc:
@@ -1498,6 +1624,18 @@ def main():
                     "error": {"status": exc.status, "detail": exc.detail},
                 }
             )
+            pipeline_mark(
+                "provider_api_succeeded" if exc.status in {400, 404, 422} else "provider_api_failed",
+                paid_resources_consumed=credits_spent > 0,
+                paid_resource_consumption_status="confirmed" if credits_spent > 0 else "confirmed_zero",
+                providers={
+                    "the_odds_api": {
+                        "credits_spent": credits_spent,
+                        "last_status": exc.status,
+                        "requests_attempted": request_attempts,
+                    }
+                },
+            )
             if exc.status in {400, 404, 422}:
                 print(f"Skipping unsupported/stale sport {sport_key}: HTTP {exc.status} {exc.detail}")
                 continue
@@ -1517,8 +1655,20 @@ def main():
                 "quota_headers": odds_quota,
             }
         )
+        pipeline_mark(
+            "provider_api_succeeded",
+            paid_resources_consumed=credits_spent > 0,
+            paid_resource_consumption_status="confirmed" if credits_spent > 0 else "confirmed_zero",
+            providers={
+                "the_odds_api": {
+                    "credits_spent": credits_spent,
+                    "requests_succeeded": chargeable_requests_made,
+                }
+            },
+        )
         sports_queried.append(sport)
 
+        pipeline_mark("normalization_started", normalization_target="the_odds_api")
         filtered_events = filter_events_between(events, start_time_utc, end_time_utc)
         events_returned += len(filtered_events)
 
@@ -1527,6 +1677,11 @@ def main():
             rows = compute_market_de_vigged_probabilities(rows)
             all_rows.extend(rows)
             rows_recorded += len(rows)
+        pipeline_mark(
+            "normalization_succeeded",
+            normalization_target="the_odds_api",
+            providers={"the_odds_api": {"rows": rows_recorded}},
+        )
 
     oddsrelay_rows = []
     oddsrelay_raw_path = None
@@ -1539,11 +1694,16 @@ def main():
         oddsrelay_rows, oddsrelay_raw_path, oddsrelay_plan, oddsrelay_acquisitions = run_oddsrelay_collection(
             observed, start_time_utc, end_time_utc
         )
+        pipeline_mark("collection_succeeded")
+        pipeline_mark("normalization_started", normalization_target="unified_snapshot")
         unified = unified_snapshot_envelope(
             observed, start_time_utc, end_time_utc, all_rows, oddsrelay_rows,
             {"oddsrelay": oddsrelay_raw_path.name} if oddsrelay_raw_path else {},
         )
+        pipeline_mark("normalization_succeeded", normalization_target="unified_snapshot")
+        pipeline_mark("board_manifest_generation_started", artifact="unified_snapshot")
         unified_path = write_unified_snapshot(unified)
+        pipeline_mark("board_manifest_generation_started", artifact="analysis_board")
         analysis_board_path = write_analysis_board(unified)
         print(f"OddsRelay normalized rows: {len(oddsrelay_rows)}")
         print(f"OddsRelay selected products: {', '.join(oddsrelay_plan.get('selected_products', [])) or 'none'}")
@@ -1554,10 +1714,14 @@ def main():
         print(f"Unified v0.5 rows: {len(unified['observations'])}")
         print(f"Unified snapshot: {unified_path}")
     else:
+        pipeline_mark("normalization_started", normalization_target="unified_snapshot")
         unified = unified_snapshot_envelope(
             observed, start_time_utc, end_time_utc, all_rows, [], {}
         )
+        pipeline_mark("normalization_succeeded", normalization_target="unified_snapshot")
+        pipeline_mark("board_manifest_generation_started", artifact="unified_snapshot")
         unified_path = write_unified_snapshot(unified)
+        pipeline_mark("board_manifest_generation_started", artifact="analysis_board")
         analysis_board_path = write_analysis_board(unified)
 
     metadata = {
@@ -1621,14 +1785,31 @@ def main():
             "selected_products": oddsrelay_plan.get("selected_products", []) if oddsrelay_plan else [],
             "token_estimates": oddsrelay_plan.get("token_estimates", {}) if oddsrelay_plan else {},
             "products_acquired": sorted(oddsrelay_acquisitions),
+            "usage": {
+                product: {
+                    key: result.get("usage", {}).get(key)
+                    for key in ("tokens_cost", "tokens_used", "tokens_remaining")
+                }
+                for product, result in oddsrelay_acquisitions.items()
+            },
             "rows": len(oddsrelay_rows),
         },
         "unified": unified.get("source_counts", {}) if unified else {},
     }
+    pipeline_mark("board_manifest_generation_started", artifact="collection_manifest")
     manifest_path = write_collection_manifest(
         observed,
         [oddsrelay_raw_path, unified_path, analysis_board_path],
         manifest_summary,
+    )
+    pipeline_mark(
+        "board_manifest_generation_succeeded",
+        board={
+            "path": str(analysis_board_path) if analysis_board_path else None,
+            "observed_at_utc": observed_utc,
+            "collection_window_end_utc": format_utc_timestamp(end_time_utc),
+        },
+        manifest_path=str(manifest_path),
     )
 
     print(f"Credits used this collection: {credits_spent}")
@@ -1636,6 +1817,7 @@ def main():
     print(f"CSV: {csv_path}")
     print(f"Metadata: {metadata_path}")
     print(f"Evidence manifest: {manifest_path}")
+    pipeline_mark("collector_succeeded")
 
 
 ODDSRELAY_MATCHED_PRODUCTS = ("standard", "2up", "dutching", "each-way", "extra-place", "bog")
@@ -1664,5 +1846,6 @@ if __name__ == "__main__":
     try:
         main()
     except Exception as exc:
+        pipeline_fail(exc)
         print(f"Paper Lab logger failed: {exc}", file=sys.stderr)
         sys.exit(1)

@@ -1,0 +1,69 @@
+name: Paper Lab Health
+run-name: Paper Lab Health — ${{ github.event_name == 'schedule' && github.event.schedule || inputs.cycle }}
+
+on:
+  schedule:
+    - cron: "8 10 * * *"
+      timezone: "Europe/London"
+    - cron: "38 16 * * *"
+      timezone: "Europe/London"
+  workflow_dispatch:
+    inputs:
+      cycle:
+        description: "Preparation cycle to diagnose without contacting either odds provider"
+        required: true
+        default: morning
+        type: choice
+        options:
+          - morning
+          - evening
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Select cycle without provider calls
+        id: cycle
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          SCHEDULE_EXPRESSION: ${{ github.event.schedule }}
+          REQUESTED_CYCLE: ${{ inputs.cycle }}
+        run: |
+          cycle="$REQUESTED_CYCLE"
+          if [ "$EVENT_NAME" = "schedule" ]
+          then
+            case "$SCHEDULE_EXPRESSION" in
+              "8 10 * * *") cycle="morning" ;;
+              "38 16 * * *") cycle="evening" ;;
+            esac
+          fi
+          echo "cycle=$cycle" >> "$GITHUB_OUTPUT"
+      - name: Classify pipeline health from GitHub metadata
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          python paper-lab/pipeline_diagnostics.py inspect-github \
+            --repo "$GITHUB_REPOSITORY" \
+            --cycle "${{ steps.cycle.outputs.cycle }}" \
+            --board paper-lab/data/v0.5/latest-analysis-board.json \
+            --output paper-lab-pipeline-health.json \
+            --summary "$GITHUB_STEP_SUMMARY" \
+            --fail-unhealthy
+      - name: Preserve zero-cost health report
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: paper-lab-health-${{ github.run_id }}
+          path: paper-lab-pipeline-health.json
+          if-no-files-found: warn
+          retention-days: 30
