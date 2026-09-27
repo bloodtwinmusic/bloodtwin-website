@@ -58,6 +58,25 @@
     },
     "schema_validation_errors": 0
   },
+  "live_quote_preflight": {
+    "workflow_run": {
+      "number": 83,
+      "run_id": 36293353951,
+      "commit": "ff29bb248a4db5b8e1e3c2ad932d07c70dd38ea1"
+    },
+    "quote_token_cost": 0,
+    "acquisition_estimates": {
+      "standard": 10000,
+      "2up": 300,
+      "dutching": 8000,
+      "each_way": 250,
+      "extra_place": 100,
+      "bog": 100,
+      "raw": 6271
+    },
+    "policy_selected_products": ["standard"],
+    "acquired_products": []
+  },
   "storage_policy": {
     "existing_specimen": "Preserved unchanged in snapshot commit fc579d3 for this first live-schema audit.",
     "future_raw_payloads": "gzip workflow artifacts retained for 30 days and excluded from ordinary Git history",

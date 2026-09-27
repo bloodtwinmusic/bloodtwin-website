@@ -32,9 +32,11 @@ The Odds API documents a cost of one credit per returned market per region. The 
 
 Free discovery and quote calls happen before paid acquisition. Empty or unavailable markets can cost less than the conservative request-plan estimate; actual per-call credit headers are recorded.
 
+The live zero-token quote check in run #83 (`36293353951`) returned these acquisition estimates: Standard 10,000; 2Up 300; Dutching 8,000; each-way 250; extra-place 100; BOG 100; Raw 6,271. The default remains Standard-only because it supplies the core cross-sport board. The specialist promotion and horse-racing products stay quote-visible but require an explicit usefulness decision before token expenditure.
+
 ## Schedule
 
-GitHub Actions runs at **10:00** and **16:30 Europe/London** using timezone-aware schedules, including BST/GMT changes. A concurrency lock prevents overlapping paid collections. Manual live runs still require the `collect_live_odds` workflow input; ordinary pushes and pull requests run tests only.
+GitHub Actions runs at **10:00** and **16:30 Europe/London** using timezone-aware schedules, including BST/GMT changes. A concurrency lock prevents overlapping paid collections. Manual live runs require the `collect_live_odds` workflow input. A maintainer can also perform a deliberate one-off end-to-end verification by including `[live-check]` in a commit message; ordinary pushes and pull requests run tests only.
 
 The window starts at observation time and ends at the next 10:00 London boundary. The morning run covers the next 24 hours. The 16:30 refresh covers that evening and overnight through 10:00.
 
