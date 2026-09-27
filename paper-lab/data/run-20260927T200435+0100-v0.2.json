@@ -1,0 +1,153 @@
+{
+  "paper_only": true,
+  "version": "0.4",
+  "schema_version": "0.2",
+  "observed_at_utc": "2026-09-27T19:04:23.279542+00:00",
+  "observed_at_london": "2026-09-27T20:04:23.279542+01:00",
+  "collection_window_start_utc": "2026-09-27T19:04:23.279542+00:00",
+  "collection_window_end_utc": "2026-09-28T09:00:00+00:00",
+  "collection_window_start_london": "2026-09-27T20:04:23.279542+01:00",
+  "collection_window_end_london": "2026-09-28T10:00:00+01:00",
+  "regions": "uk",
+  "markets": [
+    "h2h",
+    "spreads",
+    "totals"
+  ],
+  "odds_format": "decimal",
+  "request_budget_limit": 8,
+  "credit_budget_limit": 10,
+  "credit_reserve": 50,
+  "credits_before": 455,
+  "credits_spent": 10,
+  "chargeable_requests_made": 8,
+  "request_attempts": 8,
+  "sports_discovered": 72,
+  "sports_queried": 8,
+  "events_returned": 11,
+  "rows_recorded": 314,
+  "quota_history": [
+    {
+      "sport_key": "basketball_wnba",
+      "sport_title": "WNBA",
+      "requested_markets": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "estimated_credits": 3,
+      "quota_headers": {
+        "requests_last": "3",
+        "requests_used": "48",
+        "requests_remaining": "452",
+        "credits_used": "48",
+        "credits_remaining": "452"
+      }
+    },
+    {
+      "sport_key": "americanfootball_nfl",
+      "sport_title": "NFL",
+      "requested_markets": [
+        "h2h"
+      ],
+      "estimated_credits": 1,
+      "quota_headers": {
+        "requests_last": "1",
+        "requests_used": "49",
+        "requests_remaining": "451",
+        "credits_used": "49",
+        "credits_remaining": "451"
+      }
+    },
+    {
+      "sport_key": "baseball_npb",
+      "sport_title": "NPB",
+      "requested_markets": [
+        "h2h"
+      ],
+      "estimated_credits": 1,
+      "quota_headers": {
+        "requests_last": "1",
+        "requests_used": "50",
+        "requests_remaining": "450",
+        "credits_used": "50",
+        "credits_remaining": "450"
+      }
+    },
+    {
+      "sport_key": "icehockey_liiga",
+      "sport_title": "Liiga",
+      "requested_markets": [
+        "h2h"
+      ],
+      "estimated_credits": 1,
+      "quota_headers": {
+        "requests_last": "1",
+        "requests_used": "51",
+        "requests_remaining": "449",
+        "credits_used": "51",
+        "credits_remaining": "449"
+      }
+    },
+    {
+      "sport_key": "cricket_odi",
+      "sport_title": "One Day Internationals",
+      "requested_markets": [
+        "h2h"
+      ],
+      "estimated_credits": 1,
+      "quota_headers": {
+        "requests_last": "1",
+        "requests_used": "52",
+        "requests_remaining": "448",
+        "credits_used": "52",
+        "credits_remaining": "448"
+      }
+    },
+    {
+      "sport_key": "soccer_netherlands_eredivisie",
+      "sport_title": "Dutch Eredivisie",
+      "requested_markets": [
+        "h2h"
+      ],
+      "estimated_credits": 1,
+      "quota_headers": {
+        "requests_last": "1",
+        "requests_used": "53",
+        "requests_remaining": "447",
+        "credits_used": "53",
+        "credits_remaining": "447"
+      }
+    },
+    {
+      "sport_key": "basketball_euroleague",
+      "sport_title": "Basketball Euroleague",
+      "requested_markets": [
+        "h2h"
+      ],
+      "estimated_credits": 1,
+      "quota_headers": {
+        "requests_last": "1",
+        "requests_used": "54",
+        "requests_remaining": "446",
+        "credits_used": "54",
+        "credits_remaining": "446"
+      }
+    },
+    {
+      "sport_key": "americanfootball_cfl",
+      "sport_title": "CFL",
+      "requested_markets": [
+        "h2h"
+      ],
+      "estimated_credits": 1,
+      "quota_headers": {
+        "requests_last": "1",
+        "requests_used": "55",
+        "requests_remaining": "445",
+        "credits_used": "55",
+        "credits_remaining": "445"
+      }
+    }
+  ]
+}
