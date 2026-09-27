@@ -44,7 +44,7 @@ jobs:
         run: python -m unittest paper-lab/test_odds_logger.py
 
   oddsrelay_preflight:
-    if: ${{ github.event_name == 'workflow_dispatch' && inputs.collect_live_odds == false }}
+    if: ${{ (github.event_name == 'workflow_dispatch' && inputs.collect_live_odds == false) || (github.event_name == 'push' && contains(github.event.head_commit.message, '[quote-check]')) }}
     needs: test
     runs-on: ubuntu-latest
     steps:
@@ -75,11 +75,25 @@ jobs:
           print(f"OddsRelay catalogue: OK; sports_payload_items={count}")
           print("OddsRelay quote preflight: " + ", ".join(f"{name}={result['status']}" for name, result in summary["quotes"].items()))
           print("OddsRelay token headers: " + ", ".join(f"{name}={result.get('tokens_cost') or '0/free/unspecified'}" for name, result in summary["quotes"].items()))
+          estimates = {
+              name: odds_logger.oddsrelay_quote_token_estimate(result)
+              for name, result in quotes.items()
+              if "error" not in result
+          }
+          print("OddsRelay acquisition estimates: " + ", ".join(f"{name}={estimate if estimate is not None else 'unknown'}" for name, estimate in estimates.items()))
+          selected, _ = odds_logger.oddsrelay_select_products_from_quotes(
+              quotes, odds_logger.default_oddsrelay_acquisition_products()
+          )
+          print("OddsRelay policy-selected products: " + (", ".join(selected) or "none"))
           failures = [name for name, result in quotes.items() if "error" in result]
           if failures:
               for name in failures:
                   print(f"OddsRelay {name} diagnostic: {quotes[name].get('error')}: {quotes[name].get('detail', '')}")
               raise SystemExit("OddsRelay quote preflight failed: " + ", ".join(failures))
+          if "standard" not in selected:
+              standard_quote = quotes.get("standard", {}).get("quote")
+              shape = sorted(standard_quote) if isinstance(standard_quote, dict) else type(standard_quote).__name__
+              raise SystemExit(f"OddsRelay Standard quote is not policy-selectable; quote shape={shape}")
           PY
 
   collect:
