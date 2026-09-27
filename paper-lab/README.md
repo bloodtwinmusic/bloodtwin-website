@@ -1,85 +1,60 @@
-# £10 Paper Lab Odds Logger v0.4
+# £10 Paper Lab dual-provider collector v0.5
 
-Paper-only research for the blood.twin £10 Paper Lab.
+Paper-only market measurement for the blood.twin £10 Paper Lab. The collector records pre-event prices; it never signs in to bookmakers, places bets or initiates real-money activity.
 
-This logger records prospective bookmaker odds only. It never places bets, accesses bookmaker accounts, or initiates any real-money action.
+## Providers and canonical data
 
-## Purpose
+- **The Odds API** supplies a rotating, worldwide, credit-bounded sample.
+- **OddsRelay** supplies a broad UK Standard board after a free quote confirms that the acquisition fits the token budget.
+- Both providers normalize into canonical v0.5 rows before union and deduplication. The Odds API's legacy v0.2 CSV remains an append-only source record.
+- Canonical markets are `h2h`, `spreads` and `totals`. Source-specific market names, bookmaker names, event IDs, outcome names and price side remain attached for provenance.
+- Event reconciliation uses start time, sport family and participant similarity. Bookmaker aliases and outcome roles are canonicalized before duplicate quotes collapse. Every surviving row records `source_providers` and `duplicate_count`.
+- De-vigging is calculated only for complete same-event, same-bookmaker, same-market, same-line back-price groups. Lay prices and incomplete groups remain `null` rather than receiving a false probability.
 
-The logger captures pre-event market snapshots so the experiment can analyse:
+## Proven live schema
 
-- price movement
-- de-vigged market probabilities
-- estimated edge
-- entry-price timing
-- closing-line value (CLV)
-- model calibration
+Run #81 (`36260469588`) returned the OddsRelay Standard hierarchy:
 
-Historical observations are append-only and preserved rather than reconstructed after results are known.
+`event -> markets[] -> outcomes[] -> back[] / lay[]`
 
-## v0.4 changes
+The first live specimen is preserved unchanged at `data/v0.5/oddsrelay_2026-09-26T175109.140035_0000.json`. A compact fixture under `fixtures/` protects this schema in zero-spend regression tests. `data/v0.5/run81-normalization-audit.json` records the specimen hash and real-data reconciliation counts.
 
-- Discovers every active sport returned by The Odds API instead of restricting discovery to the original six-family allowlist.
-- Keeps finite chargeable odds acquisition budgeted and family-diversified; broad discovery does not imply indiscriminate credit spend.
-- OddsRelay is the second planned source. Its key is stored only as the `ODDSRELAY_KEY` repository secret; integration must use free discovery/quotes before token-consuming calls.
+## Allowance controls
 
-## v0.3 changes
+The Odds API documents a cost of one credit per returned market per region. The default 10-credit cycle therefore queries eight rotating sports: one for `h2h,spreads,totals` and seven for `h2h`. Repeated cycles rotate through each live sport-family bucket instead of repeatedly selecting the same alphabetical leagues.
 
-- Uses an explicit Europe/London-aware collection window from observation time to the next 10:00 London boundary.
-- A 10:00 London run therefore covers the next 24 hours; a 16:30 London refresh covers that evening/overnight period through 10:00 the next day.
-- Handles BST/GMT transitions using the Europe/London timezone rather than fixed UTC offsets.
-- Filters events against the exact start/end timestamps used in run metadata.
-- Diversifies the finite request budget across sport families instead of allowing alphabetical league order to consume the scan.
-- This is a budget-limited sampled worldwide scan, not an exhaustive scan of every league.
+- `ODDS_CREDIT_BUDGET` — default `10` credits per collection.
+- `ODDS_CREDIT_RESERVE` — default `50`; paid calls stop before crossing this floor.
+- `ODDS_REQUEST_BUDGET` — default `8` HTTP odds requests per collection.
+- `ODDS_MARKETS` — default `h2h,spreads,totals`.
+- `ODDSRELAY_PRODUCTS` — default `standard`. Specialist products remain explicit opt-ins.
+- `ODDSRELAY_TOKEN_BUDGET` — default `10000`. Unknown or over-budget quote estimates are not purchased.
 
-## v0.2 foundation
+Free discovery and quote calls happen before paid acquisition. Empty or unavailable markets can cost less than the conservative request-plan estimate; actual per-call credit headers are recorded.
 
-- Uses The Odds API v4 with the `ODDS_API_KEY` environment variable only.
-- Uses Europe/London timestamps for human-readable observation and event times while preserving UTC timestamps.
-- Uses the free `/sports` endpoint to discover active sports.
-- Defaults to a tightly controlled H2H market configuration only. Other supported markets are configured explicitly via the market list and remain opt-in.
-- Enforces an API request budget of 10 chargeable odds requests by default and stops before exceeding the limit.
-- Keeps the UK region and decimal odds format for this research stream.
-- Records quota headers after each chargeable odds request in the run metadata.
-- Derives raw implied probabilities as $1 / \text{decimal odds}$ and de-vigging uses same-bookmaker, same-market groupings only.
-- Prints a clear run summary showing sports discovered, sports queried, chargeable requests, events returned, rows recorded, credits used, and credits remaining.
+## Schedule
 
-## Quota and collection controls
+GitHub Actions runs at **10:00** and **16:30 Europe/London** using timezone-aware schedules, including BST/GMT changes. A concurrency lock prevents overlapping paid collections. Manual live runs still require the `collect_live_odds` workflow input; ordinary pushes and pull requests run tests only.
 
-The logger is intentionally conservative because The Odds API credit budget is limited.
+The window starts at observation time and ends at the next 10:00 London boundary. The morning run covers the next 24 hours. The 16:30 refresh covers that evening and overnight through 10:00.
 
-- Default request budget: 10 chargeable odds requests per run.
-- No automatic querying of every active sport.
-- Sports are filtered through the allowlist before any odds requests are made.
-- The collection window runs from observation time to the next 10:00 Europe/London boundary.
-- `ODDS_REQUEST_BUDGET`: hard cap for chargeable odds requests in one run.
-- `ODDS_MARKETS`: comma-separated market list, defaulting to `h2h`.
+## Storage
 
-## Snapshot fields
+Large per-cycle JSON is never added to ordinary Git history:
 
-Each recorded row includes:
+- raw and canonical payloads are compact gzip files under ignored `data/raw/`;
+- both are uploaded as a 30-day workflow evidence artifact for debugging;
+- canonical boards are also stored durably as monthly GitHub Release assets;
+- small committed manifests retain SHA-256 hashes, byte sizes, allowance usage and source/deduplication counts.
 
-- observed_at_utc
-- observed_at_london
-- event_id
-- sport_key
-- sport_title
-- commence_time_utc
-- commence_time_london
-- home_team
-- away_team
-- bookmaker_key
-- bookmaker_title
-- bookmaker_last_update
-- market
-- outcome
-- price_decimal
-- point
-- raw_implied_probability
-- market_de_vigged_probability
+The existing 54 MB run #81 specimen remains in history because it is the first successful live-schema evidence. Future collections follow the external archive policy.
 
-The CSV is append-only. The logger never overwrites historical observations or reconstructs them from old snapshots.
+## Verification
 
-## Safety note
+Run the zero-credit suite with:
 
-This system is paper-only and intentionally never performs real-money activity. It does not access bookmaker accounts, betting interfaces, or payment systems.
+```bash
+python -m unittest paper-lab/test_odds_logger.py
+```
+
+Tests use mocks and compact fixtures only. They do not call either provider or consume credits/tokens.

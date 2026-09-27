@@ -1,0 +1,140 @@
+{
+  "data": [
+    {
+      "away_team": "Talia Gibson",
+      "commence_time": "2026-09-27T09:00:00Z",
+      "event_id": "or_evt_f3cdc2121843",
+      "home_team": "Fernandez, Leylah Annie",
+      "markets": [
+        {
+          "key": "over_under_games",
+          "outcomes": [
+            {
+              "back": [
+                {
+                  "bookmaker": "fitzdares",
+                  "link": "https://www.fitzdares.com/en/sports/tennis/wta-singapore/wta-singapore/fernandez-leylah-annie-vs-gibson-talia/6509616",
+                  "price": 1.8
+                }
+              ],
+              "lay": [
+                {
+                  "available": 492.0,
+                  "exchange": "betfair_exchange",
+                  "link": "https://www.betfair.com/exchange/plus/tennis/event/36119890",
+                  "price": 1.79
+                }
+              ],
+              "name": "Over 20.5 Games"
+            },
+            {
+              "back": [
+                {
+                  "bookmaker": "karamba",
+                  "link": "https://www.karamba.co.uk/sport",
+                  "price": 2.15
+                }
+              ],
+              "lay": [
+                {
+                  "available": 453.0,
+                  "exchange": "betfair_exchange",
+                  "link": "https://www.betfair.com/exchange/plus/tennis/event/36119890",
+                  "price": 2.34
+                }
+              ],
+              "name": "Under 20.5 Games"
+            }
+          ]
+        },
+        {
+          "key": "h2h",
+          "outcomes": [
+            {
+              "back": [
+                {
+                  "bookmaker": "fitzdares",
+                  "link": "https://www.fitzdares.com/en/sports/tennis/wta-singapore/wta-singapore/fernandez-leylah-annie-vs-gibson-talia/6509616",
+                  "price": 1.5
+                }
+              ],
+              "lay": [
+                {
+                  "available": 2638.87,
+                  "exchange": "betfair_exchange",
+                  "link": "https://www.betfair.com/exchange/plus/tennis/event/36119890",
+                  "price": 1.57
+                }
+              ],
+              "name": "Fernandez, Leylah Annie"
+            },
+            {
+              "back": [
+                {
+                  "bookmaker": "betfair_sportsbook",
+                  "link": "https://www.betfair.com/betting/tennis/wta-singapore-2026/l-fernandez-v-ta-gibson/e-36119890",
+                  "price": 1.53
+                }
+              ],
+              "lay": [
+                {
+                  "available": 2638.87,
+                  "exchange": "betfair_exchange",
+                  "link": "https://www.betfair.com/exchange/plus/tennis/event/36119890",
+                  "price": 1.57
+                }
+              ],
+              "name": "Leylah Fernandez"
+            },
+            {
+              "back": [
+                {
+                  "bookmaker": "betway",
+                  "link": "https://betway.com/gb/en/sports/event/17276589",
+                  "price": 2.75
+                }
+              ],
+              "lay": [
+                {
+                  "available": 170.0,
+                  "exchange": "betfair_exchange",
+                  "link": "https://www.betfair.com/exchange/plus/tennis/event/36119890",
+                  "price": 2.9
+                }
+              ],
+              "name": "Talia Gibson"
+            }
+          ]
+        }
+      ],
+      "sport_key": "tennis_wta_singapore",
+      "sport_title": "WTA Singapore"
+    }
+  ],
+  "meta": {
+    "count": 1,
+    "feed_type": "standard",
+    "last_seen": {
+      "betfair_exchange": {
+        "tennis": "2026-09-26T17:51:06Z"
+      },
+      "betfair_sportsbook": {
+        "tennis": "2026-09-26T17:51:06Z"
+      },
+      "betway": {
+        "tennis": "2026-09-26T17:51:05Z"
+      },
+      "fitzdares": {
+        "tennis": "2026-09-26T17:51:09Z"
+      },
+      "karamba": {
+        "tennis": "2026-09-26T17:51:05Z"
+      }
+    },
+    "next_cursor": null,
+    "odds_format": "decimal",
+    "processed_at": "2026-09-26T17:51:09.206Z",
+    "region": "uk",
+    "version": "v2"
+  }
+}

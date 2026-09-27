@@ -1,0 +1,67 @@
+{
+  "paper_only": true,
+  "schema_version": "0.5",
+  "workflow_run": {
+    "number": 81,
+    "run_id": 36260469588,
+    "collector_commit": "88e34d14f12b1789782b3809bb5b00dddf6f0fe9",
+    "snapshot_commit": "fc579d3fd4d1ce0665844accfa469dde8d6a7f2b"
+  },
+  "specimen": {
+    "filename": "oddsrelay_2026-09-26T175109.140035_0000.json",
+    "bytes": 56802239,
+    "sha256": "fdecf3388ebf890e5441f083e2757ba3d4ad0857887ab698415f690fa6064249",
+    "events": 387,
+    "markets": 3534,
+    "outcomes": 15467,
+    "back_quotes": 180520,
+    "lay_quotes": 25638
+  },
+  "actual_oddsrelay_schema": {
+    "path": "products.standard.data.data[]",
+    "hierarchy": "event -> markets[] -> outcomes[] -> back[]/lay[]",
+    "event_fields": [
+      "away_team",
+      "commence_time",
+      "event_id",
+      "home_team",
+      "markets",
+      "sport_key",
+      "sport_title",
+      "venue"
+    ],
+    "market_fields": ["key", "outcomes"],
+    "outcome_fields": ["back", "lay", "name", "point"],
+    "back_quote_fields": ["bookmaker", "link", "price"],
+    "lay_quote_fields": ["available", "exchange", "link", "price"]
+  },
+  "recovery_validation": {
+    "eligible_core_quotes_before_alias_dedupe": 131554,
+    "oddsrelay_core_rows_after_alias_dedupe": 130831,
+    "oddsrelay_alias_duplicates_collapsed": 723,
+    "the_odds_api_legacy_rows": 822,
+    "the_odds_api_invalid_prices_rejected": 20,
+    "the_odds_api_canonical_rows": 802,
+    "oddsrelay_events_with_core_markets": 380,
+    "the_odds_api_events_with_valid_prices": 57,
+    "cross_provider_events_reconciled": 33,
+    "cross_provider_quotes_collapsed": 288,
+    "canonical_rows": 131345,
+    "canonical_events": 404,
+    "canonical_back_rows": 115875,
+    "canonical_lay_rows": 15470,
+    "rows_with_complete_de_vigged_probability": 97017,
+    "market_rows": {
+      "h2h": 28414,
+      "spreads": 38046,
+      "totals": 64885
+    },
+    "schema_validation_errors": 0
+  },
+  "storage_policy": {
+    "existing_specimen": "Preserved unchanged in snapshot commit fc579d3 for this first live-schema audit.",
+    "future_raw_payloads": "gzip workflow artifacts retained for 30 days and excluded from ordinary Git history",
+    "future_canonical_boards": "gzip assets stored in monthly GitHub Releases for durable research history",
+    "future_manifests": "small SHA-256 integrity and collection summaries committed to Git"
+  }
+}

@@ -1,6 +1,11 @@
 name: Paper Lab
 
 on:
+  schedule:
+    - cron: "0 10 * * *"
+      timezone: "Europe/London"
+    - cron: "30 16 * * *"
+      timezone: "Europe/London"
   push:
     branches:
       - paper-lab-odds-logger
@@ -78,9 +83,12 @@ jobs:
           PY
 
   collect:
-    if: ${{ github.event_name == 'workflow_dispatch' && inputs.collect_live_odds == true }}
+    if: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.collect_live_odds == true) }}
     needs: test
     runs-on: ubuntu-latest
+    concurrency:
+      group: paper-lab-live-collection
+      cancel-in-progress: false
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -92,12 +100,36 @@ jobs:
         env:
           ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
           ODDSRELAY_KEY: ${{ secrets.ODDSRELAY_KEY }}
+          ODDS_CREDIT_BUDGET: "10"
+          ODDS_CREDIT_RESERVE: "50"
+          ODDS_REQUEST_BUDGET: "8"
+          ODDS_MARKETS: "h2h,spreads,totals"
+          ODDSRELAY_PRODUCTS: "standard"
+          ODDSRELAY_TOKEN_BUDGET: "10000"
         run: python paper-lab/odds_logger.py
+      - name: Preserve raw and canonical evidence for 30 days
+        uses: actions/upload-artifact@v4
+        with:
+          name: paper-lab-evidence-${{ github.run_id }}
+          path: paper-lab/data/raw/*.json.gz
+          if-no-files-found: error
+          retention-days: 30
+          compression-level: 0
+      - name: Archive canonical board outside Git history
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          archive_tag="paper-lab-archive-$(date -u +%Y-%m)"
+          if ! gh release view "$archive_tag" >/dev/null 2>&1
+          then
+            gh release create "$archive_tag" --title "Paper Lab archive $(date -u +%Y-%m)" --notes "Durable compressed canonical Paper Lab observations. Raw provider payloads remain short-retention workflow artifacts; integrity manifests remain in Git."
+          fi
+          gh release upload "$archive_tag" paper-lab/data/raw/unified_*.json.gz --clobber
       - name: Commit snapshot
         run: |
           git config user.name "Paper Lab Bot"
           git config user.email "paper-lab@users.noreply.github.com"
-          git add paper-lab/data/
+          git add paper-lab/data/ ':!paper-lab/data/raw/'
           if git diff --cached --quiet; then
             echo "No new snapshot to commit."
           else

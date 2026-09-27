@@ -1,4 +1,6 @@
 import csv
+import gzip
+import json
 import os
 import sys
 import tempfile
@@ -13,6 +15,11 @@ import odds_logger
 
 
 class OddsLoggerTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        fixture_path = Path(__file__).resolve().parent / "fixtures" / "oddsrelay_standard_representative.json"
+        cls.oddsrelay_fixture = json.loads(fixture_path.read_text(encoding="utf-8"))
+
     def test_provider_status_detects_both_keys_without_exposing_values(self):
         with patch.dict("os.environ", {"ODDS_API_KEY": "secret-a", "ODDSRELAY_KEY": "secret-b"}, clear=False):
             self.assertEqual(odds_logger.provider_status(), {"the_odds_api": True, "oddsrelay": True})
@@ -78,6 +85,18 @@ class OddsLoggerTests(unittest.TestCase):
         }
         self.assertEqual(odds_logger.oddsrelay_choose_products_from_quotes(quotes), ["standard"])
 
+    def test_oddsrelay_quote_budget_selects_only_affordable_explicit_products(self):
+        quotes = {
+            "standard": {"quote": {"tokens": 10000}},
+            "2up": {"quote": {"tokens": 25000}},
+            "raw": {"quote": {"message": "cost unavailable"}},
+        }
+        selected, estimates = odds_logger.oddsrelay_select_products_from_quotes(
+            quotes, ["standard", "2up", "raw"], token_budget=10000
+        )
+        self.assertEqual(selected, ["standard"])
+        self.assertEqual(estimates, {"standard": 10000, "2up": 25000, "raw": None})
+
     def test_oddsrelay_executor_requires_explicit_allow_list(self):
         plan = {"products": ["standard", "raw"], "params": {"region": "uk"}}
         with patch.object(odds_logger, "oddsrelay_acquire_product") as mocked:
@@ -111,27 +130,68 @@ class OddsLoggerTests(unittest.TestCase):
         rows = [dict(base, point=-1.5), dict(base, point=-2.5)]
         self.assertEqual(len(odds_logger.dedupe_normalized_observations(rows)), 2)
 
-    def test_oddsrelay_normalizer_emits_only_complete_decimal_rows(self):
-        good = {"sport":"soccer","start_time":"2026-09-26T18:00:00Z","home_team":"A","away_team":"B","bookmaker":"book","market":"h2h","selection":"A","odds":"2.10"}
-        incomplete = {"market":"h2h","odds":"3.0"}
-        rows = odds_logger.normalize_oddsrelay_payload("standard", {"items":[good, incomplete]}, "2026-09-26T14:00:00Z")
-        self.assertEqual(len(rows), 1)
-        self.assertEqual(rows[0]["price_decimal"], 2.1)
-        self.assertEqual(rows[0]["provider"], "oddsrelay")
+    def test_oddsrelay_normalizer_handles_real_nested_standard_schema(self):
+        rows = odds_logger.normalize_oddsrelay_payload(
+            "standard", self.oddsrelay_fixture, "2026-09-26T17:51:09.140035Z"
+        )
+        self.assertEqual(len(rows), 9)
+        self.assertEqual({row["market_key"] for row in rows}, {"h2h", "totals"})
+        self.assertEqual({row["price_side"] for row in rows}, {"back", "lay"})
+        self.assertEqual({row["point"] for row in rows if row["market_key"] == "totals"}, {20.5})
+        self.assertFalse(odds_logger.validate_canonical_rows(rows))
+
+    def test_oddsrelay_normalizer_collapses_repeated_alias_lay_quote(self):
+        rows = odds_logger.normalize_oddsrelay_payload(
+            "standard", self.oddsrelay_fixture, "2026-09-26T17:51:09.140035Z"
+        )
+        home_lay = [
+            row for row in rows
+            if row["market_key"] == "h2h"
+            and row["outcome_role"] == "home"
+            and row["price_side"] == "lay"
+        ]
+        self.assertEqual(len(home_lay), 1)
+        self.assertEqual(home_lay[0]["duplicate_count"], 2)
 
     def test_oddsrelay_normalizer_rejects_non_decimal_or_invalid_price(self):
-        bad = {"sport":"soccer","start_time":"x","home_team":"A","away_team":"B","bookmaker":"book","market":"h2h","selection":"A","odds":"EVS"}
-        self.assertEqual(odds_logger.normalize_oddsrelay_payload("standard", bad, "now"), [])
+        bad = json.loads(json.dumps(self.oddsrelay_fixture))
+        bad["data"][0]["markets"][1]["outcomes"][0]["back"][0]["price"] = "EVS"
+        rows = odds_logger.normalize_oddsrelay_payload("standard", bad, "2026-09-26T14:00:00Z")
+        self.assertFalse(any(row["bookmaker_key"] == "fitzdares" and row["market_key"] == "h2h" for row in rows))
 
     def test_unified_snapshot_dedupes_cross_provider_overlap(self):
         observed = datetime(2026, 9, 26, 13, 0, tzinfo=timezone.utc)
-        base = {"sport_key":"soccer","commence_time_utc":"2026-09-26T18:00:00Z","home":"A","away":"B","bookmaker_key":"book","market_key":"h2h","outcome_name":"A","point":None}
-        a = dict(base, observed_at_utc="2026-09-26T12:59:00Z", price_decimal=2.0)
-        b = dict(base, observed_at_utc="2026-09-26T13:00:00Z", price_decimal=2.1)
-        snap = odds_logger.unified_snapshot_envelope(observed, observed, observed, [a], [b], {"oddsrelay":"raw.json"})
-        self.assertEqual(snap["source_counts"], {"the_odds_api":1,"oddsrelay":1,"canonical":1})
-        self.assertEqual(snap["observations"][0]["price_decimal"], 2.1)
-        self.assertEqual(snap["raw_source_refs"]["oddsrelay"], "raw.json")
+        relay = odds_logger.normalize_oddsrelay_payload(
+            "standard", self.oddsrelay_fixture, "2026-09-26T17:51:09.140035Z"
+        )
+        api_row = {
+            "event_id": "toa-event-1",
+            "observed_at_utc": "2026-09-26T17:51:09.140035Z",
+            "sport_key": "tennis_wta_singapore_open",
+            "sport_title": "WTA Singapore Open",
+            "commence_time_utc": "2026-09-27T09:00:00Z",
+            "home_team": "Leylah Fernandez",
+            "away_team": "Talia Gibson",
+            "bookmaker_key": "betfair_sb_uk",
+            "bookmaker_title": "Betfair",
+            "bookmaker_last_update": "2026-09-26T17:50:59Z",
+            "market": "h2h",
+            "outcome": "Leylah Fernandez",
+            "point": None,
+            "price_decimal": 1.52,
+        }
+        snap = odds_logger.unified_snapshot_envelope(
+            observed, observed, observed, [api_row], relay, {"oddsrelay":"raw.json.gz"}
+        )
+        self.assertEqual(snap["source_counts"]["the_odds_api"], 1)
+        self.assertEqual(snap["source_counts"]["oddsrelay"], 9)
+        self.assertEqual(snap["source_counts"]["canonical"], 9)
+        self.assertEqual(snap["source_counts"]["duplicates_collapsed"], 1)
+        self.assertEqual(snap["source_counts"]["cross_provider_rows"], 1)
+        overlap = [row for row in snap["observations"] if len(row["source_providers"]) == 2]
+        self.assertEqual(overlap[0]["price_decimal"], 1.53)
+        self.assertEqual(overlap[0]["home"], "Leylah Fernandez")
+        self.assertEqual(snap["raw_source_refs"]["oddsrelay"], "raw.json.gz")
 
     def test_oddsrelay_default_acquisition_is_standard_only(self):
         with patch.dict(os.environ, {}, clear=False):
@@ -163,8 +223,10 @@ class OddsLoggerTests(unittest.TestCase):
         self.assertEqual(returned_plan, plan)
         self.assertIn("standard", acquisitions)
 
-    def test_default_market_config_is_h2h_only(self):
-        self.assertEqual(odds_logger.default_market_keys(), ["h2h"])
+    def test_default_market_config_includes_three_core_markets(self):
+        with patch.dict(os.environ, {}, clear=False):
+            os.environ.pop("ODDS_MARKETS", None)
+            self.assertEqual(odds_logger.default_market_keys(), ["h2h", "spreads", "totals"])
 
     def test_same_bookmaker_grouping_keeps_market_bounds(self):
         rows = [
@@ -267,7 +329,7 @@ class OddsLoggerTests(unittest.TestCase):
             {"key": "icehockey_nhl", "group": "Ice Hockey", "title": "NHL"},
         ]
 
-        selected = odds_logger.select_sports_for_budget(sports, 6)
+        selected = odds_logger.select_sports_for_budget(sports, 6, cycle=0)
         families = [odds_logger.sport_family(sport) for sport in selected]
 
         self.assertEqual(
@@ -282,8 +344,50 @@ class OddsLoggerTests(unittest.TestCase):
             {"key": "soccer_b", "group": "Soccer", "title": "B Soccer"},
             {"key": "tennis_atp", "group": "Tennis", "title": "ATP"},
         ]
-        selected = odds_logger.select_sports_for_budget(sports, 3)
+        selected = odds_logger.select_sports_for_budget(sports, 3, cycle=0)
         self.assertEqual([sport["key"] for sport in selected], ["soccer_a", "tennis_atp", "soccer_b"])
+
+    def test_budget_selection_rotates_catalogue_between_cycles(self):
+        sports = [
+            {"key": "soccer_a", "group": "Soccer", "title": "A Soccer"},
+            {"key": "soccer_b", "group": "Soccer", "title": "B Soccer"},
+            {"key": "soccer_c", "group": "Soccer", "title": "C Soccer"},
+        ]
+        first = odds_logger.select_sports_for_budget(sports, 1, cycle=0)
+        second = odds_logger.select_sports_for_budget(sports, 1, cycle=1)
+        self.assertEqual(first[0]["key"], "soccer_a")
+        self.assertEqual(second[0]["key"], "soccer_b")
+
+    def test_request_plan_covers_three_markets_within_ten_credit_cap(self):
+        sports = [
+            {"key": f"soccer_{index}", "group": "Soccer", "title": f"Soccer {index}"}
+            for index in range(12)
+        ]
+        plan = odds_logger.plan_the_odds_api_requests(
+            sports, credit_budget=10, max_requests=10,
+            markets=["h2h", "spreads", "totals"], cycle=0,
+        )
+        self.assertEqual(len(plan), 8)
+        self.assertEqual(plan[0]["markets"], ["h2h", "spreads", "totals"])
+        self.assertTrue(all(item["markets"] == ["h2h"] for item in plan[1:]))
+        self.assertEqual(sum(item["estimated_credits"] for item in plan), 10)
+
+    def test_raw_and_unified_snapshots_are_gzipped_outside_v05_manifest_dir(self):
+        observed = datetime(2026, 9, 26, 13, 0, tzinfo=timezone.utc)
+        snapshot = odds_logger.oddsrelay_snapshot_envelope(observed, observed, observed, {})
+        with tempfile.TemporaryDirectory() as tmpdir:
+            raw_dir = Path(tmpdir) / "raw"
+            manifest_dir = Path(tmpdir) / "v0.5"
+            raw_path = odds_logger.write_oddsrelay_snapshot(snapshot, raw_dir)
+            self.assertEqual(raw_path.suffixes[-2:], [".json", ".gz"])
+            with gzip.open(raw_path, "rt", encoding="utf-8") as handle:
+                self.assertEqual(json.load(handle)["provider"], "oddsrelay")
+            manifest_path = odds_logger.write_collection_manifest(
+                observed, [raw_path], {"test": True}, manifest_dir
+            )
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            self.assertEqual(manifest["files"][0]["filename"], raw_path.name)
+            self.assertEqual(len(manifest["files"][0]["sha256"]), 64)
 
     def test_morning_window_ends_at_next_10am_london(self):
         now = datetime(2026, 9, 25, 9, 0, tzinfo=timezone.utc)  # 10:00 BST

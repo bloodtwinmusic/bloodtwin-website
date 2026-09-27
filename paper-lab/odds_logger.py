@@ -1,10 +1,14 @@
 import csv
+import gzip
+import hashlib
 import json
 import os
 import re
 import sys
+import unicodedata
 import urllib.parse
 import urllib.request
+from difflib import SequenceMatcher
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -14,6 +18,8 @@ BASE_URL = "https://api.the-odds-api.com/v4"
 REGIONS = "uk"
 ODDS_FORMAT = "decimal"
 DATA_DIR = Path(__file__).resolve().parent / "data"
+RAW_DATA_DIR = DATA_DIR / "raw"
+V0_5_DATA_DIR = DATA_DIR / "v0.5"
 LONDON = ZoneInfo("Europe/London")
 
 CSV_V0_1_FIELDNAMES = [
@@ -72,17 +78,27 @@ PAPER_ONLY_SPORT_ALIASES = {
 
 
 def default_market_keys():
-    configured = os.environ.get("ODDS_MARKETS", "h2h")
+    configured = os.environ.get("ODDS_MARKETS", "h2h,spreads,totals")
     markets = [item.strip() for item in configured.split(",") if item.strip()]
-    return markets or ["h2h"]
+    return markets or ["h2h", "spreads", "totals"]
 
 
 def default_request_budget():
-    raw_value = os.environ.get("ODDS_REQUEST_BUDGET", "10")
+    raw_value = os.environ.get("ODDS_REQUEST_BUDGET", "8")
     try:
         return max(0, int(raw_value))
     except ValueError:
-        return 10
+        return 8
+
+
+def default_credit_budget():
+    """Maximum The Odds API credits for one collection, not HTTP requests."""
+    return max(0, env_int("ODDS_CREDIT_BUDGET", 10))
+
+
+def default_credit_reserve():
+    """Credits preserved as a hard floor for diagnostics and future decisions."""
+    return max(0, env_int("ODDS_CREDIT_RESERVE", 50))
 
 
 def env_int(name, default):
@@ -290,6 +306,63 @@ def oddsrelay_choose_products_from_quotes(quotes):
     return chosen
 
 
+def oddsrelay_quote_token_estimate(result):
+    """Extract the acquisition estimate from a zero-token quote response."""
+    quote = result.get("quote") if isinstance(result, dict) else None
+    preferred_keys = {"tokens", "token_cost", "tokens_cost", "estimated_tokens", "cost"}
+
+    def walk(value):
+        if isinstance(value, dict):
+            for key, child in value.items():
+                if normalize_sport_name(key) in preferred_keys:
+                    try:
+                        return max(0, int(float(child)))
+                    except (TypeError, ValueError):
+                        pass
+            for child in value.values():
+                found = walk(child)
+                if found is not None:
+                    return found
+        elif isinstance(value, list):
+            for child in value:
+                found = walk(child)
+                if found is not None:
+                    return found
+        return None
+
+    return walk(quote)
+
+
+def default_oddsrelay_token_budget():
+    return max(0, env_int("ODDSRELAY_TOKEN_BUDGET", 10000))
+
+
+def oddsrelay_select_products_from_quotes(quotes, requested_products, token_budget=None):
+    """Use explicit usefulness policy plus quote estimates; unknown costs are not purchased."""
+    remaining = default_oddsrelay_token_budget() if token_budget is None else max(0, int(token_budget))
+    provider_remaining = []
+    for result in quotes.values():
+        try:
+            provider_remaining.append(int(result.get("usage", {}).get("tokens_remaining")))
+        except (AttributeError, TypeError, ValueError):
+            pass
+    if provider_remaining:
+        remaining = min(remaining, min(provider_remaining))
+    selected = []
+    estimates = {}
+    for product in requested_products:
+        result = quotes.get(product, {})
+        if "error" in result or "quote" not in result:
+            continue
+        estimate = oddsrelay_quote_token_estimate(result)
+        estimates[product] = estimate
+        if estimate is None or estimate > remaining:
+            continue
+        selected.append(product)
+        remaining -= estimate
+    return selected, estimates
+
+
 def oddsrelay_build_acquisition_plan(start_time, end_time, region="uk"):
     """Zero-purchase planning stage: quote first, then expose validated products."""
     params = oddsrelay_window_params(start_time, end_time, region)
@@ -312,10 +385,12 @@ def oddsrelay_acquire_product(product, params):
 
 def oddsrelay_execute_plan(plan, allowed_products=None):
     """Acquire only products present in a quote-gated plan and explicit allow-list."""
-    planned = set(plan.get("products", []))
-    allowed = set(allowed_products or [])
+    planned = set(plan.get("selected_products", plan.get("products", [])))
+    allowed = list(allowed_products or [])
     results = {}
-    for product in sorted(planned & allowed):
+    for product in allowed:
+        if product not in planned:
+            continue
         body, usage = oddsrelay_acquire_product(product, plan.get("params", {}))
         results[product] = {"data": body, "usage": usage}
     return results
@@ -337,23 +412,157 @@ def oddsrelay_snapshot_envelope(observed, start_time, end_time, acquisitions):
 
 
 def write_oddsrelay_snapshot(snapshot, data_dir=None):
-    directory = Path(data_dir or Path(__file__).parent / "data" / "v0.5")
+    """Write raw evidence as gzip outside ordinary Git history."""
+    directory = Path(data_dir or RAW_DATA_DIR)
     directory.mkdir(parents=True, exist_ok=True)
     stamp = snapshot["observed_at_utc"].replace(":", "").replace("+", "_")
-    path = directory / f"oddsrelay_{stamp}.json"
-    path.write_text(json.dumps(snapshot, indent=2, sort_keys=True), encoding="utf-8")
+    path = directory / f"oddsrelay_{stamp}.json.gz"
+    with gzip.open(path, "wt", encoding="utf-8", compresslevel=9) as handle:
+        json.dump(snapshot, handle, separators=(",", ":"), sort_keys=True)
     return path
 
 
 def canonical_text(value):
-    return " ".join(str(value or "").strip().lower().split())
+    text = unicodedata.normalize("NFKD", str(value or ""))
+    text = "".join(char for char in text if not unicodedata.combining(char))
+    text = text.lower().replace("&", " and ")
+    text = re.sub(r"[^a-z0-9]+", " ", text)
+    return " ".join(text.split())
+
+
+BOOKMAKER_ALIASES = {
+    "betano_uk": "betano",
+    "betfair_ex_uk": "betfair_exchange",
+    "betfair_sb_uk": "betfair_sportsbook",
+    "betfred_uk": "betfred",
+    "ladbrokes_uk": "ladbrokes",
+    "livescorebet": "livescore_bet",
+    "paddypower": "paddy_power",
+    "skybet": "sky_bet",
+    "sport888": "888sport",
+    "unibet_uk": "unibet",
+    "virginbet": "virgin_bet",
+    "williamhill": "william_hill",
+}
+
+
+PRIMARY_MARKETS = {"h2h", "spreads", "totals"}
+
+
+PRIMARY_MARKET_BY_FAMILY = {
+    "american_football": {"spreads": "handicap_points", "totals": "over_under_points"},
+    "baseball": {"spreads": "handicap_runs", "totals": "over_under_runs"},
+    "basketball": {"spreads": "handicap_points", "totals": "over_under_points"},
+    "cricket": {"spreads": "handicap_runs", "totals": "over_under_runs"},
+    "ice_hockey": {"spreads": "handicap_goals", "totals": "totals"},
+    "soccer": {"spreads": "handicap_goals", "totals": "totals"},
+    "tennis": {"spreads": "handicap_games", "totals": "over_under_games"},
+}
+
+
+def canonical_bookmaker_key(value):
+    key = normalize_sport_name(value)
+    return BOOKMAKER_ALIASES.get(key, key)
+
+
+def canonical_sport_family(value):
+    key = normalize_sport_name(value)
+    if key.startswith("americanfootball"):
+        key = "american_football" + key[len("americanfootball"):]
+    for family in (
+        "american_football", "aussie_rules", "baseball", "basketball", "boxing",
+        "cricket", "darts", "esports", "handball", "horse_racing", "ice_hockey",
+        "mma", "rugby_league", "rugby_union", "soccer", "tennis", "volleyball",
+    ):
+        if key == family or key.startswith(f"{family}_"):
+            return family
+    return key.split("_", 1)[0] if key else "unknown"
+
+
+def canonical_sport_key(value):
+    key = normalize_sport_name(value)
+    if key.startswith("americanfootball"):
+        key = "american_football" + key[len("americanfootball"):]
+    return key
+
+
+def participant_tokens(value):
+    raw = str(value or "").strip()
+    if "," in raw:
+        last, rest = raw.split(",", 1)
+        raw = f"{rest} {last}"
+    text = canonical_text(raw)
+    replacements = {"saint": "st", "university": "", "women": "", "womens": ""}
+    tokens = [replacements.get(token, token) for token in text.split()]
+    return [token for token in tokens if token and token not in {"fc", "afc", "cf", "bc"}]
+
+
+def participant_similarity(left, right):
+    left_tokens = participant_tokens(left)
+    right_tokens = participant_tokens(right)
+    if not left_tokens or not right_tokens:
+        return 0.0
+    left_text = " ".join(left_tokens)
+    right_text = " ".join(right_tokens)
+    if left_text == right_text:
+        return 1.0
+    intersection = len(set(left_tokens) & set(right_tokens))
+    token_score = (2.0 * intersection) / (len(set(left_tokens)) + len(set(right_tokens)))
+    sequence_score = SequenceMatcher(None, left_text, right_text).ratio()
+    initial_score = 0.0
+    if left_tokens[-1] == right_tokens[-1] and left_tokens[0][0] == right_tokens[0][0]:
+        initial_score = 0.9
+    return max(token_score, sequence_score, initial_score)
+
+
+def infer_outcome_role(name, home, away):
+    normalized = canonical_text(name)
+    if normalized.startswith("over"):
+        return "over"
+    if normalized.startswith("under"):
+        return "under"
+    if normalized in {"draw", "tie", "x"}:
+        return "draw"
+    home_score = participant_similarity(name, home)
+    away_score = participant_similarity(name, away)
+    if max(home_score, away_score) >= 0.72:
+        return "home" if home_score >= away_score else "away"
+    return normalized or "other"
+
+
+def extract_point(value, outcome_name=None):
+    if value not in (None, ""):
+        try:
+            return float(value)
+        except (TypeError, ValueError):
+            return None
+    match = re.search(r"(?<![A-Za-z])(-?\d+(?:\.\d+)?)", str(outcome_name or ""))
+    return float(match.group(1)) if match else None
+
+
+def canonical_market_descriptor(source_market, sport_key):
+    source = normalize_sport_name(source_market)
+    if source.endswith("_lay"):
+        source = source[:-4]
+    if source == "h2h":
+        return "h2h", "result"
+    family = canonical_sport_family(sport_key)
+    family_markets = PRIMARY_MARKET_BY_FAMILY.get(family, {})
+    if source == family_markets.get("spreads"):
+        return "spreads", source.replace("handicap_", "")
+    if source == family_markets.get("totals"):
+        metric = source.replace("over_under_", "")
+        return "totals", "score" if metric == "totals" else metric
+    if source in {"spreads", "totals"}:
+        return source, "score"
+    return None, None
 
 
 def canonical_event_key(sport, commence_time, home, away):
-    """Cross-provider event identity without relying on provider-specific IDs."""
+    """Provider-neutral event identity for already-reconciled participant names."""
     return "|".join([
-        canonical_text(sport),
-        canonical_text(commence_time),
+        canonical_sport_family(sport),
+        format_utc_timestamp(commence_time) if commence_time else "",
         canonical_text(home),
         canonical_text(away),
     ])
@@ -370,64 +579,128 @@ def canonical_market_key(provider, sport, commence_time, home, away, bookmaker, 
     ])
 
 
+def normalized_row_identity(row):
+    event = row.get("canonical_event_id") or canonical_event_key(
+        row.get("sport_key"), row.get("commence_time_utc"), row.get("home"), row.get("away")
+    )
+    outcome = row.get("outcome_role") or row.get("outcome_name") or row.get("outcome")
+    point = row.get("point")
+    if point is not None:
+        point = round(float(point), 4)
+    return (
+        event,
+        canonical_bookmaker_key(row.get("bookmaker_key") or row.get("bookmaker")),
+        canonical_text(row.get("market_key") or row.get("market")),
+        canonical_text(row.get("market_metric")),
+        canonical_text(outcome),
+        point,
+        canonical_text(row.get("price_side") or "back"),
+    )
+
+
+def _freshness_key(row):
+    return (
+        str(row.get("bookmaker_last_update") or ""),
+        str(row.get("observed_at_utc") or ""),
+        1 if row.get("provider") == "oddsrelay" else 0,
+    )
+
+
 def dedupe_normalized_observations(rows):
-    """Deduplicate provider-overlap while preserving the newest observation."""
+    """Deduplicate canonical quote overlap while preserving merged provenance."""
     deduped = {}
     for row in rows:
-        key = canonical_market_key(
-            row.get("provider"), row.get("sport_key") or row.get("sport"),
-            row.get("commence_time_utc") or row.get("commence_time"),
-            row.get("home"), row.get("away"),
-            row.get("bookmaker_key") or row.get("bookmaker"),
-            row.get("market_key") or row.get("market"),
-            row.get("outcome_name") or row.get("outcome"), row.get("point"),
-        )
+        row = dict(row)
+        key = normalized_row_identity(row)
         current = deduped.get(key)
-        if current is None or str(row.get("observed_at_utc", "")) >= str(current.get("observed_at_utc", "")):
+        providers = set(row.get("source_providers") or [row.get("provider")])
+        if current is None:
+            row["source_providers"] = sorted(item for item in providers if item)
+            row["duplicate_count"] = int(row.get("duplicate_count") or 1)
             deduped[key] = row
+            continue
+        providers.update(current.get("source_providers") or [current.get("provider")])
+        duplicate_count = int(current.get("duplicate_count") or 1) + int(row.get("duplicate_count") or 1)
+        winner = row if _freshness_key(row) >= _freshness_key(current) else current
+        winner = dict(winner)
+        winner["source_providers"] = sorted(item for item in providers if item)
+        winner["duplicate_count"] = duplicate_count
+        deduped[key] = winner
     return list(deduped.values())
 
 
-def _walk_dicts(value):
-    if isinstance(value, dict):
-        yield value
-        for child in value.values():
-            yield from _walk_dicts(child)
-    elif isinstance(value, list):
-        for child in value:
-            yield from _walk_dicts(child)
-
-
-def normalize_oddsrelay_payload(product, payload, observed_at_utc):
-    """Conservative adapter: emit rows only when canonical betting fields are explicit."""
+def normalize_oddsrelay_payload(product, payload, observed_at_utc, allowed_markets=None):
+    """Normalize OddsRelay's event/market/outcome/back-or-lay hierarchy."""
+    allowed = set(allowed_markets or PRIMARY_MARKETS)
+    body = payload or {}
+    events = body.get("data", []) if isinstance(body, dict) else body
+    meta = body.get("meta", {}) if isinstance(body, dict) else {}
+    last_seen = meta.get("last_seen", {}) if isinstance(meta, dict) else {}
     rows = []
-    for item in _walk_dicts(payload):
-        price = item.get("price_decimal", item.get("decimal_odds", item.get("odds")))
-        market = item.get("market_key", item.get("market"))
-        outcome = item.get("outcome_name", item.get("outcome", item.get("selection")))
-        bookmaker = item.get("bookmaker_key", item.get("bookmaker"))
-        commence = item.get("commence_time_utc", item.get("commence_time", item.get("start_time")))
-        sport = item.get("sport_key", item.get("sport"))
-        home = item.get("home", item.get("home_team"))
-        away = item.get("away", item.get("away_team"))
-        if None in (price, market, outcome, bookmaker, commence, sport, home, away):
+    for event in events or []:
+        if not isinstance(event, dict):
             continue
-        try:
-            decimal_price = float(price)
-        except (TypeError, ValueError):
+        source_sport = event.get("sport_key")
+        family = canonical_sport_family(source_sport)
+        commence = event.get("commence_time")
+        home = event.get("home_team")
+        away = event.get("away_team")
+        if None in (source_sport, commence, home, away):
             continue
-        if decimal_price <= 1.0:
-            continue
-        rows.append({
-            "provider": "oddsrelay", "product": product,
-            "observed_at_utc": observed_at_utc,
-            "sport_key": str(sport), "commence_time_utc": str(commence),
-            "home": str(home), "away": str(away),
-            "bookmaker_key": str(bookmaker), "market_key": str(market),
-            "outcome_name": str(outcome), "point": item.get("point", item.get("line")),
-            "price_decimal": decimal_price,
-        })
-    return rows
+        for market in event.get("markets", []):
+            source_market = market.get("key")
+            market_key, metric = canonical_market_descriptor(source_market, source_sport)
+            if market_key not in allowed:
+                continue
+            for outcome in market.get("outcomes", []):
+                outcome_name = outcome.get("name")
+                outcome_role = infer_outcome_role(outcome_name, home, away)
+                point = extract_point(outcome.get("point"), outcome_name)
+                for price_side, quote_key, bookmaker_field in (
+                    ("back", "back", "bookmaker"), ("lay", "lay", "exchange")
+                ):
+                    for quote in outcome.get(quote_key, []) or []:
+                        bookmaker = quote.get(bookmaker_field)
+                        try:
+                            decimal_price = float(quote.get("price"))
+                        except (TypeError, ValueError):
+                            continue
+                        if not bookmaker or decimal_price <= 1.0:
+                            continue
+                        bookmaker_key = canonical_bookmaker_key(bookmaker)
+                        bookmaker_updates = last_seen.get(bookmaker, {})
+                        bookmaker_update = bookmaker_updates.get(family) if isinstance(bookmaker_updates, dict) else None
+                        rows.append({
+                            "schema_version": "0.5",
+                            "provider": "oddsrelay",
+                            "product": product,
+                            "provider_event_id": event.get("event_id"),
+                            "observed_at_utc": format_utc_timestamp(observed_at_utc),
+                            "sport_key": canonical_sport_key(source_sport),
+                            "source_sport_key": source_sport,
+                            "sport_title": event.get("sport_title"),
+                            "sport_family": family,
+                            "commence_time_utc": format_utc_timestamp(commence),
+                            "home": str(home),
+                            "away": str(away),
+                            "bookmaker_key": bookmaker_key,
+                            "bookmaker_title": bookmaker,
+                            "bookmaker_last_update": bookmaker_update,
+                            "market_key": market_key,
+                            "source_market_key": source_market,
+                            "market_metric": metric,
+                            "outcome_name": str(outcome_name),
+                            "source_outcome_name": str(outcome_name),
+                            "outcome_role": outcome_role,
+                            "price_side": price_side,
+                            "point": point,
+                            "price_decimal": decimal_price,
+                            "raw_implied_probability": 1.0 / decimal_price,
+                            "market_de_vigged_probability": None,
+                            "available_amount": quote.get("available"),
+                            "source_link": quote.get("link"),
+                        })
+    return dedupe_normalized_observations(rows)
 
 
 def normalize_oddsrelay_acquisitions(acquisitions, observed_at_utc):
@@ -437,11 +710,189 @@ def normalize_oddsrelay_acquisitions(acquisitions, observed_at_utc):
     return dedupe_normalized_observations(rows)
 
 
+def normalize_the_odds_api_rows(rows):
+    normalized = []
+    for source in rows or []:
+        source_market = source.get("market")
+        price_side = "lay" if str(source_market or "").endswith("_lay") else "back"
+        market_key, metric = canonical_market_descriptor(source_market, source.get("sport_key"))
+        if market_key not in PRIMARY_MARKETS:
+            continue
+        try:
+            price = float(source.get("price_decimal"))
+        except (TypeError, ValueError):
+            continue
+        if price <= 1.0:
+            continue
+        home = source.get("home_team")
+        away = source.get("away_team")
+        outcome_name = source.get("outcome")
+        normalized.append({
+            "schema_version": "0.5",
+            "provider": "the_odds_api",
+            "product": "odds",
+            "provider_event_id": source.get("event_id"),
+            "observed_at_utc": format_utc_timestamp(source.get("observed_at_utc")),
+            "sport_key": canonical_sport_key(source.get("sport_key")),
+            "source_sport_key": source.get("sport_key"),
+            "sport_title": source.get("sport_title"),
+            "sport_family": canonical_sport_family(source.get("sport_key")),
+            "commence_time_utc": format_utc_timestamp(source.get("commence_time_utc")),
+            "home": str(home),
+            "away": str(away),
+            "bookmaker_key": canonical_bookmaker_key(source.get("bookmaker_key")),
+            "bookmaker_title": source.get("bookmaker_title"),
+            "bookmaker_last_update": source.get("bookmaker_last_update"),
+            "market_key": market_key,
+            "source_market_key": source_market,
+            "market_metric": metric,
+            "outcome_name": str(outcome_name),
+            "source_outcome_name": str(outcome_name),
+            "outcome_role": infer_outcome_role(outcome_name, home, away),
+            "price_side": price_side,
+            "point": extract_point(source.get("point"), outcome_name),
+            "price_decimal": price,
+            "raw_implied_probability": source.get("raw_implied_probability") or 1.0 / price,
+            "market_de_vigged_probability": (
+                source.get("market_de_vigged_probability") if price_side == "back" else None
+            ),
+            "available_amount": None,
+            "source_link": None,
+        })
+    return normalized
+
+
+def _event_descriptor_key(row):
+    provider_id = row.get("provider_event_id")
+    if provider_id:
+        return row.get("provider"), str(provider_id)
+    return (
+        row.get("provider"), row.get("sport_key"), row.get("commence_time_utc"),
+        row.get("home"), row.get("away"),
+    )
+
+
+def reconcile_canonical_events(rows):
+    """Cluster provider event IDs by time, sport family and participant similarity."""
+    descriptors = {}
+    for row in rows:
+        descriptors.setdefault(_event_descriptor_key(row), row)
+    ordered = sorted(
+        descriptors.items(),
+        key=lambda item: (
+            item[1].get("sport_family") or "",
+            item[1].get("commence_time_utc") or "",
+            0 if item[1].get("provider") == "the_odds_api" else 1,
+            str(item[0]),
+        ),
+    )
+    clusters_by_slot = {}
+    assignments = {}
+    for descriptor_key, row in ordered:
+        slot = (row.get("sport_family"), row.get("commence_time_utc"))
+        clusters = clusters_by_slot.setdefault(slot, [])
+        best = None
+        for cluster in clusters:
+            normal = min(
+                participant_similarity(row.get("home"), cluster["home"]),
+                participant_similarity(row.get("away"), cluster["away"]),
+            )
+            swapped = min(
+                participant_similarity(row.get("home"), cluster["away"]),
+                participant_similarity(row.get("away"), cluster["home"]),
+            )
+            score = max(normal, swapped)
+            if score >= 0.72 and (best is None or score > best[0]):
+                best = (score, cluster, swapped > normal)
+        if best is None:
+            seed = canonical_event_key(row.get("sport_family"), row.get("commence_time_utc"), row.get("home"), row.get("away"))
+            cluster = {
+                "id": "evt_" + hashlib.sha256(seed.encode("utf-8")).hexdigest()[:16],
+                "home": row.get("home"),
+                "away": row.get("away"),
+                "sport_key": row.get("sport_key"),
+            }
+            clusters.append(cluster)
+            swapped = False
+        else:
+            _, cluster, swapped = best
+        assignments[descriptor_key] = (cluster, swapped)
+
+    reconciled = []
+    for source in rows:
+        row = dict(source)
+        cluster, swapped = assignments[_event_descriptor_key(row)]
+        row["provider_home"] = row.get("home")
+        row["provider_away"] = row.get("away")
+        row["canonical_event_id"] = cluster["id"]
+        row["home"] = cluster["home"]
+        row["away"] = cluster["away"]
+        row["sport_key"] = cluster["sport_key"]
+        if swapped and row.get("outcome_role") in {"home", "away"}:
+            row["outcome_role"] = "away" if row["outcome_role"] == "home" else "home"
+        reconciled.append(row)
+    return reconciled
+
+
+def compute_canonical_de_vigged_probabilities(rows):
+    grouped = {}
+    for row in rows:
+        if row.get("price_side") != "back":
+            continue
+        point = row.get("point")
+        line = round(abs(float(point)), 4) if point is not None else None
+        key = (
+            row.get("canonical_event_id"), row.get("bookmaker_key"), row.get("market_key"),
+            row.get("market_metric"), line,
+        )
+        grouped.setdefault(key, []).append(row)
+    for group in grouped.values():
+        total = sum(float(row.get("raw_implied_probability") or 0.0) for row in group)
+        complete = len({row.get("outcome_role") for row in group}) >= 2
+        for row in group:
+            row["market_de_vigged_probability"] = (
+                float(row.get("raw_implied_probability") or 0.0) / total
+                if total > 0 and complete else None
+            )
+    return rows
+
+
+CANONICAL_REQUIRED_FIELDS = {
+    "schema_version", "provider", "provider_event_id", "observed_at_utc", "sport_key",
+    "sport_family", "commence_time_utc", "home", "away", "bookmaker_key",
+    "market_key", "outcome_role", "price_side", "price_decimal",
+}
+
+
+def validate_canonical_rows(rows):
+    errors = []
+    for index, row in enumerate(rows):
+        missing = sorted(field for field in CANONICAL_REQUIRED_FIELDS if row.get(field) in (None, ""))
+        if missing:
+            errors.append(f"row {index}: missing {', '.join(missing)}")
+        if row.get("market_key") not in PRIMARY_MARKETS:
+            errors.append(f"row {index}: unsupported market {row.get('market_key')}")
+        if row.get("price_side") not in {"back", "lay"}:
+            errors.append(f"row {index}: unsupported price side {row.get('price_side')}")
+        try:
+            if float(row.get("price_decimal")) <= 1.0:
+                errors.append(f"row {index}: invalid decimal price")
+        except (TypeError, ValueError):
+            errors.append(f"row {index}: invalid decimal price")
+    return errors
+
+
 def unified_snapshot_envelope(observed, start_time, end_time, the_odds_api_rows, oddsrelay_rows, raw_refs=None):
     """v0.5 canonical observation universe with provider provenance retained per row."""
-    api_rows = [dict(row, provider=row.get("provider", "the_odds_api")) for row in the_odds_api_rows]
+    api_rows = normalize_the_odds_api_rows(the_odds_api_rows)
     relay_rows = [dict(row, provider=row.get("provider", "oddsrelay")) for row in oddsrelay_rows]
-    combined = dedupe_normalized_observations(api_rows + relay_rows)
+    reconciled = reconcile_canonical_events(api_rows + relay_rows)
+    validation_errors = validate_canonical_rows(reconciled)
+    if validation_errors:
+        raise ValueError("Canonical v0.5 validation failed: " + "; ".join(validation_errors[:10]))
+    combined = dedupe_normalized_observations(reconciled)
+    compute_canonical_de_vigged_probabilities(combined)
+    cross_provider_rows = sum(1 for row in combined if len(row.get("source_providers", [])) > 1)
     return {
         "paper_only": True,
         "version": "0.5",
@@ -454,6 +905,8 @@ def unified_snapshot_envelope(observed, start_time, end_time, the_odds_api_rows,
             "the_odds_api": len(api_rows),
             "oddsrelay": len(relay_rows),
             "canonical": len(combined),
+            "duplicates_collapsed": len(api_rows) + len(relay_rows) - len(combined),
+            "cross_provider_rows": cross_provider_rows,
         },
         "raw_source_refs": raw_refs or {},
         "observations": combined,
@@ -461,11 +914,44 @@ def unified_snapshot_envelope(observed, start_time, end_time, the_odds_api_rows,
 
 
 def write_unified_snapshot(snapshot, data_dir=None):
-    directory = Path(data_dir or Path(__file__).parent / "data" / "v0.5")
+    """Write the full canonical board beside raw evidence for release-asset archival."""
+    directory = Path(data_dir or RAW_DATA_DIR)
     directory.mkdir(parents=True, exist_ok=True)
     stamp = snapshot["observed_at_utc"].replace(":", "").replace("+", "_")
-    path = directory / f"unified_{stamp}.json"
-    path.write_text(json.dumps(snapshot, indent=2, sort_keys=True), encoding="utf-8")
+    path = directory / f"unified_{stamp}.json.gz"
+    with gzip.open(path, "wt", encoding="utf-8", compresslevel=9) as handle:
+        json.dump(snapshot, handle, separators=(",", ":"), sort_keys=True)
+    return path
+
+
+def file_integrity(path):
+    digest = hashlib.sha256()
+    with Path(path).open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    filename = Path(path).name
+    return {
+        "filename": filename,
+        "bytes": Path(path).stat().st_size,
+        "sha256": digest.hexdigest(),
+        "storage_class": "durable_release" if filename.startswith("unified_") else "workflow_artifact_30_days",
+    }
+
+
+def write_collection_manifest(observed, raw_paths, summary, data_dir=None):
+    directory = Path(data_dir or V0_5_DATA_DIR)
+    directory.mkdir(parents=True, exist_ok=True)
+    stamp = format_utc_timestamp(observed).replace(":", "").replace("+", "_")
+    manifest = {
+        "paper_only": True,
+        "schema_version": "0.5",
+        "observed_at_utc": format_utc_timestamp(observed),
+        "archive_release": f"paper-lab-archive-{observed.astimezone(timezone.utc):%Y-%m}",
+        "files": [file_integrity(path) for path in raw_paths if path],
+        "summary": summary,
+    }
+    path = directory / f"manifest_{stamp}.json"
+    path.write_text(json.dumps(manifest, indent=2, sort_keys=True), encoding="utf-8")
     return path
 
 def get_active_sports():
@@ -489,17 +975,30 @@ def sport_family(sport):
             return family
     return "other"
 
-def select_sports_for_budget(sports, budget):
-    """Round-robin across sport families so an alphabetical list cannot consume the budget."""
+def collection_cycle_number(now=None):
+    now = (now or datetime.now(timezone.utc)).astimezone(LONDON)
+    return now.date().toordinal() * 2 + (1 if now.hour >= 13 else 0)
+
+
+def select_sports_for_budget(sports, budget, cycle=None):
+    """Family-diversified rotating sample; repeated cycles traverse the live catalogue."""
     budget = max(0, int(budget))
     if budget == 0:
         return []
+    cycle = collection_cycle_number() if cycle is None else int(cycle)
     buckets = {}
     family_order = list(PAPER_ONLY_SPORT_ALIASES) + ["other"]
     for sport in sports or []:
         buckets.setdefault(sport_family(sport), []).append(sport)
     for bucket in buckets.values():
         bucket.sort(key=lambda sport: (sport.get("title") or "").lower())
+        if bucket:
+            offset = cycle % len(bucket)
+            bucket[:] = bucket[offset:] + bucket[:offset]
+
+    if family_order:
+        family_offset = cycle % len(family_order)
+        family_order = family_order[family_offset:] + family_order[:family_offset]
 
     selected = []
     while len(selected) < budget:
@@ -512,6 +1011,33 @@ def select_sports_for_budget(sports, budget):
         if not added:
             break
     return selected
+
+
+def plan_the_odds_api_requests(sports, credit_budget, max_requests=None, markets=None, cycle=None):
+    """Spend a bounded credit budget on broad H2H plus rotating deep market coverage."""
+    credit_budget = max(0, int(credit_budget))
+    max_requests = default_request_budget() if max_requests is None else max(0, int(max_requests))
+    requested_markets = list(markets or default_market_keys())
+    if "h2h" not in requested_markets:
+        requested_markets.insert(0, "h2h")
+    requested_markets = list(dict.fromkeys(requested_markets))
+    if credit_budget == 0 or max_requests == 0:
+        return []
+
+    deep_markets = requested_markets
+    upgrade_cost = max(0, len(deep_markets) - 1)
+    deep_count = 1 if upgrade_cost and credit_budget >= len(deep_markets) else 0
+    sport_count = min(max_requests, credit_budget - (deep_count * upgrade_cost))
+    selected = select_sports_for_budget(sports, sport_count, cycle=cycle)
+    plan = []
+    for index, sport in enumerate(selected):
+        sport_markets = deep_markets if index < deep_count else ["h2h"]
+        plan.append({
+            "sport": sport,
+            "markets": sport_markets,
+            "estimated_credits": len(sport_markets),
+        })
+    return plan
 
 
 def default_collection_window(now=None):
@@ -749,6 +1275,10 @@ def run_oddsrelay_collection(observed, start_time, end_time):
     """Quote-gated live OddsRelay collection; acquisition products are explicit."""
     plan = oddsrelay_build_acquisition_plan(start_time, end_time)
     allowed = default_oddsrelay_acquisition_products()
+    selected, estimates = oddsrelay_select_products_from_quotes(plan.get("quotes", {}), allowed)
+    plan["selected_products"] = selected
+    plan["token_estimates"] = estimates
+    plan["token_budget"] = default_oddsrelay_token_budget()
     acquisitions = oddsrelay_execute_plan(plan, allowed)
     raw_snapshot = oddsrelay_snapshot_envelope(observed, start_time, end_time, acquisitions)
     raw_path = write_oddsrelay_snapshot(raw_snapshot)
@@ -765,39 +1295,53 @@ def main():
     sports_discovered = sports
     sports_queried = []
     chargeable_requests_made = 0
-    budget_limit = default_request_budget()
+    request_budget_limit = default_request_budget()
+    configured_credit_budget = default_credit_budget()
+    credit_reserve = default_credit_reserve()
+    try:
+        credits_before = int(sports_quota.get("requests_remaining"))
+    except (TypeError, ValueError):
+        credits_before = None
+    available_above_reserve = (
+        max(0, credits_before - credit_reserve) if credits_before is not None else configured_credit_budget
+    )
+    credit_budget = min(configured_credit_budget, available_above_reserve)
     events_returned = 0
     rows_recorded = 0
+    credits_spent = 0
     quota_history = []
     all_rows = []
 
     print(f"Sports discovered: {len(sports_discovered)}")
-    print(f"Sports queried: 0")
-    print(f"Chargeable requests made: 0")
-    print(f"Events returned: 0")
-    print(f"Rows recorded: 0")
-    print(f"Credits used: 0")
-    print(f"Credits remaining: {sports_quota.get('requests_remaining', 'n/a')}")
+    request_plan = plan_the_odds_api_requests(
+        sports_discovered,
+        credit_budget,
+        max_requests=request_budget_limit,
+        markets=default_market_keys(),
+        cycle=collection_cycle_number(observed),
+    )
+    if not request_plan:
+        print("The Odds API paid collection skipped: no sports or credit budget above reserve.")
 
-    if not sports_discovered:
-        print("No active paper-only sports available for this collection window.")
-        return
-
-    sports_selected = select_sports_for_budget(sports_discovered, budget_limit)
-    for sport in sports_selected:
-
+    for planned_request in request_plan:
+        sport = planned_request["sport"]
         sport_key = sport.get("key")
         if not sport_key:
             continue
 
-        requested_markets = default_market_keys()
+        requested_markets = planned_request["markets"]
         events, odds_quota = get_odds(sport_key, requested_markets)
         chargeable_requests_made += 1
+        try:
+            credits_spent += int(odds_quota.get("requests_last") or planned_request["estimated_credits"])
+        except (TypeError, ValueError):
+            credits_spent += planned_request["estimated_credits"]
         quota_history.append(
             {
                 "sport_key": sport_key,
                 "sport_title": sport.get("title"),
                 "requested_markets": requested_markets,
+                "estimated_credits": planned_request["estimated_credits"],
                 "quota_headers": odds_quota,
             }
         )
@@ -821,22 +1365,30 @@ def main():
     oddsrelay_raw_path = None
     oddsrelay_plan = None
     oddsrelay_acquisitions = {}
+    unified = None
+    unified_path = None
     if oddsrelay_key_present():
         oddsrelay_rows, oddsrelay_raw_path, oddsrelay_plan, oddsrelay_acquisitions = run_oddsrelay_collection(
             observed, start_time_utc, end_time_utc
         )
         unified = unified_snapshot_envelope(
             observed, start_time_utc, end_time_utc, all_rows, oddsrelay_rows,
-            {"oddsrelay": str(oddsrelay_raw_path)} if oddsrelay_raw_path else {},
+            {"oddsrelay": oddsrelay_raw_path.name} if oddsrelay_raw_path else {},
         )
         unified_path = write_unified_snapshot(unified)
         print(f"OddsRelay normalized rows: {len(oddsrelay_rows)}")
+        print(f"OddsRelay selected products: {', '.join(oddsrelay_plan.get('selected_products', [])) or 'none'}")
         print(f"OddsRelay acquired products: {', '.join(sorted(oddsrelay_acquisitions)) or 'none'}")
         for product, result in sorted(oddsrelay_acquisitions.items()):
             usage = result.get("usage", {})
             print(f"OddsRelay {product} tokens cost: {usage.get('tokens_cost') or 'unspecified'}")
         print(f"Unified v0.5 rows: {len(unified['observations'])}")
         print(f"Unified snapshot: {unified_path}")
+    else:
+        unified = unified_snapshot_envelope(
+            observed, start_time_utc, end_time_utc, all_rows, [], {}
+        )
+        unified_path = write_unified_snapshot(unified)
 
     metadata = {
         "paper_only": True,
@@ -851,7 +1403,11 @@ def main():
         "regions": REGIONS,
         "markets": default_market_keys(),
         "odds_format": ODDS_FORMAT,
-        "request_budget_limit": budget_limit,
+        "request_budget_limit": request_budget_limit,
+        "credit_budget_limit": configured_credit_budget,
+        "credit_reserve": credit_reserve,
+        "credits_before": credits_before,
+        "credits_spent": credits_spent,
         "chargeable_requests_made": chargeable_requests_made,
         "sports_discovered": len(sports_discovered),
         "sports_queried": len(sports_queried),
@@ -872,17 +1428,41 @@ def main():
     print(f"Events returned: {events_returned}")
     print(f"Rows recorded: {rows_recorded}")
 
-    credits_used = None
     credits_remaining = None
     if quota_history:
         last_quota = quota_history[-1]["quota_headers"]
-        credits_used = last_quota.get("requests_used")
         credits_remaining = last_quota.get("requests_remaining")
+    elif credits_before is not None:
+        credits_remaining = credits_before
 
-    print(f"Credits used: {credits_used if credits_used is not None else 'n/a'}")
+    manifest_summary = {
+        "the_odds_api": {
+            "sports_discovered": len(sports_discovered),
+            "sports_queried": len(sports_queried),
+            "requests": chargeable_requests_made,
+            "credits_spent": credits_spent,
+            "credits_remaining": credits_remaining,
+            "rows": len(normalize_the_odds_api_rows(all_rows)),
+        },
+        "oddsrelay": {
+            "selected_products": oddsrelay_plan.get("selected_products", []) if oddsrelay_plan else [],
+            "token_estimates": oddsrelay_plan.get("token_estimates", {}) if oddsrelay_plan else {},
+            "products_acquired": sorted(oddsrelay_acquisitions),
+            "rows": len(oddsrelay_rows),
+        },
+        "unified": unified.get("source_counts", {}) if unified else {},
+    }
+    manifest_path = write_collection_manifest(
+        observed,
+        [oddsrelay_raw_path, unified_path],
+        manifest_summary,
+    )
+
+    print(f"Credits used this collection: {credits_spent}")
     print(f"Credits remaining: {credits_remaining if credits_remaining is not None else 'n/a'}")
     print(f"CSV: {csv_path}")
     print(f"Metadata: {metadata_path}")
+    print(f"Evidence manifest: {manifest_path}")
 
 
 ODDSRELAY_MATCHED_PRODUCTS = ("standard", "2up", "dutching", "each-way", "extra-place", "bog")
