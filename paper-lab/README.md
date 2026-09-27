@@ -51,6 +51,8 @@ Large per-cycle JSON is never added to ordinary Git history:
 
 The existing 54 MB run #81 specimen remains in history because it is the first successful live-schema evidence. Future collections follow the external archive policy.
 
+Run #85 (`36293695650`) proved the complete v0.5 path with real data. It used the bounded 10-credit/10,000-token cycle, produced 36 The Odds API rows plus 12,711 OddsRelay rows, reconciled 32 cross-provider duplicates into 12,715 canonical rows and uploaded both the short-retention evidence artifact and durable unified release asset. Its committed integrity record is `data/v0.5/manifest_2026-09-27T041401.958332_0000.json`.
+
 ## Verification
 
 Run the zero-credit suite with:
