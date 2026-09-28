@@ -1,4 +1,5 @@
 import json
+import hashlib
 import io
 import sys
 import tempfile
@@ -23,6 +24,27 @@ class PipelineDiagnosticsTests(unittest.TestCase):
                     "observed_at_utc": observed,
                     "collection_window_end_utc": window_end,
                     "event_count": event_count,
+                }
+            ),
+            encoding="utf-8",
+        )
+        payload = path.read_bytes()
+        stamp = observed.replace(":", "").replace("+", "_").replace("Z", "_0000")
+        manifest = path.parent / f"manifest_{stamp}.json"
+        manifest.write_text(
+            json.dumps(
+                {
+                    "schema_version": "0.5",
+                    "observed_at_utc": observed,
+                    "paper_only": True,
+                    "files": [
+                        {
+                            "filename": path.name,
+                            "bytes": len(payload),
+                            "sha256": hashlib.sha256(payload).hexdigest(),
+                            "storage_class": "rolling_git_index",
+                        }
+                    ],
                 }
             ),
             encoding="utf-8",
@@ -54,6 +76,18 @@ class PipelineDiagnosticsTests(unittest.TestCase):
             )
         self.assertFalse(result["fresh"])
         self.assertEqual(result["reason"], "board_precedes_cycle")
+
+    def test_board_requires_matching_manifest_hash(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            board = self.write_board(
+                tmpdir, "2026-09-28T08:42:00Z", "2026-09-29T09:00:00Z"
+            )
+            board.write_text(board.read_text(encoding="utf-8") + " ", encoding="utf-8")
+            result = pipeline_diagnostics.board_freshness(
+                board, "morning", datetime(2026, 9, 28, 8, 57, tzinfo=timezone.utc)
+            )
+        self.assertFalse(result["fresh"])
+        self.assertEqual(result["reason"], "board_manifest_integrity_mismatch")
 
     def test_evening_board_is_fresh_for_delayed_primary_attempt(self):
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -128,6 +162,25 @@ class PipelineDiagnosticsTests(unittest.TestCase):
             diagnostic["classification"],
             "collection_and_board_succeeded_commit_publish_failed",
         )
+
+    def test_watchdog_push_is_attributed_to_correct_cycle(self):
+        run = {
+            "event": "push",
+            "display_title": "Paper Lab — push",
+            "head_commit": {
+                "message": "Recover preparation [paper-lab-watchdog:morning]"
+            },
+        }
+        self.assertTrue(pipeline_diagnostics.run_matches_cycle(run, "morning"))
+        self.assertFalse(pipeline_diagnostics.run_matches_cycle(run, "evening"))
+
+    def test_ordinary_push_is_not_a_cycle_candidate(self):
+        run = {
+            "event": "push",
+            "display_title": "Paper Lab — routine change",
+            "head_commit": {"message": "Routine change"},
+        }
+        self.assertFalse(pipeline_diagnostics.run_matches_cycle(run, "morning"))
 
 
 if __name__ == "__main__":

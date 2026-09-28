@@ -38,9 +38,13 @@ The live zero-token quote check in run #83 (`36293353951`) returned these acquis
 
 GitHub Actions prepares the **10:00** and **16:30 Europe/London** cycles through redundant non-round schedule opportunities: **09:42/09:57** and **16:12/16:27**. A repository-wide concurrency lock serializes them, and the locked freshness gate suppresses the later opportunity after the first one publishes a board. This provides scheduler redundancy without spending a second set of provider credits or tokens. Timezone-aware schedules preserve the local times across BST/GMT changes.
 
+Because GitHub documents scheduled workflows as best-effort and may delay or drop them, `paper-lab/watchdog-trigger.json` is reserved for an independent event-driven recovery scheduler. A push carrying `[paper-lab-watchdog:morning]` or `[paper-lab-watchdog:evening]` enters the same concurrency lock and cycle freshness gate. If a scheduled run has already published, the watchdog push makes **no provider calls**; if the board is stale, it performs the one budgeted collection. Ordinary pushes remain inert.
+
 The explicit morning cycle always ends at the following day's 10:00 London boundary, even though preparation starts just before 10:00. This avoids the previous three-minute-window edge case. Manual live runs still require the `collect_live_odds` workflow input. A maintainer can also perform a deliberate one-off end-to-end verification by including `[live-check]` in a commit message; ordinary pushes and pull requests run tests only.
 
 `Paper Lab Health` runs at **10:08** and **16:38 Europe/London**, before the 10:15/16:45 analysis tasks. It reads only GitHub workflow metadata, the committed analysis board and the collection run's secret-free diagnostic artifact. It has no provider secrets and cannot contact OddsRelay or The Odds API. Its report distinguishes a missing scheduled event, test failure, provider/API failure, normalization failure, board/manifest failure, commit/publish failure and a fully successful fresh board. Every collection run uploads `paper-lab-diagnostic-<run-id>` even after a failed step.
+
+Freshness now requires a cryptographically valid handoff pair: the board and the newest v0.5 manifest must share `observed_at_utc`, and the manifest's recorded board byte count and SHA-256 must match the committed file. Consumers can verify this without provider calls using `python paper-lab/pipeline_diagnostics.py validate-handoff --cycle morning --board paper-lab/data/v0.5/latest-analysis-board.json`.
 
 The window starts at observation time and ends at the next 10:00 London boundary. The morning run covers the next 24 hours. The 16:30 refresh covers that evening and overnight through 10:00.
 

@@ -1,0 +1,6 @@
+{
+  "schema_version": "paper-lab-watchdog-trigger-1",
+  "last_requested_at_utc": null,
+  "last_requested_cycle": null,
+  "purpose": "Reserved for an independent freshness-gated scheduler. Updating this file is inert unless the commit message carries an explicit paper-lab watchdog marker."
+}

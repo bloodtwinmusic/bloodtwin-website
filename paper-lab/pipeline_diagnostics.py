@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import io
 import json
 import os
@@ -20,10 +21,12 @@ CYCLE_CONFIG = {
     "morning": {
         "fresh_after": time(9, 30),
         "schedules": {"42 9 * * *", "57 9 * * *"},
+        "watchdog_marker": "[paper-lab-watchdog:morning]",
     },
     "evening": {
         "fresh_after": time(16, 0),
         "schedules": {"12 16 * * *", "27 16 * * *"},
+        "watchdog_marker": "[paper-lab-watchdog:evening]",
     },
 }
 
@@ -70,6 +73,74 @@ def load_json(path, default=None):
         return json.loads(Path(path).read_text(encoding="utf-8"))
     except (FileNotFoundError, json.JSONDecodeError, OSError):
         return {} if default is None else default
+
+
+def sha256_path(path):
+    digest = hashlib.sha256()
+    with Path(path).open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def validate_board_manifest_pair(board_path):
+    """Prove that the rolling board has a matching committed v0.5 manifest."""
+    board_path = Path(board_path)
+    result = {
+        "valid": False,
+        "reason": "board_missing_or_invalid",
+        "board_path": str(board_path),
+    }
+    board = load_json(board_path, {})
+    observed = board.get("observed_at_utc")
+    if not observed:
+        return result
+
+    result["observed_at_utc"] = observed
+    manifests = sorted(board_path.parent.glob("manifest_*.json"), reverse=True)
+    timestamp_matches = []
+    for manifest_path in manifests:
+        manifest = load_json(manifest_path, {})
+        if manifest.get("observed_at_utc") != observed:
+            continue
+        timestamp_matches.append((manifest_path, manifest))
+
+    if not timestamp_matches:
+        result["reason"] = "matching_manifest_missing"
+        return result
+
+    board_bytes = board_path.stat().st_size
+    board_sha256 = sha256_path(board_path)
+    result.update({"board_bytes": board_bytes, "board_sha256": board_sha256})
+    for manifest_path, manifest in timestamp_matches:
+        entry = next(
+            (
+                item
+                for item in manifest.get("files", [])
+                if item.get("filename") == board_path.name
+            ),
+            None,
+        )
+        if not entry:
+            continue
+        result.update(
+            {
+                "manifest_path": str(manifest_path),
+                "manifest_schema_version": manifest.get("schema_version"),
+                "manifest_board_bytes": entry.get("bytes"),
+                "manifest_board_sha256": entry.get("sha256"),
+            }
+        )
+        if entry.get("bytes") != board_bytes or entry.get("sha256") != board_sha256:
+            result["reason"] = "board_manifest_integrity_mismatch"
+            continue
+        result["valid"] = True
+        result["reason"] = "board_manifest_pair_valid"
+        return result
+
+    if result["reason"] == "board_missing_or_invalid":
+        result["reason"] = "manifest_missing_board_entry"
+    return result
 
 
 def atomic_write_json(path, payload):
@@ -122,6 +193,11 @@ def board_freshness(board_path, cycle, now=None):
         "expected_window_end_utc": expected_end.isoformat(),
         "reason": "board_missing_or_invalid",
     }
+    handoff = validate_board_manifest_pair(board_path)
+    result["handoff"] = handoff
+    if not handoff["valid"]:
+        result["reason"] = handoff["reason"]
+        return result
     try:
         observed = parse_timestamp(board["observed_at_utc"])
         window_end = parse_timestamp(board["collection_window_end_utc"])
@@ -209,6 +285,17 @@ def failure_classification(stage):
     if any(label in stage for label in ("board", "manifest", "evidence")):
         return "normalization_succeeded_board_manifest_failed"
     return "workflow_started_collector_failed_unknown_stage"
+
+
+def run_matches_cycle(run, cycle):
+    config = CYCLE_CONFIG[cycle]
+    title = str(run.get("display_title") or "")
+    message = str((run.get("head_commit") or {}).get("message") or "")
+    if run.get("event") == "schedule":
+        return any(schedule in title for schedule in config["schedules"])
+    if run.get("event") == "push":
+        return config["watchdog_marker"] in f"{title}\n{message}"
+    return False
 
 
 def finalize(args):
@@ -299,16 +386,14 @@ def inspect_github(args):
         token = args.token or os.environ.get("GITHUB_TOKEN")
         runs = github_json(
             f"https://api.github.com/repos/{args.repo}/actions/workflows/"
-            f"paper-lab.yml/runs?event=schedule&per_page=100",
+            f"paper-lab.yml/runs?per_page=100",
             token,
         ).get("workflow_runs", [])
         floor = cycle_floor(now, args.cycle).astimezone(timezone.utc)
-        schedules = CYCLE_CONFIG[args.cycle]["schedules"]
         candidates = []
         for run in runs:
             created = parse_timestamp(run.get("created_at"))
-            title = str(run.get("display_title") or "")
-            if created >= floor and any(schedule in title for schedule in schedules):
+            if created >= floor and run_matches_cycle(run, args.cycle):
                 candidates.append(run)
 
         if not candidates:
@@ -361,6 +446,14 @@ def inspect_github(args):
     return 0 if healthy or not args.fail_unhealthy else 1
 
 
+def validate_handoff(args):
+    result = board_freshness(args.board, args.cycle, args.now)
+    if args.output:
+        atomic_write_json(args.output, result)
+    print(json.dumps(result, indent=2, sort_keys=True))
+    return 0 if result["fresh"] else 1
+
+
 def build_parser():
     parser = argparse.ArgumentParser(description=__doc__)
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -402,6 +495,13 @@ def build_parser():
     inspect_parser.add_argument("--now")
     inspect_parser.add_argument("--fail-unhealthy", action="store_true")
     inspect_parser.set_defaults(handler=inspect_github)
+
+    handoff_parser = subparsers.add_parser("validate-handoff")
+    handoff_parser.add_argument("--cycle", choices=("morning", "evening"), required=True)
+    handoff_parser.add_argument("--board", required=True)
+    handoff_parser.add_argument("--output")
+    handoff_parser.add_argument("--now")
+    handoff_parser.set_defaults(handler=validate_handoff)
     return parser
 
 
