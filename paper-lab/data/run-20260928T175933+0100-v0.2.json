@@ -1,0 +1,153 @@
+{
+  "paper_only": true,
+  "version": "0.4",
+  "schema_version": "0.2",
+  "observed_at_utc": "2026-09-28T16:59:24.921614+00:00",
+  "observed_at_london": "2026-09-28T17:59:24.921614+01:00",
+  "collection_window_start_utc": "2026-09-28T16:59:24.921614+00:00",
+  "collection_window_end_utc": "2026-09-29T09:00:00+00:00",
+  "collection_window_start_london": "2026-09-28T17:59:24.921614+01:00",
+  "collection_window_end_london": "2026-09-29T10:00:00+01:00",
+  "regions": "uk",
+  "markets": [
+    "h2h",
+    "spreads",
+    "totals"
+  ],
+  "odds_format": "decimal",
+  "request_budget_limit": 8,
+  "credit_budget_limit": 10,
+  "credit_reserve": 50,
+  "credits_before": 445,
+  "credits_spent": 10,
+  "chargeable_requests_made": 8,
+  "request_attempts": 8,
+  "sports_discovered": 76,
+  "sports_queried": 8,
+  "events_returned": 7,
+  "rows_recorded": 86,
+  "quota_history": [
+    {
+      "sport_key": "americanfootball_ncaaf",
+      "sport_title": "NCAAF",
+      "requested_markets": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "estimated_credits": 3,
+      "quota_headers": {
+        "requests_last": "3",
+        "requests_used": "58",
+        "requests_remaining": "442",
+        "credits_used": "58",
+        "credits_remaining": "442"
+      }
+    },
+    {
+      "sport_key": "baseball_mlb",
+      "sport_title": "MLB",
+      "requested_markets": [
+        "h2h"
+      ],
+      "estimated_credits": 1,
+      "quota_headers": {
+        "requests_last": "1",
+        "requests_used": "59",
+        "requests_remaining": "441",
+        "credits_used": "59",
+        "credits_remaining": "441"
+      }
+    },
+    {
+      "sport_key": "icehockey_sweden_allsvenskan",
+      "sport_title": "HockeyAllsvenskan",
+      "requested_markets": [
+        "h2h"
+      ],
+      "estimated_credits": 1,
+      "quota_headers": {
+        "requests_last": "1",
+        "requests_used": "60",
+        "requests_remaining": "440",
+        "credits_used": "60",
+        "credits_remaining": "440"
+      }
+    },
+    {
+      "sport_key": "mma_mixed_martial_arts",
+      "sport_title": "MMA",
+      "requested_markets": [
+        "h2h"
+      ],
+      "estimated_credits": 1,
+      "quota_headers": {
+        "requests_last": "1",
+        "requests_used": "61",
+        "requests_remaining": "439",
+        "credits_used": "61",
+        "credits_remaining": "439"
+      }
+    },
+    {
+      "sport_key": "soccer_norway_eliteserien",
+      "sport_title": "Eliteserien - Norway",
+      "requested_markets": [
+        "h2h"
+      ],
+      "estimated_credits": 1,
+      "quota_headers": {
+        "requests_last": "1",
+        "requests_used": "62",
+        "requests_remaining": "438",
+        "credits_used": "62",
+        "credits_remaining": "438"
+      }
+    },
+    {
+      "sport_key": "basketball_wnba",
+      "sport_title": "WNBA",
+      "requested_markets": [
+        "h2h"
+      ],
+      "estimated_credits": 1,
+      "quota_headers": {
+        "requests_last": "1",
+        "requests_used": "63",
+        "requests_remaining": "437",
+        "credits_used": "63",
+        "credits_remaining": "437"
+      }
+    },
+    {
+      "sport_key": "americanfootball_nfl",
+      "sport_title": "NFL",
+      "requested_markets": [
+        "h2h"
+      ],
+      "estimated_credits": 1,
+      "quota_headers": {
+        "requests_last": "1",
+        "requests_used": "64",
+        "requests_remaining": "436",
+        "credits_used": "64",
+        "credits_remaining": "436"
+      }
+    },
+    {
+      "sport_key": "baseball_npb",
+      "sport_title": "NPB",
+      "requested_markets": [
+        "h2h"
+      ],
+      "estimated_credits": 1,
+      "quota_headers": {
+        "requests_last": "1",
+        "requests_used": "65",
+        "requests_remaining": "435",
+        "credits_used": "65",
+        "credits_remaining": "435"
+      }
+    }
+  ]
+}
