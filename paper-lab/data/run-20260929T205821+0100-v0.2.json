@@ -1,0 +1,153 @@
+{
+  "paper_only": true,
+  "version": "0.4",
+  "schema_version": "0.2",
+  "observed_at_utc": "2026-09-29T19:58:12.795822+00:00",
+  "observed_at_london": "2026-09-29T20:58:12.795822+01:00",
+  "collection_window_start_utc": "2026-09-29T19:58:12.795822+00:00",
+  "collection_window_end_utc": "2026-09-30T09:00:00+00:00",
+  "collection_window_start_london": "2026-09-29T20:58:12.795822+01:00",
+  "collection_window_end_london": "2026-09-30T10:00:00+01:00",
+  "regions": "uk",
+  "markets": [
+    "h2h",
+    "spreads",
+    "totals"
+  ],
+  "odds_format": "decimal",
+  "request_budget_limit": 8,
+  "credit_budget_limit": 10,
+  "credit_reserve": 50,
+  "credits_before": 425,
+  "credits_spent": 10,
+  "chargeable_requests_made": 8,
+  "request_attempts": 8,
+  "sports_discovered": 82,
+  "sports_queried": 8,
+  "events_returned": 9,
+  "rows_recorded": 364,
+  "quota_history": [
+    {
+      "sport_key": "icehockey_mestis",
+      "sport_title": "Mestis",
+      "requested_markets": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "estimated_credits": 3,
+      "quota_headers": {
+        "requests_last": "3",
+        "requests_used": "78",
+        "requests_remaining": "422",
+        "credits_used": "78",
+        "credits_remaining": "422"
+      }
+    },
+    {
+      "sport_key": "rugbyleague_nrlw",
+      "sport_title": "NRLW",
+      "requested_markets": [
+        "h2h"
+      ],
+      "estimated_credits": 1,
+      "quota_headers": {
+        "requests_last": "1",
+        "requests_used": "79",
+        "requests_remaining": "421",
+        "credits_used": "79",
+        "credits_remaining": "421"
+      }
+    },
+    {
+      "sport_key": "soccer_austria_bundesliga",
+      "sport_title": "Austrian Football Bundesliga",
+      "requested_markets": [
+        "h2h"
+      ],
+      "estimated_credits": 1,
+      "quota_headers": {
+        "requests_last": "1",
+        "requests_used": "80",
+        "requests_remaining": "420",
+        "credits_used": "80",
+        "credits_remaining": "420"
+      }
+    },
+    {
+      "sport_key": "tennis_atp_china_open",
+      "sport_title": "ATP China Open",
+      "requested_markets": [
+        "h2h"
+      ],
+      "estimated_credits": 1,
+      "quota_headers": {
+        "requests_last": "1",
+        "requests_used": "81",
+        "requests_remaining": "419",
+        "credits_used": "81",
+        "credits_remaining": "419"
+      }
+    },
+    {
+      "sport_key": "basketball_nba",
+      "sport_title": "NBA",
+      "requested_markets": [
+        "h2h"
+      ],
+      "estimated_credits": 1,
+      "quota_headers": {
+        "requests_last": "1",
+        "requests_used": "82",
+        "requests_remaining": "418",
+        "credits_used": "82",
+        "credits_remaining": "418"
+      }
+    },
+    {
+      "sport_key": "americanfootball_cfl",
+      "sport_title": "CFL",
+      "requested_markets": [
+        "h2h"
+      ],
+      "estimated_credits": 1,
+      "quota_headers": {
+        "requests_last": "1",
+        "requests_used": "83",
+        "requests_remaining": "417",
+        "credits_used": "83",
+        "credits_remaining": "417"
+      }
+    },
+    {
+      "sport_key": "baseball_kbo",
+      "sport_title": "KBO",
+      "requested_markets": [
+        "h2h"
+      ],
+      "estimated_credits": 1,
+      "quota_headers": {
+        "requests_last": "1",
+        "requests_used": "84",
+        "requests_remaining": "416",
+        "credits_used": "84",
+        "credits_remaining": "416"
+      }
+    },
+    {
+      "sport_key": "icehockey_nhl",
+      "sport_title": "NHL",
+      "requested_markets": [
+        "h2h"
+      ],
+      "estimated_credits": 1,
+      "quota_headers": {
+        "requests_last": "1",
+        "requests_used": "85",
+        "requests_remaining": "415",
+        "credits_used": "85",
+        "credits_remaining": "415"
+      }
+    }
+  ]
+}
