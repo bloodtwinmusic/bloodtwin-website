@@ -1,0 +1,153 @@
+{
+  "paper_only": true,
+  "version": "0.4",
+  "schema_version": "0.2",
+  "observed_at_utc": "2026-09-29T08:51:09.445673+00:00",
+  "observed_at_london": "2026-09-29T09:51:09.445673+01:00",
+  "collection_window_start_utc": "2026-09-29T08:51:09.445673+00:00",
+  "collection_window_end_utc": "2026-09-30T09:00:00+00:00",
+  "collection_window_start_london": "2026-09-29T09:51:09.445673+01:00",
+  "collection_window_end_london": "2026-09-30T10:00:00+01:00",
+  "regions": "uk",
+  "markets": [
+    "h2h",
+    "spreads",
+    "totals"
+  ],
+  "odds_format": "decimal",
+  "request_budget_limit": 8,
+  "credit_budget_limit": 10,
+  "credit_reserve": 50,
+  "credits_before": 435,
+  "credits_spent": 10,
+  "chargeable_requests_made": 8,
+  "request_attempts": 8,
+  "sports_discovered": 79,
+  "sports_queried": 8,
+  "events_returned": 35,
+  "rows_recorded": 1013,
+  "quota_history": [
+    {
+      "sport_key": "baseball_npb",
+      "sport_title": "NPB",
+      "requested_markets": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "estimated_credits": 3,
+      "quota_headers": {
+        "requests_last": "3",
+        "requests_used": "68",
+        "requests_remaining": "432",
+        "credits_used": "68",
+        "credits_remaining": "432"
+      }
+    },
+    {
+      "sport_key": "icehockey_liiga",
+      "sport_title": "Liiga",
+      "requested_markets": [
+        "h2h"
+      ],
+      "estimated_credits": 1,
+      "quota_headers": {
+        "requests_last": "1",
+        "requests_used": "69",
+        "requests_remaining": "431",
+        "credits_used": "69",
+        "credits_remaining": "431"
+      }
+    },
+    {
+      "sport_key": "rugbyleague_nrl",
+      "sport_title": "NRL",
+      "requested_markets": [
+        "h2h"
+      ],
+      "estimated_credits": 1,
+      "quota_headers": {
+        "requests_last": "1",
+        "requests_used": "70",
+        "requests_remaining": "430",
+        "credits_used": "70",
+        "credits_remaining": "430"
+      }
+    },
+    {
+      "sport_key": "soccer_epl",
+      "sport_title": "EPL",
+      "requested_markets": [
+        "h2h"
+      ],
+      "estimated_credits": 1,
+      "quota_headers": {
+        "requests_last": "1",
+        "requests_used": "71",
+        "requests_remaining": "429",
+        "credits_used": "71",
+        "credits_remaining": "429"
+      }
+    },
+    {
+      "sport_key": "tennis_wta_china_open",
+      "sport_title": "WTA China Open",
+      "requested_markets": [
+        "h2h"
+      ],
+      "estimated_credits": 1,
+      "quota_headers": {
+        "requests_last": "1",
+        "requests_used": "72",
+        "requests_remaining": "428",
+        "credits_used": "72",
+        "credits_remaining": "428"
+      }
+    },
+    {
+      "sport_key": "basketball_euroleague",
+      "sport_title": "Basketball Euroleague",
+      "requested_markets": [
+        "h2h"
+      ],
+      "estimated_credits": 1,
+      "quota_headers": {
+        "requests_last": "1",
+        "requests_used": "73",
+        "requests_remaining": "427",
+        "credits_used": "73",
+        "credits_remaining": "427"
+      }
+    },
+    {
+      "sport_key": "americanfootball_nfl",
+      "sport_title": "NFL",
+      "requested_markets": [
+        "h2h"
+      ],
+      "estimated_credits": 1,
+      "quota_headers": {
+        "requests_last": "1",
+        "requests_used": "74",
+        "requests_remaining": "426",
+        "credits_used": "74",
+        "credits_remaining": "426"
+      }
+    },
+    {
+      "sport_key": "baseball_kbo",
+      "sport_title": "KBO",
+      "requested_markets": [
+        "h2h"
+      ],
+      "estimated_credits": 1,
+      "quota_headers": {
+        "requests_last": "1",
+        "requests_used": "75",
+        "requests_remaining": "425",
+        "credits_used": "75",
+        "credits_remaining": "425"
+      }
+    }
+  ]
+}
