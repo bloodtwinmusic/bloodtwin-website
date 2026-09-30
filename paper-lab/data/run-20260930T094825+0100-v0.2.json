@@ -1,0 +1,153 @@
+{
+  "paper_only": true,
+  "version": "0.4",
+  "schema_version": "0.2",
+  "observed_at_utc": "2026-09-30T08:48:11.000480+00:00",
+  "observed_at_london": "2026-09-30T09:48:11.000480+01:00",
+  "collection_window_start_utc": "2026-09-30T08:48:11.000480+00:00",
+  "collection_window_end_utc": "2026-10-01T09:00:00+00:00",
+  "collection_window_start_london": "2026-09-30T09:48:11.000480+01:00",
+  "collection_window_end_london": "2026-10-01T10:00:00+01:00",
+  "regions": "uk",
+  "markets": [
+    "h2h",
+    "spreads",
+    "totals"
+  ],
+  "odds_format": "decimal",
+  "request_budget_limit": 8,
+  "credit_budget_limit": 10,
+  "credit_reserve": 50,
+  "credits_before": 415,
+  "credits_spent": 10,
+  "chargeable_requests_made": 8,
+  "request_attempts": 8,
+  "sports_discovered": 83,
+  "sports_queried": 8,
+  "events_returned": 19,
+  "rows_recorded": 730,
+  "quota_history": [
+    {
+      "sport_key": "cricket_odi",
+      "sport_title": "One Day Internationals",
+      "requested_markets": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "estimated_credits": 3,
+      "quota_headers": {
+        "requests_last": "3",
+        "requests_used": "88",
+        "requests_remaining": "412",
+        "credits_used": "88",
+        "credits_remaining": "412"
+      }
+    },
+    {
+      "sport_key": "soccer_belgium_first_div",
+      "sport_title": "Belgium First Div",
+      "requested_markets": [
+        "h2h"
+      ],
+      "estimated_credits": 1,
+      "quota_headers": {
+        "requests_last": "1",
+        "requests_used": "89",
+        "requests_remaining": "411",
+        "credits_used": "89",
+        "credits_remaining": "411"
+      }
+    },
+    {
+      "sport_key": "tennis_atp_japan_open",
+      "sport_title": "ATP Japan Open",
+      "requested_markets": [
+        "h2h"
+      ],
+      "estimated_credits": 1,
+      "quota_headers": {
+        "requests_last": "1",
+        "requests_used": "90",
+        "requests_remaining": "410",
+        "credits_used": "90",
+        "credits_remaining": "410"
+      }
+    },
+    {
+      "sport_key": "basketball_nbl",
+      "sport_title": "NBL",
+      "requested_markets": [
+        "h2h"
+      ],
+      "estimated_credits": 1,
+      "quota_headers": {
+        "requests_last": "1",
+        "requests_used": "91",
+        "requests_remaining": "409",
+        "credits_used": "91",
+        "credits_remaining": "409"
+      }
+    },
+    {
+      "sport_key": "americanfootball_ncaaf_fcs",
+      "sport_title": "NCAAF FCS",
+      "requested_markets": [
+        "h2h"
+      ],
+      "estimated_credits": 1,
+      "quota_headers": {
+        "requests_last": "1",
+        "requests_used": "92",
+        "requests_remaining": "408",
+        "credits_used": "92",
+        "credits_remaining": "408"
+      }
+    },
+    {
+      "sport_key": "baseball_mlb",
+      "sport_title": "MLB",
+      "requested_markets": [
+        "h2h"
+      ],
+      "estimated_credits": 1,
+      "quota_headers": {
+        "requests_last": "1",
+        "requests_used": "93",
+        "requests_remaining": "407",
+        "credits_used": "93",
+        "credits_remaining": "407"
+      }
+    },
+    {
+      "sport_key": "icehockey_nhl",
+      "sport_title": "NHL",
+      "requested_markets": [
+        "h2h"
+      ],
+      "estimated_credits": 1,
+      "quota_headers": {
+        "requests_last": "1",
+        "requests_used": "94",
+        "requests_remaining": "406",
+        "credits_used": "94",
+        "credits_remaining": "406"
+      }
+    },
+    {
+      "sport_key": "aussierules_aflw",
+      "sport_title": "AFL Women's",
+      "requested_markets": [
+        "h2h"
+      ],
+      "estimated_credits": 1,
+      "quota_headers": {
+        "requests_last": "1",
+        "requests_used": "95",
+        "requests_remaining": "405",
+        "credits_used": "95",
+        "credits_remaining": "405"
+      }
+    }
+  ]
+}
