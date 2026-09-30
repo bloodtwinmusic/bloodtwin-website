@@ -1,0 +1,153 @@
+{
+  "paper_only": true,
+  "version": "0.4",
+  "schema_version": "0.2",
+  "observed_at_utc": "2026-09-30T19:59:50.055623+00:00",
+  "observed_at_london": "2026-09-30T20:59:50.055623+01:00",
+  "collection_window_start_utc": "2026-09-30T19:59:50.055623+00:00",
+  "collection_window_end_utc": "2026-10-01T09:00:00+00:00",
+  "collection_window_start_london": "2026-09-30T20:59:50.055623+01:00",
+  "collection_window_end_london": "2026-10-01T10:00:00+01:00",
+  "regions": "uk",
+  "markets": [
+    "h2h",
+    "spreads",
+    "totals"
+  ],
+  "odds_format": "decimal",
+  "request_budget_limit": 8,
+  "credit_budget_limit": 10,
+  "credit_reserve": 50,
+  "credits_before": 405,
+  "credits_spent": 10,
+  "chargeable_requests_made": 8,
+  "request_attempts": 8,
+  "sports_discovered": 82,
+  "sports_queried": 8,
+  "events_returned": 21,
+  "rows_recorded": 748,
+  "quota_history": [
+    {
+      "sport_key": "soccer_brazil_campeonato",
+      "sport_title": "Brazil S\u00e9rie A",
+      "requested_markets": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "estimated_credits": 3,
+      "quota_headers": {
+        "requests_last": "3",
+        "requests_used": "98",
+        "requests_remaining": "402",
+        "credits_used": "98",
+        "credits_remaining": "402"
+      }
+    },
+    {
+      "sport_key": "tennis_wta_china_open",
+      "sport_title": "WTA China Open",
+      "requested_markets": [
+        "h2h"
+      ],
+      "estimated_credits": 1,
+      "quota_headers": {
+        "requests_last": "1",
+        "requests_used": "99",
+        "requests_remaining": "401",
+        "credits_used": "99",
+        "credits_remaining": "401"
+      }
+    },
+    {
+      "sport_key": "basketball_wnba",
+      "sport_title": "WNBA",
+      "requested_markets": [
+        "h2h"
+      ],
+      "estimated_credits": 1,
+      "quota_headers": {
+        "requests_last": "1",
+        "requests_used": "100",
+        "requests_remaining": "400",
+        "credits_used": "100",
+        "credits_remaining": "400"
+      }
+    },
+    {
+      "sport_key": "americanfootball_nfl",
+      "sport_title": "NFL",
+      "requested_markets": [
+        "h2h"
+      ],
+      "estimated_credits": 1,
+      "quota_headers": {
+        "requests_last": "1",
+        "requests_used": "101",
+        "requests_remaining": "399",
+        "credits_used": "101",
+        "credits_remaining": "399"
+      }
+    },
+    {
+      "sport_key": "baseball_npb",
+      "sport_title": "NPB",
+      "requested_markets": [
+        "h2h"
+      ],
+      "estimated_credits": 1,
+      "quota_headers": {
+        "requests_last": "1",
+        "requests_used": "102",
+        "requests_remaining": "398",
+        "credits_used": "102",
+        "credits_remaining": "398"
+      }
+    },
+    {
+      "sport_key": "icehockey_sweden_hockey_league",
+      "sport_title": "SHL",
+      "requested_markets": [
+        "h2h"
+      ],
+      "estimated_credits": 1,
+      "quota_headers": {
+        "requests_last": "1",
+        "requests_used": "103",
+        "requests_remaining": "397",
+        "credits_used": "103",
+        "credits_remaining": "397"
+      }
+    },
+    {
+      "sport_key": "aussierules_aflw",
+      "sport_title": "AFL Women's",
+      "requested_markets": [
+        "h2h"
+      ],
+      "estimated_credits": 1,
+      "quota_headers": {
+        "requests_last": "1",
+        "requests_used": "104",
+        "requests_remaining": "396",
+        "credits_used": "104",
+        "credits_remaining": "396"
+      }
+    },
+    {
+      "sport_key": "soccer_brazil_serie_b",
+      "sport_title": "Brazil S\u00e9rie B",
+      "requested_markets": [
+        "h2h"
+      ],
+      "estimated_credits": 1,
+      "quota_headers": {
+        "requests_last": "1",
+        "requests_used": "105",
+        "requests_remaining": "395",
+        "credits_used": "105",
+        "credits_remaining": "395"
+      }
+    }
+  ]
+}
