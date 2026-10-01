@@ -1,0 +1,153 @@
+{
+  "paper_only": true,
+  "version": "0.4",
+  "schema_version": "0.2",
+  "observed_at_utc": "2026-10-01T08:47:49.238138+00:00",
+  "observed_at_london": "2026-10-01T09:47:49.238138+01:00",
+  "collection_window_start_utc": "2026-10-01T08:47:49.238138+00:00",
+  "collection_window_end_utc": "2026-10-02T09:00:00+00:00",
+  "collection_window_start_london": "2026-10-01T09:47:49.238138+01:00",
+  "collection_window_end_london": "2026-10-02T10:00:00+01:00",
+  "regions": "uk",
+  "markets": [
+    "h2h",
+    "spreads",
+    "totals"
+  ],
+  "odds_format": "decimal",
+  "request_budget_limit": 8,
+  "credit_budget_limit": 10,
+  "credit_reserve": 50,
+  "credits_before": 500,
+  "credits_spent": 10,
+  "chargeable_requests_made": 8,
+  "request_attempts": 8,
+  "sports_discovered": 83,
+  "sports_queried": 8,
+  "events_returned": 22,
+  "rows_recorded": 848,
+  "quota_history": [
+    {
+      "sport_key": "tennis_atp_china_open",
+      "sport_title": "ATP China Open",
+      "requested_markets": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "estimated_credits": 3,
+      "quota_headers": {
+        "requests_last": "3",
+        "requests_used": "3",
+        "requests_remaining": "497",
+        "credits_used": "3",
+        "credits_remaining": "497"
+      }
+    },
+    {
+      "sport_key": "basketball_euroleague",
+      "sport_title": "Basketball Euroleague",
+      "requested_markets": [
+        "h2h"
+      ],
+      "estimated_credits": 1,
+      "quota_headers": {
+        "requests_last": "1",
+        "requests_used": "4",
+        "requests_remaining": "496",
+        "credits_used": "4",
+        "credits_remaining": "496"
+      }
+    },
+    {
+      "sport_key": "americanfootball_cfl",
+      "sport_title": "CFL",
+      "requested_markets": [
+        "h2h"
+      ],
+      "estimated_credits": 1,
+      "quota_headers": {
+        "requests_last": "1",
+        "requests_used": "5",
+        "requests_remaining": "495",
+        "credits_used": "5",
+        "credits_remaining": "495"
+      }
+    },
+    {
+      "sport_key": "baseball_kbo",
+      "sport_title": "KBO",
+      "requested_markets": [
+        "h2h"
+      ],
+      "estimated_credits": 1,
+      "quota_headers": {
+        "requests_last": "1",
+        "requests_used": "6",
+        "requests_remaining": "494",
+        "credits_used": "6",
+        "credits_remaining": "494"
+      }
+    },
+    {
+      "sport_key": "icehockey_sweden_allsvenskan",
+      "sport_title": "HockeyAllsvenskan",
+      "requested_markets": [
+        "h2h"
+      ],
+      "estimated_credits": 1,
+      "quota_headers": {
+        "requests_last": "1",
+        "requests_used": "7",
+        "requests_remaining": "493",
+        "credits_used": "7",
+        "credits_remaining": "493"
+      }
+    },
+    {
+      "sport_key": "boxing_boxing",
+      "sport_title": "Boxing",
+      "requested_markets": [
+        "h2h"
+      ],
+      "estimated_credits": 1,
+      "quota_headers": {
+        "requests_last": "1",
+        "requests_used": "8",
+        "requests_remaining": "492",
+        "credits_used": "8",
+        "credits_remaining": "492"
+      }
+    },
+    {
+      "sport_key": "soccer_brazil_serie_b",
+      "sport_title": "Brazil S\u00e9rie B",
+      "requested_markets": [
+        "h2h"
+      ],
+      "estimated_credits": 1,
+      "quota_headers": {
+        "requests_last": "1",
+        "requests_used": "9",
+        "requests_remaining": "491",
+        "credits_used": "9",
+        "credits_remaining": "491"
+      }
+    },
+    {
+      "sport_key": "tennis_atp_japan_open",
+      "sport_title": "ATP Japan Open",
+      "requested_markets": [
+        "h2h"
+      ],
+      "estimated_credits": 1,
+      "quota_headers": {
+        "requests_last": "1",
+        "requests_used": "10",
+        "requests_remaining": "490",
+        "credits_used": "10",
+        "credits_remaining": "490"
+      }
+    }
+  ]
+}
