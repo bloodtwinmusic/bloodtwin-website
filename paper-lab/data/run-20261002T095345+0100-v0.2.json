@@ -1,0 +1,153 @@
+{
+  "paper_only": true,
+  "version": "0.4",
+  "schema_version": "0.2",
+  "observed_at_utc": "2026-10-02T08:53:26.007991+00:00",
+  "observed_at_london": "2026-10-02T09:53:26.007991+01:00",
+  "collection_window_start_utc": "2026-10-02T08:53:26.007991+00:00",
+  "collection_window_end_utc": "2026-10-03T09:00:00+00:00",
+  "collection_window_start_london": "2026-10-02T09:53:26.007991+01:00",
+  "collection_window_end_london": "2026-10-03T10:00:00+01:00",
+  "regions": "uk",
+  "markets": [
+    "h2h",
+    "spreads",
+    "totals"
+  ],
+  "odds_format": "decimal",
+  "request_budget_limit": 8,
+  "credit_budget_limit": 10,
+  "credit_reserve": 50,
+  "credits_before": 480,
+  "credits_spent": 10,
+  "chargeable_requests_made": 8,
+  "request_attempts": 8,
+  "sports_discovered": 85,
+  "sports_queried": 8,
+  "events_returned": 25,
+  "rows_recorded": 844,
+  "quota_history": [
+    {
+      "sport_key": "americanfootball_ncaaf_fcs",
+      "sport_title": "NCAAF FCS",
+      "requested_markets": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "estimated_credits": 3,
+      "quota_headers": {
+        "requests_last": "3",
+        "requests_used": "23",
+        "requests_remaining": "477",
+        "credits_used": "23",
+        "credits_remaining": "477"
+      }
+    },
+    {
+      "sport_key": "baseball_npb",
+      "sport_title": "NPB",
+      "requested_markets": [
+        "h2h"
+      ],
+      "estimated_credits": 1,
+      "quota_headers": {
+        "requests_last": "1",
+        "requests_used": "24",
+        "requests_remaining": "476",
+        "credits_used": "24",
+        "credits_remaining": "476"
+      }
+    },
+    {
+      "sport_key": "icehockey_mestis",
+      "sport_title": "Mestis",
+      "requested_markets": [
+        "h2h"
+      ],
+      "estimated_credits": 1,
+      "quota_headers": {
+        "requests_last": "1",
+        "requests_used": "25",
+        "requests_remaining": "475",
+        "credits_used": "25",
+        "credits_remaining": "475"
+      }
+    },
+    {
+      "sport_key": "cricket_odi",
+      "sport_title": "One Day Internationals",
+      "requested_markets": [
+        "h2h"
+      ],
+      "estimated_credits": 1,
+      "quota_headers": {
+        "requests_last": "1",
+        "requests_used": "26",
+        "requests_remaining": "474",
+        "credits_used": "26",
+        "credits_remaining": "474"
+      }
+    },
+    {
+      "sport_key": "soccer_germany_bundesliga2",
+      "sport_title": "Bundesliga 2 - Germany",
+      "requested_markets": [
+        "h2h"
+      ],
+      "estimated_credits": 1,
+      "quota_headers": {
+        "requests_last": "1",
+        "requests_used": "27",
+        "requests_remaining": "473",
+        "credits_used": "27",
+        "credits_remaining": "473"
+      }
+    },
+    {
+      "sport_key": "tennis_wta_china_open",
+      "sport_title": "WTA China Open",
+      "requested_markets": [
+        "h2h"
+      ],
+      "estimated_credits": 1,
+      "quota_headers": {
+        "requests_last": "1",
+        "requests_used": "28",
+        "requests_remaining": "472",
+        "credits_used": "28",
+        "credits_remaining": "472"
+      }
+    },
+    {
+      "sport_key": "basketball_nba_preseason",
+      "sport_title": "NBA Preseason",
+      "requested_markets": [
+        "h2h"
+      ],
+      "estimated_credits": 1,
+      "quota_headers": {
+        "requests_last": "1",
+        "requests_used": "29",
+        "requests_remaining": "471",
+        "credits_used": "29",
+        "credits_remaining": "471"
+      }
+    },
+    {
+      "sport_key": "americanfootball_nfl",
+      "sport_title": "NFL",
+      "requested_markets": [
+        "h2h"
+      ],
+      "estimated_credits": 1,
+      "quota_headers": {
+        "requests_last": "1",
+        "requests_used": "30",
+        "requests_remaining": "470",
+        "credits_used": "30",
+        "credits_remaining": "470"
+      }
+    }
+  ]
+}
