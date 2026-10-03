@@ -1,0 +1,153 @@
+{
+  "paper_only": true,
+  "version": "0.4",
+  "schema_version": "0.2",
+  "observed_at_utc": "2026-10-03T18:40:07.327099+00:00",
+  "observed_at_london": "2026-10-03T19:40:07.327099+01:00",
+  "collection_window_start_utc": "2026-10-03T18:40:07.327099+00:00",
+  "collection_window_end_utc": "2026-10-04T09:00:00+00:00",
+  "collection_window_start_london": "2026-10-03T19:40:07.327099+01:00",
+  "collection_window_end_london": "2026-10-04T10:00:00+01:00",
+  "regions": "uk",
+  "markets": [
+    "h2h",
+    "spreads",
+    "totals"
+  ],
+  "odds_format": "decimal",
+  "request_budget_limit": 8,
+  "credit_budget_limit": 10,
+  "credit_reserve": 50,
+  "credits_before": 450,
+  "credits_spent": 10,
+  "chargeable_requests_made": 8,
+  "request_attempts": 8,
+  "sports_discovered": 88,
+  "sports_queried": 8,
+  "events_returned": 69,
+  "rows_recorded": 1255,
+  "quota_history": [
+    {
+      "sport_key": "boxing_boxing",
+      "sport_title": "Boxing",
+      "requested_markets": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "estimated_credits": 3,
+      "quota_headers": {
+        "requests_last": "3",
+        "requests_used": "53",
+        "requests_remaining": "447",
+        "credits_used": "53",
+        "credits_remaining": "447"
+      }
+    },
+    {
+      "sport_key": "soccer_argentina_primera_division",
+      "sport_title": "Primera Divisi\u00f3n - Argentina",
+      "requested_markets": [
+        "h2h"
+      ],
+      "estimated_credits": 1,
+      "quota_headers": {
+        "requests_last": "1",
+        "requests_used": "54",
+        "requests_remaining": "446",
+        "credits_used": "54",
+        "credits_remaining": "446"
+      }
+    },
+    {
+      "sport_key": "tennis_wta_china_open",
+      "sport_title": "WTA China Open",
+      "requested_markets": [
+        "h2h"
+      ],
+      "estimated_credits": 1,
+      "quota_headers": {
+        "requests_last": "1",
+        "requests_used": "55",
+        "requests_remaining": "445",
+        "credits_used": "55",
+        "credits_remaining": "445"
+      }
+    },
+    {
+      "sport_key": "basketball_euroleague",
+      "sport_title": "Basketball Euroleague",
+      "requested_markets": [
+        "h2h"
+      ],
+      "estimated_credits": 1,
+      "quota_headers": {
+        "requests_last": "1",
+        "requests_used": "56",
+        "requests_remaining": "444",
+        "credits_used": "56",
+        "credits_remaining": "444"
+      }
+    },
+    {
+      "sport_key": "americanfootball_ncaaf",
+      "sport_title": "NCAAF",
+      "requested_markets": [
+        "h2h"
+      ],
+      "estimated_credits": 1,
+      "quota_headers": {
+        "requests_last": "1",
+        "requests_used": "57",
+        "requests_remaining": "443",
+        "credits_used": "57",
+        "credits_remaining": "443"
+      }
+    },
+    {
+      "sport_key": "baseball_npb",
+      "sport_title": "NPB",
+      "requested_markets": [
+        "h2h"
+      ],
+      "estimated_credits": 1,
+      "quota_headers": {
+        "requests_last": "1",
+        "requests_used": "58",
+        "requests_remaining": "442",
+        "credits_used": "58",
+        "credits_remaining": "442"
+      }
+    },
+    {
+      "sport_key": "icehockey_ahl",
+      "sport_title": "AHL",
+      "requested_markets": [
+        "h2h"
+      ],
+      "estimated_credits": 1,
+      "quota_headers": {
+        "requests_last": "1",
+        "requests_used": "59",
+        "requests_remaining": "441",
+        "credits_used": "59",
+        "credits_remaining": "441"
+      }
+    },
+    {
+      "sport_key": "handball_germany_bundesliga",
+      "sport_title": "Handball-Bundesliga",
+      "requested_markets": [
+        "h2h"
+      ],
+      "estimated_credits": 1,
+      "quota_headers": {
+        "requests_last": "1",
+        "requests_used": "60",
+        "requests_remaining": "440",
+        "credits_used": "60",
+        "credits_remaining": "440"
+      }
+    }
+  ]
+}

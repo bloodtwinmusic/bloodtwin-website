@@ -1,0 +1,63 @@
+{
+  "archive_release": "paper-lab-archive-2026-10",
+  "files": [
+    {
+      "bytes": 1343205,
+      "filename": "oddsrelay_2026-10-03T184007.327099_0000.json.gz",
+      "sha256": "51bc28f8751202d5eb5bd88c3654f31699e0578257bcfe111f7568dac65d4caf",
+      "storage_class": "workflow_artifact_30_days"
+    },
+    {
+      "bytes": 4674110,
+      "filename": "unified_2026-10-03T184007.327099_0000.json.gz",
+      "sha256": "9c3f86ca9b02113b82283908d3888405db603107ed5aa067b7ca3a173c4e0d1f",
+      "storage_class": "durable_release"
+    },
+    {
+      "bytes": 142520,
+      "filename": "latest-analysis-board.json",
+      "sha256": "92c990fdd00b3bd6edcb3ea4e5b7810e265f2c6b584cfd1e15175d64d9e1b779",
+      "storage_class": "rolling_git_index"
+    }
+  ],
+  "observed_at_utc": "2026-10-03T18:40:07.327099+00:00",
+  "paper_only": true,
+  "schema_version": "0.5",
+  "summary": {
+    "oddsrelay": {
+      "products_acquired": [
+        "standard"
+      ],
+      "rows": 135026,
+      "selected_products": [
+        "standard"
+      ],
+      "token_estimates": {
+        "standard": 10000
+      },
+      "usage": {
+        "standard": {
+          "tokens_cost": "10000",
+          "tokens_remaining": "110000",
+          "tokens_used": "140000"
+        }
+      }
+    },
+    "the_odds_api": {
+      "credits_remaining": "440",
+      "credits_spent": 10,
+      "request_attempts": 8,
+      "requests": 8,
+      "rows": 1249,
+      "sports_discovered": 88,
+      "sports_queried": 8
+    },
+    "unified": {
+      "canonical": 135894,
+      "cross_provider_rows": 381,
+      "duplicates_collapsed": 381,
+      "oddsrelay": 135026,
+      "the_odds_api": 1249
+    }
+  }
+}
